@@ -9,6 +9,7 @@
   - Everyday note-taking.
   - Personal knowledge organization.
   - Software project documentation and specs.
+  - Providing workspace context to external LLMs and coding tools through MCP.
 - Core functionality must work fully offline.
 
 ## Principles
