@@ -16,6 +16,8 @@
 
 ## Application Architecture
 
+- Use a monorepo for platform clients and shared packages.
+- Keep platform-specific code behind adapters; share domain logic and workspace services where practical.
 - Tauri and Rust provide filesystem access, file watching, Git operations, and native integrations.
 - React owns the user interface, editor, and application state.
 - Keep domain logic independent of the desktop platform so it can be reused by future mobile clients.
