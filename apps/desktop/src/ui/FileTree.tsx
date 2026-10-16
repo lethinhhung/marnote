@@ -2,8 +2,20 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
 import type { Entry } from "./workspaceTypes";
 
-type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
+type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; hideFoldersWithoutNotes: boolean; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
 type Drag = { path: string; x: number; y: number; moved: boolean };
+
+function containsNote(entry: Entry): boolean {
+  return entry.kind === "file" ? entry.path.toLowerCase().endsWith(".md") : (entry.children || []).some(containsNote);
+}
+
+function visibleEntries(entries: Entry[], hideFoldersWithoutNotes: boolean): Entry[] {
+  return entries.flatMap(entry => {
+    if (entry.kind === "file") return [entry];
+    const children = visibleEntries(entry.children || [], hideFoldersWithoutNotes);
+    return hideFoldersWithoutNotes && !containsNote(entry) ? [] : [{ ...entry, children }];
+  });
+}
 
 export function FileTree(props: Props) {
   const [dragging, setDragging] = useState("");
@@ -55,7 +67,8 @@ export function FileTree(props: Props) {
     if (entry.kind === "directory") props.onFolderSelect(entry.path);
     else props.onOpen(entry);
   };
-  return <ul className="file-tree">{props.entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} />)}</ul>;
+  const entries = visibleEntries(props.entries, props.hideFoldersWithoutNotes);
+  return <ul className="file-tree">{entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} />)}</ul>;
 }
 
 function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, onExpanded, depth, onStart, onClick }: { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder"; dragging: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void }) {

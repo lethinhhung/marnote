@@ -30,7 +30,7 @@ button, input { font: inherit; }
 .tree-item.selected-folder { background: #e9edf5; color: #465b7a; }
 .tree-indent { display: block; width: 14px; flex: 0 0 14px; }
 .sidebar-empty { padding: 12px 8px; color: #999d93; font-size: 11px; line-height: 1.6; }
-.status-banner { margin: 0 0 20px; padding: 10px 13px; border-radius: 7px; font-size: 12px; line-height: 1.5; }
+.status-banner { margin: 0; padding: 10px 13px; border-radius: 7px; font-size: 12px; line-height: 1.5; }
 .status-banner.error { border: 1px solid #e9c9c2; background: #fff5f2; color: #9a4838; overflow-wrap: anywhere; }
 .status-banner.conflict { border: 1px solid #e7d9af; background: #fffbee; color: #76633b; }
 .status-banner button { margin-left: 8px; border: 0; background: transparent; color: #536d57; text-decoration: underline; cursor: pointer; }
