@@ -28,6 +28,10 @@
 :root[data-theme="dark"] .tool { color: #a9b1a6; }
 :root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #343d35; color: #c5d7c4; }
 :root[data-theme="dark"] .tool-separator { border-color: #424940; }
+:root[data-theme="dark"] .link-popover { border-color: #424a43; background: #272d28; box-shadow: 0 10px 28px rgba(0,0,0,.4); }
+:root[data-theme="dark"] .link-popover label { color: #a6afa2; }
+:root[data-theme="dark"] .link-popover input, :root[data-theme="dark"] .link-popover button { border-color: #424a43; background: #232925; color: #c0c9bd; }
+:root[data-theme="dark"] .link-popover button[type="submit"] { border-color: #607a64; background: #607a64; color: #fff; }
 :root[data-theme="dark"] .editor-prose { color: #c4cbc2; }
 :root[data-theme="dark"] .editor-prose h1, :root[data-theme="dark"] .editor-prose h2, :root[data-theme="dark"] .editor-prose h3 { color: #e0e5de; }
 :root[data-theme="dark"] .editor-prose strong { color: #e2e9df; }

@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/react";
+import { useRef, useState, type FormEvent } from "react";
 import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Eye, Pilcrow, Table2 } from "lucide-react";
 
 type Props = { editor: Editor | null; source: boolean; onToggleSource: () => void };
@@ -22,16 +23,26 @@ const actions: Action[] = [
 ];
 
 export function EditorToolbar({ editor, source, onToggleSource }: Props) {
-  const addLink = () => {
-    if (!editor) return;
-    const href = window.prompt("Paste a link");
-    if (href) editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [href, setHref] = useState("");
+  const selection = useRef({ from: 0, to: 0 });
+  const addLink = (event: FormEvent) => {
+    event.preventDefault();
+    const url = href.trim();
+    if (!editor || !url) return;
+    const range = selection.current;
+    const chain = editor.chain().focus().setTextSelection(range);
+    if (range.from === range.to) chain.insertContent({ type: "text", text: url, marks: [{ type: "link", attrs: { href: url } }] }).run();
+    else chain.setLink({ href: url }).run();
+    setLinkOpen(false);
+    setHref("");
   };
   return <div className="toolbar" role="toolbar" aria-label="Formatting">
     <div className="tool-group">{actions.map(({ label, icon: Icon, run, active }) => { const selected = !!editor && !!active?.(editor); return <button key={label} type="button" title={label} aria-label={label} aria-pressed={selected} disabled={!editor} className={selected ? "tool active" : "tool"} onClick={() => editor && run(editor)}><Icon size={16} strokeWidth={1.8} /></button>; })}</div>
-    <span className="toolbar-spacer" />
     <button type="button" className="tool" title="Insert table" aria-label="Insert table" disabled={!editor} onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={16} strokeWidth={1.8} /></button>
-    <button type="button" className="tool link-tool" title="Add link" aria-label="Add link" disabled={!editor} onClick={addLink}><Link2 size={16} /></button>
+    <button type="button" className={linkOpen ? "tool active" : "tool"} title="Add link" aria-label="Add link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) selection.current = editor.state.selection; }} onClick={() => setLinkOpen(open => !open)}><Link2 size={16} /></button>
+    {linkOpen && <form className="link-popover" onSubmit={addLink}><label htmlFor="link-url">Link URL</label><input id="link-url" autoFocus placeholder="https://example.com or note.md" value={href} onChange={event => setHref(event.target.value)} onKeyDown={event => event.key === "Escape" && setLinkOpen(false)} /><div><button type="button" onClick={() => setLinkOpen(false)}>Cancel</button><button type="submit" disabled={!href.trim()}>Apply link</button></div></form>}
+    <span className="toolbar-spacer" />
     <span className="tool-separator" />
     <button type="button" className={source ? "tool active source-toggle" : "tool source-toggle"} title="View Markdown" aria-label="View Markdown" aria-pressed={source} onClick={onToggleSource}><Eye size={16} /><span>Markdown</span></button>
   </div>;

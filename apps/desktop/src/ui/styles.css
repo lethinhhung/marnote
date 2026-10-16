@@ -54,7 +54,14 @@ button, input { font: inherit; }
 .title-input::placeholder { color: #c4c4be; }
 .title-input { flex: 0 0 auto; margin-bottom: 20px; }
 .editor-frame { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; background: #fff; }
-.toolbar { min-height: 40px; display: flex; flex: 0 0 40px; align-items: center; gap: 8px; padding: 4px clamp(16px, 4vw, 56px); border-bottom: 1px solid #efeee9; background: #fdfdfc; }
+.toolbar { position: relative; min-height: 40px; display: flex; flex: 0 0 40px; align-items: center; gap: 8px; padding: 4px clamp(16px, 4vw, 56px); border-bottom: 1px solid #efeee9; background: #fdfdfc; }
+.link-popover { position: absolute; z-index: 30; top: calc(100% + 6px); left: clamp(16px, 4vw, 56px); width: min(300px, calc(100vw - 32px)); display: grid; gap: 8px; padding: 12px; border: 1px solid #e9e8e3; border-radius: 8px; background: #fff; box-shadow: 0 10px 28px rgba(32,37,30,.14); }
+.link-popover label { color: #858a80; font-size: 11px; font-weight: 600; }
+.link-popover input { min-width: 0; padding: 8px; border: 1px solid #e8e8e1; border-radius: 5px; outline-color: #8a9c85; color: #454b43; font-size: 12px; }
+.link-popover div { display: flex; justify-content: flex-end; gap: 6px; }
+.link-popover button { padding: 6px 8px; border: 1px solid #e8e8e1; border-radius: 5px; background: #fff; color: #596858; font-size: 11px; cursor: pointer; }
+.link-popover button[type="submit"] { border-color: #526b58; background: #526b58; color: #fff; }
+.link-popover button:disabled { opacity: .5; cursor: default; }
 .note-heading { width: min(920px, calc(100% - 48px)); margin: 0 auto; padding: 42px 0 18px; }
 .title-field { width: min(100%, 920px); display: flex; align-items: baseline; gap: 3px; margin: 0 auto; }
 .note-heading .title-input { width: auto; max-width: calc(100% - 2.5em); min-width: 1ch; flex: 0 0 auto; field-sizing: content; margin: 0; }
@@ -67,7 +74,6 @@ button, input { font: inherit; }
 .toolbar-spacer { flex: 1; }
 .tool-separator { height: 19px; border-left: 1px solid #e9e8e3; }
 .source-toggle { width: auto; padding: 0 9px; font-size: 11px; }
-.link-tool { margin-left: auto; }
 .editor-prose, .markdown-source { width: min(920px, calc(100% - 48px)); min-height: 480px; margin: 0 auto; padding: 8px 0 48px; outline: 0; color: #44483f; font-size: 15px; line-height: 1.8; }
 .editor-prose > *:first-child { margin-top: 0; }
 .editor-prose p { margin: 0 0 14px; }
