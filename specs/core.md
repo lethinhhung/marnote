@@ -58,9 +58,11 @@
   - Task lists.
   - Quotes.
   - Code blocks.
+  - Tables.
   - Dividers.
 - Support linking to other notes.
 - Common Markdown should round-trip without destructive changes.
+- Tables should serialize as standard Markdown table syntax.
 - Avoid editor features that cannot map cleanly to Markdown.
 
 ## Project Workspace
