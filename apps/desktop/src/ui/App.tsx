@@ -1,8 +1,7 @@
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { GripVertical, Moon, Sun } from "lucide-react";
-import { DragHandle } from "@tiptap/extension-drag-handle-react";
+import { Moon, Sun } from "lucide-react";
 import StarterKit from "@tiptap/starter-kit";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
@@ -13,6 +12,7 @@ import { EditorToolbar } from "./EditorToolbar";
 import { initialMarkdown } from "./initialMarkdown";
 import { matchingSlashIds, SlashMenu } from "./SlashMenu";
 import { useTheme } from "./useTheme";
+import { BlockDragHandle } from "./BlockDragHandle";
 
 type SlashState = { query: string; from: number; to: number; top: number; left: number };
 
@@ -25,7 +25,9 @@ export function App() {
     extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown],
     content: initialMarkdown,
     contentType: "markdown",
-    editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } },
+    editorProps: {
+      attributes: { class: "editor-prose", "aria-label": "Markdown note editor" },
+    },
     onUpdate: ({ editor: current }) => {
       const { $from } = current.state.selection;
       const match = $from.parent.type.name === "paragraph" && $from.parent.textContent.match(/(?:^|\s)\/([\w-]*)$/);
@@ -72,7 +74,7 @@ export function App() {
       <div className="doc-subtitle">A quiet place for your thoughts.</div>
       <div className="editor-frame" onKeyDownCapture={handleMenuKeys}>
         <EditorToolbar editor={editor} source={source} onToggleSource={() => setSource(!source)} />
-        {source ? <pre className="markdown-source">{markdown}</pre> : <><EditorContent editor={editor} />{editor && <DragHandle editor={editor} className="block-drag-handle"><button type="button" aria-label="Drag block to move" title="Drag to move block"><GripVertical size={17} /></button></DragHandle>}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left }} onSelect={insertBlock} />}</>}
+        {source ? <pre className="markdown-source">{markdown}</pre> : <><EditorContent editor={editor} />{editor && <BlockDragHandle editor={editor} />}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left }} onSelect={insertBlock} />}</>}
         <footer className="editor-footer"><span>Markdown formatting supported</span><span>{words} words <b>·</b> Markdown</span></footer>
       </div>
     </section>

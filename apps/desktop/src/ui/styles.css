@@ -58,8 +58,11 @@ button, input { font: inherit; }
 .slash-label { font-size: 12px; font-weight: 600; }
 .slash-label small { display: block; margin-top: 2px; color: #999b92; font-size: 10px; font-weight: 400; }
 .block-drag-handle { z-index: 15; }
-.block-drag-handle button { width: 23px; height: 29px; display: grid; place-items: center; border: 0; border-radius: 5px; background: #f3f3ef; color: #8d9188; cursor: grab; }
+.block-drag-handle button { width: 23px; height: 29px; display: grid; place-items: center; border: 0; border-radius: 5px; background: #f3f3ef; color: #8d9188; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
 .block-drag-handle button:hover { background: #e8ebe4; color: #516d57; }
+.block-drag-handle button.is-dragging { cursor: grabbing; background: #e2e8df; color: #405b46; }
+body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: grabbing !important; }
+.block-drop-indicator { position: absolute; z-index: 25; right: 52px; left: 52px; height: 2px; border-radius: 2px; background: #607a64; box-shadow: 0 0 0 2px rgba(96,122,100,.12); pointer-events: none; }
 .markdown-source { margin: 0; overflow: auto; background: #fbfbf9; color: #566154; font: 13px/1.8 ui-monospace, SFMono-Regular, monospace; white-space: pre-wrap; }
 .editor-footer { min-height: 39px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-top: 1px solid #f0efeb; color: #a0a198; font-size: 10px; }
 .editor-footer kbd { padding: 2px 4px; border: 1px solid #e7e6e1; border-radius: 4px; background: #fafaf8; font: inherit; }
@@ -101,6 +104,8 @@ button, input { font: inherit; }
 :root[data-theme="dark"] .slash-label small { color: #a0a99d; }
 :root[data-theme="dark"] .block-drag-handle button { background: #343b35; color: #a7b0a4; }
 :root[data-theme="dark"] .block-drag-handle button:hover { background: #414b41; color: #c7d9c5; }
+:root[data-theme="dark"] .block-drag-handle button.is-dragging { background: #465346; color: #d0e2cb; }
+:root[data-theme="dark"] .block-drop-indicator { background: #a6c8a3; box-shadow: 0 0 0 2px rgba(166,200,163,.16); }
 :root[data-theme="dark"] .markdown-source { background: #202621; color: #c4d0c1; }
 :root[data-theme="dark"] .editor-footer { border-color: #383f39; color: #9aa397; }
 :root[data-theme="dark"] .editor-footer kbd { border-color: #434a43; background: #2a302b; }
