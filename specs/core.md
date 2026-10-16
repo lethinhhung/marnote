@@ -63,6 +63,7 @@
 - Support linking to other notes.
 - Common Markdown should round-trip without destructive changes.
 - Tables should serialize as standard Markdown table syntax.
+- Opening or synchronizing a note must not save editor normalization; autosave only after a user edit.
 - Avoid editor features that cannot map cleanly to Markdown.
 
 ## Project Workspace
