@@ -3,6 +3,7 @@ import type { WorkspaceTree } from "./workspaceTypes";
 
 export type ReadResult = { path: string; content: string; modifiedMs: number };
 export const openWorkspace = (path: string) => invoke<WorkspaceTree>("open_workspace", { path });
+export const openDefaultWorkspace = () => invoke<WorkspaceTree>("default_workspace");
 export const listWorkspace = (rootPath: string) => invoke<WorkspaceTree>("list_workspace_tree", { rootPath });
 export const readFile = (rootPath: string, path: string) => invoke<ReadResult>("file_read_markdown", { rootPath, path });
 export const writeFile = (rootPath: string, path: string, content: string, expectedContent: string) =>

@@ -4,6 +4,7 @@ use std::{
     fs,
     path::{Component, Path, PathBuf},
 };
+use tauri::Manager;
 
 #[derive(Serialize)]
 pub struct Entry {
@@ -70,6 +71,22 @@ pub fn open_workspace(path: String) -> Result<Workspace, String> {
         name,
         path: r.to_string_lossy().into_owned(),
         entries: collect(&r, &r)?,
+    })
+}
+
+#[tauri::command]
+pub fn default_workspace(app: tauri::AppHandle) -> Result<Workspace, String> {
+    let path = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("workspace");
+    fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+    let root = root(&path.to_string_lossy())?;
+    Ok(Workspace {
+        name: "My Notes".into(),
+        path: root.to_string_lossy().into_owned(),
+        entries: collect(&root, &root)?,
     })
 }
 #[tauri::command]

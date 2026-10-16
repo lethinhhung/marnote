@@ -10,6 +10,7 @@
 
 - The app must be local-first and work offline.
 - The filesystem is the source of truth for workspace content.
+- Store the built-in workspace's Markdown files in app data; other workspaces remain independently openable.
 - Notes are stored as standard Markdown files.
 - Workspaces support nested folders and links between notes.
 - Markdown must remain portable and round-trip through the editor without destructive changes.
