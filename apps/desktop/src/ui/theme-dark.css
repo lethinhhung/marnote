@@ -24,10 +24,15 @@
 :root[data-theme="dark"] .title-extension { color: #818b80; }
 :root[data-theme="dark"] .title-input::placeholder { color: #697168; }
 :root[data-theme="dark"] .editor-frame { background: #1e221f; }
+:root[data-theme="dark"] .table-edge-add { border-color: #536b54; background: #607a64; color: #fff; }
+:root[data-theme="dark"] .table-edge-add:hover, :root[data-theme="dark"] .table-edge-add:focus-visible { background: #789177; }
 :root[data-theme="dark"] .toolbar { border-color: #383f39; background: #252b26; }
 :root[data-theme="dark"] .tool { color: #a9b1a6; }
 :root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #343d35; color: #c5d7c4; }
 :root[data-theme="dark"] .tool-separator { border-color: #424940; }
+:root[data-theme="dark"] .table-actions { border-color: #424940; }
+:root[data-theme="dark"] .table-actions button { border-color: #424a43; background: #232925; color: #c0c9bd; }
+:root[data-theme="dark"] .table-actions button:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .link-popover { border-color: #424a43; background: #272d28; box-shadow: 0 10px 28px rgba(0,0,0,.4); }
 :root[data-theme="dark"] .link-popover label { color: #a6afa2; }
 :root[data-theme="dark"] .link-popover input, :root[data-theme="dark"] .link-popover button { border-color: #424a43; background: #232925; color: #c0c9bd; }
