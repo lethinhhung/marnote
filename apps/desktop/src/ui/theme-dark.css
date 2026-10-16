@@ -1,0 +1,51 @@
+:root[data-theme="dark"] { color-scheme: dark; color: #d6dbd4; background: #1c201d; }
+:root[data-theme="dark"] .app-shell { background: #1e221f; }
+:root[data-theme="dark"] .sidebar { border-color: #39413a; background: #232925; color: #adb5aa; }
+:root[data-theme="dark"] .workspace-open { border-color: #39413a; }
+:root[data-theme="dark"] .workspace-open input, :root[data-theme="dark"] .open-workspace { border-color: #424a43; background: #292f2a; color: #c0c9bd; }
+:root[data-theme="dark"] .tree-item { color: #aeb7aa; }
+:root[data-theme="dark"] .tree-item:hover, :root[data-theme="dark"] .tree-item.selected { background: #343d35; color: #d1e0ce; }
+:root[data-theme="dark"] .sidebar-heading button { color: #a6afa2; }
+:root[data-theme="dark"] .sidebar-heading button:hover:not(:disabled) { background: #343d35; color: #d1e0ce; }
+:root[data-theme="dark"] .welcome h1 { color: #e0e5de; }
+:root[data-theme="dark"] .topbar { border-color: #343b35; background: rgba(35,40,36,.92); color: #a3aa9f; }
+:root[data-theme="dark"] .brand-name { color: #e0e5de; }
+:root[data-theme="dark"] .topbar-divider { border-color: #424940; }
+:root[data-theme="dark"] .crumb { color: #bdc4b9; }
+:root[data-theme="dark"] .local-badge { color: #a3aa9f; }
+:root[data-theme="dark"] .document-meta { color: #969e93; }
+:root[data-theme="dark"] .doc-icon { border-color: #424940; color: #acb4a8; }
+:root[data-theme="dark"] .title-input { color: #e7eae4; }
+:root[data-theme="dark"] .title-input::placeholder { color: #697168; }
+:root[data-theme="dark"] .doc-subtitle { color: #969e94; }
+:root[data-theme="dark"] .editor-frame { border-color: #3a413b; background: #272d28; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+:root[data-theme="dark"] .toolbar { border-color: #383f39; background: #252b26; }
+:root[data-theme="dark"] .tool { color: #a9b1a6; }
+:root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #343d35; color: #c5d7c4; }
+:root[data-theme="dark"] .tool-separator { border-color: #424940; }
+:root[data-theme="dark"] .editor-prose { color: #c4cbc2; }
+:root[data-theme="dark"] .editor-prose h1, :root[data-theme="dark"] .editor-prose h2, :root[data-theme="dark"] .editor-prose h3 { color: #e0e5de; }
+:root[data-theme="dark"] .editor-prose strong { color: #e2e9df; }
+:root[data-theme="dark"] .editor-prose a { color: #a8c8a8; text-decoration-color: #617b61; }
+:root[data-theme="dark"] .editor-prose blockquote { border-color: #647c65; color: #abb6a9; }
+:root[data-theme="dark"] .editor-prose pre { border-color: #3b433c; background: #202621; color: #c8d0c6; }
+:root[data-theme="dark"] .editor-prose code { background: #384239; color: #b8d5b6; }
+:root[data-theme="dark"] .editor-prose pre code { background: none; color: inherit; }
+:root[data-theme="dark"] .editor-prose hr { border-color: #414941; }
+:root[data-theme="dark"] .editor-prose p.is-editor-empty:first-child::before { color: #70796f; }
+:root[data-theme="dark"] .slash-menu { border-color: #424a43; background: #272d28; box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+:root[data-theme="dark"] .slash-menu-heading { color: #a0a99d; }
+:root[data-theme="dark"] .slash-option { color: #d0d7ce; }
+:root[data-theme="dark"] .slash-option:hover, :root[data-theme="dark"] .slash-option.selected { background: #343d35; }
+:root[data-theme="dark"] .slash-icon { border-color: #40483f; color: #b1bcae; }
+:root[data-theme="dark"] .slash-label small { color: #a0a99d; }
+:root[data-theme="dark"] .block-drag-handle button { background: #343b35; color: #a7b0a4; }
+:root[data-theme="dark"] .block-drag-handle button:hover { background: #414b41; color: #c7d9c5; }
+:root[data-theme="dark"] .block-drag-handle button.is-dragging { background: #465346; color: #d0e2cb; }
+:root[data-theme="dark"] .block-drop-indicator { background: #a6c8a3; box-shadow: 0 0 0 2px rgba(166,200,163,.16); }
+:root[data-theme="dark"] .markdown-source { background: #202621; color: #c4d0c1; }
+:root[data-theme="dark"] .editor-footer { border-color: #383f39; color: #9aa397; }
+:root[data-theme="dark"] .editor-footer kbd { border-color: #434a43; background: #2a302b; }
+:root[data-theme="dark"] .editor-footer b { color: #687167; }
+:root[data-theme="dark"] .theme-toggle { border-color: #454d46; color: #c1c9bd; }
+:root[data-theme="dark"] .theme-toggle:hover { background: #343d35; color: #f0d69a; }

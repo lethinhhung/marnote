@@ -1,82 +1,41 @@
-import { useState } from "react";
-import type { KeyboardEvent } from "react";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import StarterKit from "@tiptap/starter-kit";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-import { Markdown } from "@tiptap/markdown";
-import { EditorToolbar } from "./EditorToolbar";
-import { initialMarkdown } from "./initialMarkdown";
-import { matchingSlashIds, SlashMenu } from "./SlashMenu";
 import { useTheme } from "./useTheme";
-import { BlockDragHandle } from "./BlockDragHandle";
-
-type SlashState = { query: string; from: number; to: number; top: number; left: number };
+import { useWorkspace } from "./useWorkspace";
+import { WorkspaceSidebar } from "./WorkspaceSidebar";
+import { NoteEditor } from "./NoteEditor";
+import { readFile } from "./workspaceApi";
 
 export function App() {
-  const [source, setSource] = useState(false);
-  const [slash, setSlash] = useState<SlashState | null>(null);
-  const [selected, setSelected] = useState(0);
   const { theme, toggleTheme } = useTheme();
-  const editor = useEditor({
-    extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown],
-    content: initialMarkdown,
-    contentType: "markdown",
-    editorProps: {
-      attributes: { class: "editor-prose", "aria-label": "Markdown note editor" },
-    },
-    onUpdate: ({ editor: current }) => {
-      const { $from } = current.state.selection;
-      const match = $from.parent.type.name === "paragraph" && $from.parent.textContent.match(/(?:^|\s)\/([\w-]*)$/);
-      if (!match) { setSlash(null); return; }
-      const from = $from.pos - match[1].length - 1;
-      const frame = document.querySelector(".editor-frame")?.getBoundingClientRect();
-      const cursor = current.view.coordsAtPos($from.pos);
-      setSlash(frame ? { query: match[1], from, to: $from.pos, top: cursor.bottom - frame.top + 6, left: Math.max(12, cursor.left - frame.left) } : null);
-      setSelected(0);
-    },
-  });
-  const markdown = editor?.getMarkdown() ?? "";
-  const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
-  const insertBlock = (id: string) => {
-    if (!editor || !slash) return;
-    const chain = editor.chain().focus().deleteRange({ from: slash.from, to: slash.to });
-    if (id === "paragraph") chain.setParagraph().run();
-    else if (id.startsWith("heading")) chain.setHeading({ level: Number(id.slice(-1)) as 1 | 2 | 3 }).run();
-    else if (id === "bullet") chain.toggleBulletList().run();
-    else if (id === "number") chain.toggleOrderedList().run();
-    else if (id === "task") chain.toggleTaskList().run();
-    else if (id === "quote") chain.toggleBlockquote().run();
-    else if (id === "code") chain.toggleCodeBlock().run();
-    else chain.setHorizontalRule().run();
-    setSlash(null);
+  const workspace = useWorkspace();
+  const [source, setSource] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [external, setExternal] = useState<string | null>(null);
+  const path = workspace.note?.path || "";
+  const name = path.split("/").pop()?.replace(/\.md$/i, "") || "Untitled note";
+  useEffect(() => { setDraft(workspace.note?.content || ""); setExternal(null); }, [path]);
+  useEffect(() => {
+    if (!path || !workspace.note) return;
+    const timer = window.setTimeout(() => { if (draft !== workspace.note?.content) workspace.save(path, draft, workspace.note?.content || ""); }, 650);
+    return () => window.clearTimeout(timer);
+  }, [draft, path, workspace.note?.content]);
+  useEffect(() => {
+    if (!path || !workspace.note) return;
+    const timer = window.setInterval(() => { void readFile(workspace.tree?.path || "", path).then(value => { if (value.content !== workspace.note?.content && value.content !== draft) setExternal(value.content); }).catch(error => workspace.setError(String(error))); }, 2500);
+    return () => window.clearInterval(timer);
+  }, [path, workspace.tree?.path, workspace.note?.content, draft]);
+  const renameTitle = (title: string) => {
+    const next = title.trim(); if (!path || !next) return;
+    const target = `${path.slice(0, path.lastIndexOf("/") + 1)}${next.endsWith(".md") ? next : `${next}.md`}`;
+    if (target !== path) workspace.rename(path, target);
   };
-
-  const handleMenuKeys = (event: KeyboardEvent) => {
-    if (!slash || !editor || !event.target || !(event.target as HTMLElement).closest(".ProseMirror")) return;
-    const ids = matchingSlashIds(slash.query);
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setSelected(value => Math.max(0, Math.min(ids.length - 1, value + (event.key === "ArrowDown" ? 1 : -1)))); }
-    if (event.key === "Escape") { event.preventDefault(); setSlash(null); }
-    if (event.key === "Enter") { event.preventDefault(); const id = ids[selected]; if (id) insertBlock(id); }
-  };
-
   return <main className="app-shell">
-    <header className="topbar"><div className="brand-lockup" aria-label="Marnote"><img className="brand-mark" src="/brand/mark.svg" alt="" /><span className="brand-name">marnote</span></div><span className="topbar-divider" />
-      <span className="crumb">Untitled note</span><span className="local-badge"><i /> Local draft</span>
-      <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} title={theme === "dark" ? "Light mode" : "Dark mode"}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button>
-    </header>
-    <section className="workspace">
-      <div className="document-meta"><div className="doc-icon">✎</div><span>PERSONAL NOTE</span></div>
-      <input className="title-input" aria-label="Note title" placeholder="Untitled" defaultValue="A note to begin with" />
-      <div className="doc-subtitle">A quiet place for your thoughts.</div>
-      <div className="editor-frame" onKeyDownCapture={handleMenuKeys}>
-        <EditorToolbar editor={editor} source={source} onToggleSource={() => setSource(!source)} />
-        {source ? <pre className="markdown-source">{markdown}</pre> : <><EditorContent editor={editor} />{editor && <BlockDragHandle editor={editor} />}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left }} onSelect={insertBlock} />}</>}
-        <footer className="editor-footer"><span>Markdown formatting supported</span><span>{words} words <b>·</b> Markdown</span></footer>
-      </div>
-    </section>
+    <header className="topbar"><div className="brand-lockup" aria-label="Marnote"><img className="brand-mark" src="/brand/mark.svg" alt="" /><span className="brand-name">marnote</span></div><span className="topbar-divider" /><span className="crumb">{workspace.tree?.name || "No workspace"}{path ? ` / ${path}` : ""}</span><span className="local-badge"><i /> {workspace.note ? "Local file" : "Local-first"}</span><button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button></header>
+    <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} selected={path} onOpen={workspace.open} onSelect={workspace.select} onCreate={workspace.create} onRename={workspace.rename} onDelete={workspace.remove} />
+      <section className="workspace">{workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}{external !== null && <div className="status-banner conflict" role="status">This file changed outside Marnote. <button onClick={() => { workspace.acceptExternal(path, external); setDraft(external); setExternal(null); }}>Load external version</button><button onClick={() => { workspace.acceptExternal(path, external); setExternal(null); }}>Keep mine</button></div>}
+        {workspace.note ? <><div className="document-meta"><div className="doc-icon">✎</div><span>MARKDOWN FILE</span></div><input className="title-input" aria-label="Note title" defaultValue={name} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><div className="doc-subtitle">{path}</div><NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} /></> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
+      </section>
+    </div>
   </main>;
 }
