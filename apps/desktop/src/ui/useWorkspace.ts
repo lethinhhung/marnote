@@ -19,5 +19,12 @@ export function useWorkspace() {
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
   const renameOrMove = (p: string, n: string) => mutate(async () => { if (tree) await moveFile(tree.path, p, n); setNote(current => current?.path === p ? { ...current, path: n } : current); });
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); setNote(current => current?.path === p ? null : current); });
-  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create: (p: string) => mutate(() => tree ? createFile(tree.path, p) : Promise.resolve()), rename: renameOrMove, move: (p: string, n: string) => renameOrMove(p, n), remove };
+  const create = (path: string) => run(async () => {
+    if (!tree) return;
+    await createFile(tree.path, path);
+    const created = await readFile(tree.path, path);
+    setTree(await listWorkspace(tree.path));
+    setNote({ path: created.path, content: created.content });
+  });
+  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create, rename: renameOrMove, move: (p: string, n: string) => renameOrMove(p, n), remove };
 }
