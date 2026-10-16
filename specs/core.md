@@ -27,6 +27,8 @@
 ## Workspace
 
 - A workspace points to a local directory.
+- Provide a persistent built-in workspace for everyday notes, stored as Markdown files in local app data.
+- Users can also open and switch to other local workspaces.
 - Supports deeply nested folders.
 - Folders map to filesystem directories.
 - Notes map to Markdown files.
