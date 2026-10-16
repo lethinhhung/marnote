@@ -27,14 +27,20 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
     if (!state.active) { document.body.dataset.blockDragging = "true"; setIsDragging(true); }
     state.active = true;
     const target = getBlockDropTarget(editor.view, event.clientY);
-    const frame = editor.view.dom.closest(".editor-frame")?.getBoundingClientRect();
-    setMarkerTop(target && frame ? target.lineY - frame.top : null);
+    const canvas = editor.view.dom.closest(".editor-canvas");
+    const bounds = canvas?.getBoundingClientRect();
+    setMarkerTop(target && canvas && bounds ? target.lineY - bounds.top + canvas.scrollTop : null);
   };
   const onPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     const state = drag.current;
     if (state?.active && state.pointerId === event.pointerId) {
       const target = getBlockDropTarget(editor.view, event.clientY);
-      if (target) moveTopLevelBlock(editor.view, state.source, target.position);
+      if (target) {
+        moveTopLevelBlock(editor.view, state.source, target.position);
+        editor.view.dispatch(editor.state.tr.setMeta("hideDragHandle", true));
+        const { clientX, clientY } = event;
+        requestAnimationFrame(() => editor.view.dom.dispatchEvent(new MouseEvent("mousemove", { clientX, clientY, bubbles: true })));
+      }
     }
     drag.current = null;
     delete document.body.dataset.blockDragging;

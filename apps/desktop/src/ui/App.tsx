@@ -12,14 +12,23 @@ export function App() {
   const workspace = useWorkspace();
   const [source, setSource] = useState(false);
   const [draft, setDraft] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
+  const saveSequence = useRef(0);
   const [external, setExternal] = useState<string | null>(null);
   const titleInput = useRef<HTMLInputElement>(null);
   const path = workspace.note?.path || "";
   const name = path.split("/").pop()?.replace(/\.md$/i, "") || "Untitled note";
-  useEffect(() => { setDraft(workspace.note?.content || ""); setExternal(null); }, [path]);
+  useEffect(() => { setDraft(workspace.note?.content || ""); setExternal(null); setSaveStatus("saved"); saveSequence.current += 1; }, [path]);
   useEffect(() => {
     if (!path || !workspace.note) return;
-    const timer = window.setTimeout(() => { if (draft !== workspace.note?.content) workspace.save(path, draft, workspace.note?.content || ""); }, 650);
+    if (draft === workspace.note.content) return;
+    const sequence = ++saveSequence.current;
+    const timer = window.setTimeout(() => {
+      setSaveStatus("saving");
+      void workspace.save(path, draft, workspace.note?.content || "").then(saved => {
+        if (sequence === saveSequence.current) setSaveStatus(saved ? "saved" : "error");
+      });
+    }, 650);
     return () => window.clearTimeout(timer);
   }, [draft, path, workspace.note?.content]);
   useEffect(() => {
@@ -39,6 +48,6 @@ export function App() {
         {workspace.note ? <NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} heading={<div className="title-field"><input ref={titleInput} className="title-input" aria-label="Note file name" defaultValue={name} size={Math.max(name.length, 1)} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} /> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
       </section>
     </div>
-    <NoteFooter value={workspace.note ? draft : ""} path={workspace.note?.path || ""} />
+    <NoteFooter value={workspace.note ? draft : ""} path={workspace.note?.path || ""} saveStatus={saveStatus} />
   </main>;
 }

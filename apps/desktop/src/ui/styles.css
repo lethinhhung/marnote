@@ -97,7 +97,8 @@ button, input { font: inherit; }
 .slash-label { font-size: 12px; font-weight: 600; }
 .slash-label small { display: block; margin-top: 2px; color: #999b92; font-size: 10px; font-weight: 400; }
 .block-drag-handle { z-index: 15; transform: translateX(-8px); }
-.block-drag-handle button { width: 23px; height: 29px; display: grid; place-items: center; border: 0; border-radius: 5px; background: #f3f3ef; color: #8d9188; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+.block-drag-handle button { position: relative; width: 23px; height: 29px; display: grid; place-items: center; border: 0; border-radius: 5px; background: #f3f3ef; color: #8d9188; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+.block-drag-handle button::after { position: absolute; top: 0; left: calc(100% - 1px); width: 12px; height: 100%; content: ""; }
 .block-drag-handle button:hover { background: #e8ebe4; color: #516d57; }
 .block-drag-handle button.is-dragging { cursor: grabbing; background: #e2e8df; color: #405b46; }
 body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: grabbing !important; }
@@ -105,6 +106,13 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .markdown-source { min-height: 100%; padding-right: 24px; padding-left: 24px; overflow: visible; background: #fbfbf9; color: #566154; font: 13px/1.8 ui-monospace, SFMono-Regular, monospace; white-space: pre-wrap; }
 .note-footer { min-width: 0; height: 26px; display: flex; align-items: center; gap: 20px; padding: 0 18px; border-top: 1px solid #e9e8e3; background: #fafaf8; color: #82877e; font-size: 10px; }
 .note-footer-stats { display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+.note-footer-save { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: #687d68; }
+.note-footer-save i { width: 6px; height: 6px; border-radius: 50%; background: #6aa879; }
+.note-footer-save.saving { color: #85816d; }
+.note-footer-save.saving i { background: #c4a64b; animation: save-pulse 1s ease-in-out infinite alternate; }
+.note-footer-save.error { color: #b44f47; }
+.note-footer-save.error i { background: #c95e55; }
+@keyframes save-pulse { to { opacity: .35; } }
 .note-footer b { color: #c3c5bd; font-weight: 400; }
 .note-footer-path { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .note-footer-format { white-space: nowrap; }

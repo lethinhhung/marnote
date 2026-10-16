@@ -9,11 +9,18 @@ export function useWorkspace() {
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
   const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); });
   const select = (entry: Entry) => run(async () => { if (!tree) return; const result = await readFile(tree.path, entry.path); setNote({ path: result.path, content: result.content }); });
-  const save = (path: string, content: string, expected: string) => run(async () => {
-    if (!tree) return;
-    await writeFile(tree.path, path, content, expected);
-    setNote(current => current?.path === path ? { path, content } : current);
-  });
+  const save = async (path: string, content: string, expected: string): Promise<boolean> => {
+    if (!tree) return false;
+    try {
+      setError("");
+      await writeFile(tree.path, path, content, expected);
+      setNote(current => current?.path === path ? { path, content } : current);
+      return true;
+    } catch (e) {
+      setError(String(e));
+      return false;
+    }
+  };
   const acceptExternal = (path: string, content: string) => setNote(current => current?.path === path ? { path, content } : current);
   const refresh = async () => { if (tree) await run(async () => setTree(await listWorkspace(tree.path))); };
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
