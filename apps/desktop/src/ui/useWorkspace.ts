@@ -44,7 +44,7 @@ export function useWorkspace() {
     try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); }
     return true;
   };
-  const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); setNote(current => current?.path === p ? null : current); });
+  const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); setNote(current => current && (current.path === p || current.path.startsWith(`${p}/`)) ? null : current); });
   const create = (path: string) => run(async () => {
     if (!tree) return;
     await createFile(tree.path, path);
