@@ -52,3 +52,12 @@
 :root[data-theme="dark"] .editor-footer b { color: #687167; }
 :root[data-theme="dark"] .theme-toggle { border-color: #454d46; color: #c1c9bd; }
 :root[data-theme="dark"] .theme-toggle:hover { background: #343d35; color: #f0d69a; }
+:root[data-theme="dark"] .address { color: #bdc4b9; }
+:root[data-theme="dark"] .address > span:first-child { color: #e0e5de; }
+:root[data-theme="dark"] .global-search { border-color: #424a43; background: #232925; color: #aeb7aa; }
+:root[data-theme="dark"] .global-search input { color: #d6dbd4; }
+:root[data-theme="dark"] .global-search kbd { border-color: #424a43; background: #292f2a; color: #c0c9bd; }
+:root[data-theme="dark"] .search-results { border-color: #424a43; background: #272d28; }
+:root[data-theme="dark"] .search-results button { color: #d0d7ce; }
+:root[data-theme="dark"] .search-results button:hover { background: #343d35; }
+:root[data-theme="dark"] .search-results button small, :root[data-theme="dark"] .search-results p { color: #a0a99d; }
