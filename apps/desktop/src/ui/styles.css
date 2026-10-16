@@ -113,16 +113,24 @@ button, input { font: inherit; }
 .editor-prose pre::-webkit-scrollbar-thumb, .editor-prose .tableWrapper::-webkit-scrollbar-thumb { border-radius: 6px; background: #c4c8be; }
 .editor-prose code { border-radius: 4px; background: #f1f1ec; padding: 2px 5px; color: #536858; font: .88em ui-monospace, SFMono-Regular, monospace; }
 .editor-prose pre code { display: block; width: max-content; min-width: 100%; padding: 0; background: none; color: inherit; white-space: inherit; overflow-wrap: inherit; word-break: inherit; }
-.editor-prose .tableWrapper { max-width: 100%; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #c4c8be transparent; margin: 20px 0; }
-.editor-prose table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: auto; }
+.editor-prose .tableWrapper { position: relative; max-width: 100%; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #c4c8be transparent; margin: 20px 0; }
+.editor-prose table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: fixed; }
 .editor-prose th, .editor-prose td { min-width: 120px; padding: 8px 10px; border: 1px solid #dfe1d9; text-align: left; vertical-align: top; }
-.wide-content-wrap .editor-prose .tableWrapper { overflow-x: hidden; }
-.wide-content-wrap .editor-prose table { width: 100%; min-width: 0; table-layout: fixed; }
+.wide-content-wrap .editor-prose .tableWrapper { overflow-x: auto; }
+.wide-content-wrap .editor-prose table { width: 100%; min-width: 0 !important; table-layout: fixed; }
+.wide-content-wrap .editor-prose col { width: auto !important; min-width: 0 !important; }
 .wide-content-wrap .editor-prose th, .wide-content-wrap .editor-prose td { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
 .wide-content-wrap .editor-prose pre { overflow-x: hidden; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .wide-content-wrap .editor-prose pre code { width: 100%; min-width: 0; max-width: 100%; white-space: inherit; overflow-wrap: inherit; word-break: inherit; }
 .editor-prose th { background: #f2f3ee; color: #41483f; font-weight: 600; }
 .editor-prose td > p, .editor-prose th > p { margin: 0; }
+.editor-prose th, .editor-prose td { position: relative; box-sizing: border-box; }
+.editor-prose .column-resize-handle { position: absolute; z-index: 20; top: 0; right: -6px; bottom: 0; width: 12px; background: #607a64; opacity: 0; pointer-events: none; }
+.editor-prose th:hover .column-resize-handle, .editor-prose td:hover .column-resize-handle, .editor-prose .column-resize-dragging .column-resize-handle { opacity: .75; }
+.editor-prose.resize-cursor, .ProseMirror.resize-cursor { cursor: col-resize; }
+.editor-prose th.table-resize-hover, .editor-prose td.table-resize-hover { cursor: col-resize !important; box-shadow: inset -2px 0 #607a64; }
+.table-edge-host.is-column-resizing { cursor: col-resize !important; }
+.wide-content-wrap .editor-prose th.table-resize-hover, .wide-content-wrap .editor-prose td.table-resize-hover { cursor: text !important; box-shadow: none; }
 .editor-prose hr { margin: 24px 0; border: 0; border-top: 1px solid #e8e7e1; }
 .editor-prose p.is-editor-empty:first-child::before { float: left; height: 0; color: #b7b8b1; content: attr(data-placeholder); pointer-events: none; }
 .slash-menu { position: fixed; z-index: 50; width: min(270px, calc(100vw - 24px)); overflow-y: auto; padding: 7px; border: 1px solid #e9e8e3; border-radius: 10px; background: #fff; box-shadow: 0 12px 36px rgba(32,37,30,.13); }

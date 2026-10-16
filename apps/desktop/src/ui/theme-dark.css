@@ -32,6 +32,7 @@
 :root[data-theme="dark"] .editor-frame { background: #1e221f; }
 :root[data-theme="dark"] .table-edge-add { border-color: #536b54; background: #607a64; color: #fff; }
 :root[data-theme="dark"] .table-edge-add:hover, :root[data-theme="dark"] .table-edge-add:focus-visible { background: #789177; }
+:root[data-theme="dark"] .editor-prose .column-resize-handle { background: #a8c8a8; }
 :root[data-theme="dark"] .toolbar { border-color: #383f39; background: #252b26; }
 :root[data-theme="dark"] .tool { color: #a9b1a6; }
 :root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #343d35; color: #c5d7c4; }
