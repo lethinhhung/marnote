@@ -20,8 +20,9 @@
 :root[data-theme="dark"] .document-meta { color: #969e93; }
 :root[data-theme="dark"] .doc-icon { border-color: #424940; color: #acb4a8; }
 :root[data-theme="dark"] .title-input { color: #e7eae4; }
+:root[data-theme="dark"] .title-extension { color: #818b80; }
 :root[data-theme="dark"] .title-input::placeholder { color: #697168; }
-:root[data-theme="dark"] .editor-frame { border-color: #3a413b; background: #272d28; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+:root[data-theme="dark"] .editor-frame { background: #1e221f; }
 :root[data-theme="dark"] .toolbar { border-color: #383f39; background: #252b26; }
 :root[data-theme="dark"] .tool { color: #a9b1a6; }
 :root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #343d35; color: #c5d7c4; }

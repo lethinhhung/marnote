@@ -1,4 +1,5 @@
 mod files;
+mod folders;
 mod tree;
 mod workspace;
 
@@ -13,7 +14,8 @@ pub fn run() {
             files::file_create_markdown,
             files::file_update_markdown,
             files::file_move,
-            files::file_delete
+            files::file_delete,
+            folders::folder_create
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Marnote");

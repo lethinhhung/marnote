@@ -25,11 +25,7 @@ pub fn collect(dir: &Path, base: &Path) -> Result<Vec<Entry>, String> {
             .extension()
             .and_then(|s| s.to_str())
             .is_some_and(|s| s.eq_ignore_ascii_case("md"));
-        if (directory
-            && (!children.is_empty()
-                || ["docs", "specs"].contains(&item.file_name().to_string_lossy().as_ref())))
-            || markdown
-        {
+        if directory || markdown {
             out.push(Entry {
                 name: item.file_name().to_string_lossy().into_owned(),
                 path,

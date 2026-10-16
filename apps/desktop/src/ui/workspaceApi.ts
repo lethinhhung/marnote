@@ -10,3 +10,4 @@ export const writeFile = (rootPath: string, path: string, content: string, expec
 export const createFile = (rootPath: string, path: string, content = "") => invoke<void>("file_create_markdown", { rootPath, path, content });
 export const moveFile = (rootPath: string, source: string, destination: string) => invoke<void>("file_move", { rootPath, source, destination });
 export const deleteFile = (rootPath: string, path: string) => invoke<string>("file_delete", { rootPath, path });
+export const createFolder = (rootPath: string, path: string) => invoke<void>("folder_create", { rootPath, path });

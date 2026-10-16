@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { createFile, deleteFile, listWorkspace, moveFile, openWorkspace, readFile, writeFile } from "./workspaceApi";
+import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openWorkspace, readFile, writeFile } from "./workspaceApi";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 
 export function useWorkspace() {
@@ -26,5 +26,8 @@ export function useWorkspace() {
     setTree(await listWorkspace(tree.path));
     setNote({ path: created.path, content: created.content });
   });
-  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create, rename: renameOrMove, move: (p: string, n: string) => renameOrMove(p, n), remove };
+  const createDirectory = (path: string) => mutate(async () => {
+    if (tree) await createFolder(tree.path, path);
+  });
+  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move: (p: string, n: string) => renameOrMove(p, n), remove };
 }

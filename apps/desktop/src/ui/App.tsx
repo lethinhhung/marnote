@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./useTheme";
 import { useWorkspace } from "./useWorkspace";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
@@ -13,6 +13,7 @@ export function App() {
   const [source, setSource] = useState(false);
   const [draft, setDraft] = useState("");
   const [external, setExternal] = useState<string | null>(null);
+  const titleInput = useRef<HTMLInputElement>(null);
   const path = workspace.note?.path || "";
   const name = path.split("/").pop()?.replace(/\.md$/i, "") || "Untitled note";
   useEffect(() => { setDraft(workspace.note?.content || ""); setExternal(null); }, [path]);
@@ -33,9 +34,9 @@ export function App() {
   };
   return <main className="app-shell">
     <HeaderBar tree={workspace.tree} path={path} theme={theme} toggleTheme={toggleTheme} onSelect={workspace.select} />
-    <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} selected={path} onOpen={workspace.open} onSelect={workspace.select} onCreate={workspace.create} onRename={workspace.rename} onDelete={workspace.remove} />
+    <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} selected={path} onOpen={workspace.open} onSelect={workspace.select} onCreate={workspace.create} onCreateFolder={workspace.createDirectory} onRename={workspace.rename} onDelete={workspace.remove} />
       <section className="workspace">{workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}{external !== null && <div className="status-banner conflict" role="status">This file changed outside Marnote. <button onClick={() => { workspace.acceptExternal(path, external); setDraft(external); setExternal(null); }}>Load external version</button><button onClick={() => { workspace.acceptExternal(path, external); setExternal(null); }}>Keep mine</button></div>}
-        {workspace.note ? <><input className="title-input" aria-label="Note title" defaultValue={name} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} /></> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
+        {workspace.note ? <NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} heading={<div className="title-field"><input ref={titleInput} className="title-input" aria-label="Note file name" defaultValue={name} size={Math.max(name.length, 1)} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} /> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
       </section>
     </div>
     <NoteFooter value={workspace.note ? draft : ""} path={workspace.note?.path || ""} />
