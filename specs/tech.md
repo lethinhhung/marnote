@@ -21,6 +21,7 @@
 - Keep platform-specific code behind adapters; share domain logic and workspace services where practical.
 - Tauri and Rust provide filesystem access, file watching, Git operations, and native integrations.
 - React owns the user interface, editor, and application state.
+- Organize desktop UI code by feature, keeping app composition, shared UI, and platform adapters separate as the app grows.
 - Keep domain logic independent of the desktop platform so it can be reused by future mobile clients.
 - UI and MCP operations must use the same workspace and filesystem services.
 
