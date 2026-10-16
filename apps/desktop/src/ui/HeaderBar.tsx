@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { FileText, Moon, Search, Sun } from "lucide-react";
+import { isTauri } from "@tauri-apps/api/core";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 
 type Props = { tree: WorkspaceTree | null; path: string; theme: string; toggleTheme: () => void; onSelect: (entry: Entry) => void };
@@ -15,13 +17,16 @@ export function HeaderBar({ tree, path, theme, toggleTheme, onSelect }: Props) {
     return () => window.removeEventListener("keydown", keydown);
   }, []);
   const choose = (entry: Entry) => { onSelect(entry); setQuery(""); setFocused(false); input.current?.blur(); };
-  return <header className="topbar">
-    <div className="brand-lockup" aria-label="Marnote"><img className="brand-mark" src="/brand/mark.svg" alt="" /><span className="brand-name">marnote</span></div>
-    <span className="topbar-divider" />
-    <nav className="address" aria-label="Current location"><span>{tree?.name || "No workspace"}</span>{path && <><span className="address-separator">/</span><span className="address-current">{path}</span></>}</nav>
-    <div className="global-search"><Search size={17} /><input ref={input} aria-label="Jump to note or command" placeholder="Jump to note or command…" value={query} onChange={event => setQuery(event.target.value)} onFocus={() => setFocused(true)} onKeyDown={event => { if (event.key === "Enter" && matches[0]) choose(matches[0]); }} /><kbd>⌘K</kbd>
+  const dragWindow = (event: PointerEvent<HTMLElement>) => {
+    if (event.button !== 0 || (event.target as HTMLElement).closest(".global-search, button")) return;
+    if (isTauri()) void getCurrentWindow().startDragging().catch(() => undefined);
+  };
+  const parts = path.split("/").filter(Boolean);
+  return <header className={navigator.platform.includes("Mac") ? "topbar mac-titlebar" : "topbar"} onPointerDown={dragWindow}>
+    <div className="address" aria-label="Current location"><span className="address-brand">Marnote</span>{parts.length === 0 && <><span className="address-separator">/</span><span>{tree?.name || "No workspace"}</span></>}{parts.map((part, index) => <span className="address-part" key={part + index}><span className="address-separator">/</span>{index === parts.length - 1 ? <span className="address-current"><FileText size={14} />{part}</span> : <span>{part}</span>}</span>)}</div>
+    <div className="global-search"><Search size={14} /><input ref={input} aria-label="Jump to note or command" placeholder="Jump to note or command…" value={query} onChange={event => setQuery(event.target.value)} onFocus={() => setFocused(true)} onKeyDown={event => { if (event.key === "Enter" && matches[0]) choose(matches[0]); }} /><kbd>⌘K</kbd>
       {focused && query && <div className="search-results" role="listbox" aria-label="Matching notes">{matches.length ? matches.map(file => <button key={file.path} type="button" role="option" onMouseDown={event => event.preventDefault()} onClick={() => choose(file)}><FileText size={15} /><span>{file.name}</span><small>{file.path}</small></button>) : <p>No matching notes</p>}</div>}
     </div>
-    <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button>
+    <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>{theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}</button>
   </header>;
 }

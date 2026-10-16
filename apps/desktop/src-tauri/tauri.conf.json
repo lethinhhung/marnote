@@ -10,7 +10,27 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "windows": [{ "title": "Marnote", "width": 1100, "height": 760, "minWidth": 720, "minHeight": 500 }]
+    "windows": [
+      {
+        "title": "Marnote",
+        "width": 1100,
+        "height": 760,
+        "minWidth": 720,
+        "minHeight": 500,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "trafficLightPosition": {
+          "x": 18,
+          "y": 18
+        }
+      }
+    ]
   },
-  "bundle": { "active": true, "targets": "all", "icon": ["icons/icon.png"] }
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.png"
+    ]
+  }
 }

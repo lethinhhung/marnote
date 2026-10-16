@@ -5,6 +5,7 @@ import { WorkspaceSidebar } from "./WorkspaceSidebar";
 import { NoteEditor } from "./NoteEditor";
 import { readFile } from "./workspaceApi";
 import { HeaderBar } from "./HeaderBar";
+import { NoteFooter } from "./NoteFooter";
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
@@ -37,5 +38,6 @@ export function App() {
         {workspace.note ? <><input className="title-input" aria-label="Note title" defaultValue={name} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} /></> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
       </section>
     </div>
+    <NoteFooter value={workspace.note ? draft : ""} path={workspace.note?.path || ""} />
   </main>;
 }
