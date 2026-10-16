@@ -21,7 +21,6 @@
 :root[data-theme="dark"] .doc-icon { border-color: #424940; color: #acb4a8; }
 :root[data-theme="dark"] .title-input { color: #e7eae4; }
 :root[data-theme="dark"] .title-input::placeholder { color: #697168; }
-:root[data-theme="dark"] .doc-subtitle { color: #969e94; }
 :root[data-theme="dark"] .editor-frame { border-color: #3a413b; background: #272d28; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
 :root[data-theme="dark"] .toolbar { border-color: #383f39; background: #252b26; }
 :root[data-theme="dark"] .tool { color: #a9b1a6; }
