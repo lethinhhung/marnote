@@ -100,10 +100,12 @@ button, input { font: inherit; }
 .editor-prose li[data-type="taskItem"] > label { padding-top: 5px; }
 .editor-prose li[data-type="taskItem"] input { accent-color: #607a64; }
 .editor-prose blockquote { margin: 20px 0; padding: 2px 0 2px 17px; border-left: 2px solid #b7c5b4; color: #777d71; font-family: Newsreader, Georgia, serif; font-size: 17px; font-style: italic; }
-.editor-prose pre { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; contain: inline-size; margin: 18px 0; padding: 16px 18px; overflow-x: auto; white-space: pre; border: 1px solid #ecebe6; border-radius: 8px; background: #f8f8f5; color: #50554e; font: 13px/1.7 ui-monospace, SFMono-Regular, monospace; }
+.editor-prose pre { display: block; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; contain: inline-size; margin: 18px 0; padding: 16px 18px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #c4c8be transparent; white-space: pre; border: 1px solid #ecebe6; border-radius: 8px; background: #f8f8f5; color: #50554e; font: 13px/1.7 ui-monospace, SFMono-Regular, monospace; }
+.editor-prose pre::-webkit-scrollbar, .editor-prose .tableWrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+.editor-prose pre::-webkit-scrollbar-thumb, .editor-prose .tableWrapper::-webkit-scrollbar-thumb { border-radius: 6px; background: #c4c8be; }
 .editor-prose code { border-radius: 4px; background: #f1f1ec; padding: 2px 5px; color: #536858; font: .88em ui-monospace, SFMono-Regular, monospace; }
 .editor-prose pre code { display: block; width: max-content; min-width: 100%; padding: 0; background: none; color: inherit; white-space: inherit; overflow-wrap: inherit; word-break: inherit; }
-.editor-prose .tableWrapper { max-width: 100%; overflow-x: auto; margin: 20px 0; }
+.editor-prose .tableWrapper { max-width: 100%; overflow-x: auto; scrollbar-width: thin; scrollbar-color: #c4c8be transparent; margin: 20px 0; }
 .editor-prose table { width: max-content; min-width: 100%; border-collapse: collapse; table-layout: auto; }
 .editor-prose th, .editor-prose td { min-width: 120px; padding: 8px 10px; border: 1px solid #dfe1d9; text-align: left; vertical-align: top; }
 .wide-content-wrap .editor-prose .tableWrapper { overflow-x: hidden; }

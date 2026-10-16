@@ -43,6 +43,8 @@
 :root[data-theme="dark"] .editor-prose a { color: #a8c8a8; text-decoration-color: #617b61; }
 :root[data-theme="dark"] .editor-prose blockquote { border-color: #647c65; color: #abb6a9; }
 :root[data-theme="dark"] .editor-prose pre { border-color: #3b433c; background: #202621; color: #c8d0c6; }
+:root[data-theme="dark"] .editor-prose pre, :root[data-theme="dark"] .editor-prose .tableWrapper { scrollbar-color: #586158 transparent; }
+:root[data-theme="dark"] .editor-prose pre::-webkit-scrollbar-thumb, :root[data-theme="dark"] .editor-prose .tableWrapper::-webkit-scrollbar-thumb { background: #586158; }
 :root[data-theme="dark"] .editor-prose code { background: #384239; color: #b8d5b6; }
 :root[data-theme="dark"] .editor-prose pre code { background: none; color: inherit; }
 :root[data-theme="dark"] .editor-prose hr { border-color: #414941; }
