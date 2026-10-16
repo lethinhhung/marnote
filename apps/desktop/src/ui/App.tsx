@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { KeyboardEvent } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Moon, Sun } from "lucide-react";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import StarterKit from "@tiptap/starter-kit";
 import TaskList from "@tiptap/extension-task-list";
@@ -12,6 +12,7 @@ import { Markdown } from "@tiptap/markdown";
 import { EditorToolbar } from "./EditorToolbar";
 import { initialMarkdown } from "./initialMarkdown";
 import { matchingSlashIds, SlashMenu } from "./SlashMenu";
+import { useTheme } from "./useTheme";
 
 type SlashState = { query: string; from: number; to: number; top: number; left: number };
 
@@ -19,6 +20,7 @@ export function App() {
   const [source, setSource] = useState(false);
   const [slash, setSlash] = useState<SlashState | null>(null);
   const [selected, setSelected] = useState(0);
+  const { theme, toggleTheme } = useTheme();
   const editor = useEditor({
     extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown],
     content: initialMarkdown,
@@ -60,8 +62,9 @@ export function App() {
   };
 
   return <main className="app-shell">
-    <header className="topbar"><div className="brand-mark">m</div><span className="brand-name">marnote</span><span className="topbar-divider" />
+    <header className="topbar"><div className="brand-lockup" aria-label="Marnote"><img className="brand-mark" src="/brand/mark.svg" alt="" /><span className="brand-name">marnote</span></div><span className="topbar-divider" />
       <span className="crumb">Untitled note</span><span className="local-badge"><i /> Local draft</span>
+      <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"} title={theme === "dark" ? "Light mode" : "Dark mode"}>{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button>
     </header>
     <section className="workspace">
       <div className="document-meta"><div className="doc-icon">✎</div><span>PERSONAL NOTE</span></div>

@@ -4,9 +4,10 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; }
 button, input { font: inherit; }
 .app-shell { min-height: 100vh; background: #f8f7f4; }
-.topbar { height: 58px; display: flex; align-items: center; padding: 0 34px; border-bottom: 1px solid #eeede9; gap: 11px; background: rgba(255,255,255,.64); color: #777a72; font-size: 12px; }
-.brand-mark { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 8px; background: #526b58; color: #fff; font-family: Georgia, serif; font-size: 17px; font-style: italic; }
-.brand-name { color: #3c443d; font-size: 13px; font-weight: 700; letter-spacing: -.03em; }
+.topbar { height: 72px; display: flex; align-items: center; padding: 0 28px; border-bottom: 1px solid #eeede9; gap: 14px; background: rgba(255,255,255,.64); color: #777a72; font-size: 12px; }
+.brand-lockup { display: inline-flex; align-items: center; gap: 12px; }
+.brand-mark { display: block; width: 50px; height: 50px; }
+.brand-name { color: #3c443d; font-size: 21px; font-weight: 700; letter-spacing: -.045em; }
 .topbar-divider { height: 17px; border-left: 1px solid #deded8; margin: 0 4px; }
 .crumb { color: #64685f; }
 .local-badge { display: flex; align-items: center; gap: 6px; margin-left: auto; color: #777c72; font-size: 11px; }
@@ -63,4 +64,47 @@ button, input { font: inherit; }
 .editor-footer { min-height: 39px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-top: 1px solid #f0efeb; color: #a0a198; font-size: 10px; }
 .editor-footer kbd { padding: 2px 4px; border: 1px solid #e7e6e1; border-radius: 4px; background: #fafaf8; font: inherit; }
 .editor-footer b { padding: 0 4px; color: #cfcec7; }
-@media (max-width: 640px) { .topbar { padding: 0 17px; } .workspace { padding: 48px 18px 60px; } .editor-prose, .markdown-source { min-height: 55vh; padding: 26px 23px; } .toolbar { gap: 4px; padding: 7px; overflow-x: auto; } .tool-group { gap: 0; } .tool { flex: 0 0 29px; } .source-toggle { flex: 0 0 auto; } .editor-footer { padding: 0 11px; font-size: 9px; } }
+.theme-toggle { width: 32px; height: 32px; display: grid; place-items: center; flex: 0 0 auto; border: 1px solid #e8e7e1; border-radius: 8px; background: transparent; color: #73786f; cursor: pointer; }
+.theme-toggle:hover { background: #f0f1ec; color: #405b46; }
+:root[data-theme="dark"] { color-scheme: dark; color: #d6dbd4; background: #1c201d; }
+:root[data-theme="dark"] .app-shell { background: #1e221f; }
+:root[data-theme="dark"] .topbar { border-color: #343b35; background: rgba(35,40,36,.92); color: #a3aa9f; }
+:root[data-theme="dark"] .brand-name { color: #e0e5de; }
+:root[data-theme="dark"] .topbar-divider { border-color: #424940; }
+:root[data-theme="dark"] .crumb { color: #bdc4b9; }
+:root[data-theme="dark"] .local-badge { color: #a3aa9f; }
+:root[data-theme="dark"] .document-meta { color: #969e93; }
+:root[data-theme="dark"] .doc-icon { border-color: #424940; color: #acb4a8; }
+:root[data-theme="dark"] .title-input { color: #e7eae4; }
+:root[data-theme="dark"] .title-input::placeholder { color: #697168; }
+:root[data-theme="dark"] .doc-subtitle { color: #969e94; }
+:root[data-theme="dark"] .editor-frame { border-color: #3a413b; background: #272d28; box-shadow: 0 8px 28px rgba(0,0,0,.18); }
+:root[data-theme="dark"] .toolbar { border-color: #383f39; background: #252b26; }
+:root[data-theme="dark"] .tool { color: #a9b1a6; }
+:root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #343d35; color: #c5d7c4; }
+:root[data-theme="dark"] .tool-separator { border-color: #424940; }
+:root[data-theme="dark"] .editor-prose { color: #c4cbc2; }
+:root[data-theme="dark"] .editor-prose h1, :root[data-theme="dark"] .editor-prose h2, :root[data-theme="dark"] .editor-prose h3 { color: #e0e5de; }
+:root[data-theme="dark"] .editor-prose strong { color: #e2e9df; }
+:root[data-theme="dark"] .editor-prose a { color: #a8c8a8; text-decoration-color: #617b61; }
+:root[data-theme="dark"] .editor-prose blockquote { border-color: #647c65; color: #abb6a9; }
+:root[data-theme="dark"] .editor-prose pre { border-color: #3b433c; background: #202621; color: #c8d0c6; }
+:root[data-theme="dark"] .editor-prose code { background: #384239; color: #b8d5b6; }
+:root[data-theme="dark"] .editor-prose pre code { background: none; color: inherit; }
+:root[data-theme="dark"] .editor-prose hr { border-color: #414941; }
+:root[data-theme="dark"] .editor-prose p.is-editor-empty:first-child::before { color: #70796f; }
+:root[data-theme="dark"] .slash-menu { border-color: #424a43; background: #272d28; box-shadow: 0 12px 36px rgba(0,0,0,.35); }
+:root[data-theme="dark"] .slash-menu-heading { color: #a0a99d; }
+:root[data-theme="dark"] .slash-option { color: #d0d7ce; }
+:root[data-theme="dark"] .slash-option:hover, :root[data-theme="dark"] .slash-option.selected { background: #343d35; }
+:root[data-theme="dark"] .slash-icon { border-color: #40483f; color: #b1bcae; }
+:root[data-theme="dark"] .slash-label small { color: #a0a99d; }
+:root[data-theme="dark"] .block-drag-handle button { background: #343b35; color: #a7b0a4; }
+:root[data-theme="dark"] .block-drag-handle button:hover { background: #414b41; color: #c7d9c5; }
+:root[data-theme="dark"] .markdown-source { background: #202621; color: #c4d0c1; }
+:root[data-theme="dark"] .editor-footer { border-color: #383f39; color: #9aa397; }
+:root[data-theme="dark"] .editor-footer kbd { border-color: #434a43; background: #2a302b; }
+:root[data-theme="dark"] .editor-footer b { color: #687167; }
+:root[data-theme="dark"] .theme-toggle { border-color: #454d46; color: #c1c9bd; }
+:root[data-theme="dark"] .theme-toggle:hover { background: #343d35; color: #f0d69a; }
+@media (max-width: 640px) { .topbar { padding: 0 17px; } .brand-mark { width: 42px; height: 42px; } .brand-name { font-size: 18px; } .workspace { padding: 48px 18px 60px; } .editor-prose, .markdown-source { min-height: 55vh; padding: 26px 23px; } .toolbar { gap: 4px; padding: 7px; overflow-x: auto; } .tool-group { gap: 0; } .tool { flex: 0 0 29px; } .source-toggle { flex: 0 0 auto; } .editor-footer { padding: 0 11px; font-size: 9px; } }
