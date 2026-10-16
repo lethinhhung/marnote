@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Eye, Pilcrow } from "lucide-react";
+import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Eye, Pilcrow, Table2 } from "lucide-react";
 
 type Props = { editor: Editor | null; source: boolean; onToggleSource: () => void };
 type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
@@ -30,6 +30,7 @@ export function EditorToolbar({ editor, source, onToggleSource }: Props) {
   return <div className="toolbar" role="toolbar" aria-label="Formatting">
     <div className="tool-group">{actions.map(({ label, icon: Icon, run, active }) => { const selected = !!editor && !!active?.(editor); return <button key={label} type="button" title={label} aria-label={label} aria-pressed={selected} disabled={!editor} className={selected ? "tool active" : "tool"} onClick={() => editor && run(editor)}><Icon size={16} strokeWidth={1.8} /></button>; })}</div>
     <span className="toolbar-spacer" />
+    <button type="button" className="tool" title="Insert table" aria-label="Insert table" disabled={!editor} onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={16} strokeWidth={1.8} /></button>
     <button type="button" className="tool link-tool" title="Add link" aria-label="Add link" disabled={!editor} onClick={addLink}><Link2 size={16} /></button>
     <span className="tool-separator" />
     <button type="button" className={source ? "tool active source-toggle" : "tool source-toggle"} title="View Markdown" aria-label="View Markdown" aria-pressed={source} onClick={onToggleSource}><Eye size={16} /><span>Markdown</span></button>
