@@ -22,9 +22,10 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
     if (!container) return;
     const update = () => {
       const bounds = target.wrapper.getBoundingClientRect();
+      const tableBounds = target.table.getBoundingClientRect();
       const origin = container.getBoundingClientRect();
       setPosition({
-        right: { top: bounds.top - origin.top + bounds.height / 2 - 13, left: bounds.right - origin.left - 14 },
+        right: { top: tableBounds.top - origin.top + tableBounds.height / 2 - 13, left: tableBounds.right - origin.left - 14 },
         bottom: { top: bounds.bottom - origin.top - 14, left: bounds.left - origin.left + bounds.width / 2 - 25 },
       });
     };
@@ -34,6 +35,7 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
     window.addEventListener("resize", update);
     const observer = new ResizeObserver(update);
     observer.observe(target.wrapper);
+    observer.observe(target.table);
     return () => {
       editor.off("transaction", update);
       target.wrapper.removeEventListener("scroll", update);
@@ -44,9 +46,10 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
   const add = (edge: "row" | "column") => {
     if (!target) return;
     const bounds = target.wrapper.getBoundingClientRect();
+    const tableBounds = target.table.getBoundingClientRect();
     const point = edge === "row"
       ? { left: bounds.left + bounds.width / 2, top: bounds.bottom - 30 }
-      : { left: bounds.right - 30, top: bounds.top + bounds.height / 2 };
+      : { left: tableBounds.right - 8, top: tableBounds.top + tableBounds.height / 2 };
     const hovered = document.elementFromPoint(point.left, point.top)?.closest<HTMLTableCellElement>("td, th");
     const fallback = edge === "row"
       ? target.table.querySelector("tr:last-child th, tr:last-child td")
