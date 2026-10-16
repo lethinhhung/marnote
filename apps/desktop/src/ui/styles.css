@@ -10,6 +10,7 @@ button, input { font: inherit; }
 .workspace-open label { color: #999d93; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .workspace-open input { min-width: 0; padding: 8px; border: 1px solid #e8e8e1; border-radius: 6px; outline-color: #8a9c85; background: #fff; color: #4a5048; font-size: 11px; }
 .open-workspace { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 7px; border: 1px solid #e8e8e1; border-radius: 6px; background: #f7f7f3; color: #596858; font-size: 11px; cursor: pointer; }
+.sidebar-error { margin: 0; color: #9a4838; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
 .sidebar-heading { display: flex; justify-content: space-between; align-items: center; margin: 17px 2px 9px; color: #858a80; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .sidebar-heading div { display: flex; gap: 1px; }
 .sidebar-heading button { display: grid; place-items: center; width: 25px; height: 25px; border: 0; border-radius: 5px; background: transparent; color: #888e84; cursor: pointer; }
