@@ -27,9 +27,9 @@ export function BlockDragHandle({ editor }: { editor: Editor }) {
     if (!state.active) { document.body.dataset.blockDragging = "true"; setIsDragging(true); }
     state.active = true;
     const target = getBlockDropTarget(editor.view, event.clientY);
-    const canvas = editor.view.dom.closest(".editor-canvas");
-    const bounds = canvas?.getBoundingClientRect();
-    setMarkerTop(target && canvas && bounds ? target.lineY - bounds.top + canvas.scrollTop : null);
+    const host = editor.view.dom.closest(".table-edge-host");
+    const bounds = host?.getBoundingClientRect();
+    setMarkerTop(target && bounds ? target.lineY - bounds.top : null);
   };
   const onPointerUp = (event: React.PointerEvent<HTMLButtonElement>) => {
     const state = drag.current;
