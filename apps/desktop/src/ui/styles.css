@@ -7,9 +7,10 @@ button, input { font: inherit; }
 .app-layout { display: flex; min-height: 0; }
 .sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; min-height: 0; padding: 20px 12px; border-right: 1px solid #e9e8e3; background: #fdfdfb; color: #666b62; overflow: hidden; }
 .workspace-open { display: grid; gap: 8px; padding: 0 7px 17px; border-bottom: 1px solid #eeede8; }
-.workspace-open label { color: #999d93; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.workspace-open input { min-width: 0; padding: 8px; border: 1px solid #e8e8e1; border-radius: 6px; outline-color: #8a9c85; background: #fff; color: #4a5048; font-size: 11px; }
 .open-workspace { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 7px; border: 1px solid #e8e8e1; border-radius: 6px; background: #f7f7f3; color: #596858; font-size: 11px; cursor: pointer; }
+.default-workspace { display: flex; align-items: center; gap: 8px; margin: 0 7px 12px; padding: 8px 10px; border: 1px solid #dce4d9; border-radius: 7px; background: #f0f4ed; color: #405b46; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; }
+.recent-workspaces { display: grid; gap: 6px; margin: 0 7px 12px; color: #999d93; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.recent-workspaces select { width: 100%; padding: 7px; border: 1px solid #e8e8e1; border-radius: 6px; background: #fff; color: #596858; font-size: 11px; letter-spacing: normal; text-transform: none; }
 .sidebar-error { margin: 0; color: #9a4838; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
 .sidebar-heading { display: flex; justify-content: space-between; align-items: center; margin: 17px 2px 9px; color: #858a80; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .sidebar-heading div { display: flex; gap: 1px; }

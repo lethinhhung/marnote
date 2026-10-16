@@ -1,13 +1,23 @@
 import { useCallback, useState } from "react";
-import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openWorkspace, readFile, writeFile } from "./workspaceApi";
+import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, writeFile } from "./workspaceApi";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
+
+function loadRecent(): string[] {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem("marnote-workspaces") || "[]");
+    return Array.isArray(value) ? value.filter((path): path is string => typeof path === "string") : [];
+  } catch { return []; }
+}
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
   const [note, setNote] = useState<{ path: string; content: string } | null>(null);
   const [error, setError] = useState("");
+  const [recent, setRecent] = useState<string[]>(loadRecent);
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
-  const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); });
+  const remember = (path: string) => setRecent(current => { const next = [path, ...current.filter(item => item !== path)].slice(0, 5); localStorage.setItem("marnote-workspaces", JSON.stringify(next)); return next; });
+  const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); remember(path); });
+  const openDefault = () => run(async () => { setTree(await openDefaultWorkspace()); setNote(null); });
   const select = (entry: Entry) => run(async () => { if (!tree) return; const result = await readFile(tree.path, entry.path); setNote({ path: result.path, content: result.content }); });
   const save = async (path: string, content: string, expected: string): Promise<boolean> => {
     if (!tree) return false;
@@ -45,5 +55,5 @@ export function useWorkspace() {
   const createDirectory = (path: string) => mutate(async () => {
     if (tree) await createFolder(tree.path, path);
   });
-  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move, remove };
+  return { tree, note, error, setError, open, openDefault, recent, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move, remove };
 }
