@@ -27,6 +27,7 @@ button, input { font: inherit; }
 .tree-item { display: flex; align-items: center; gap: 7px; width: 100%; height: 30px; padding-right: 7px; border: 0; border-radius: 5px; background: transparent; color: #6e756a; font-size: 11px; text-align: left; cursor: pointer; }
 .tree-item span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tree-item:hover, .tree-item.selected { background: #eff1eb; color: #435c48; }
+.tree-item.selected-folder { background: #e9edf5; color: #465b7a; }
 .tree-indent { display: block; width: 14px; flex: 0 0 14px; }
 .sidebar-empty { padding: 12px 8px; color: #999d93; font-size: 11px; line-height: 1.6; }
 .status-banner { margin: 0 0 20px; padding: 10px 13px; border-radius: 7px; font-size: 12px; line-height: 1.5; }

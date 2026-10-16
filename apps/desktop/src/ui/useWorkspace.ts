@@ -17,7 +17,16 @@ export function useWorkspace() {
   const acceptExternal = (path: string, content: string) => setNote(current => current?.path === path ? { path, content } : current);
   const refresh = async () => { if (tree) await run(async () => setTree(await listWorkspace(tree.path))); };
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
-  const renameOrMove = (p: string, n: string) => mutate(async () => { if (tree) await moveFile(tree.path, p, n); setNote(current => current?.path === p ? { ...current, path: n } : current); });
+  const renameOrMove = (p: string, n: string) => mutate(async () => { if (tree) await moveFile(tree.path, p, n); setNote(current => current && (current.path === p || current.path.startsWith(`${p}/`)) ? { ...current, path: `${n}${current.path.slice(p.length)}` } : current); });
+  const move = async (source: string, destination: string) => {
+    if (!tree) return false;
+    setError("");
+    try { await moveFile(tree.path, source, destination); }
+    catch (e) { setError(String(e)); return false; }
+    setNote(current => current && (current.path === source || current.path.startsWith(`${source}/`)) ? { ...current, path: `${destination}${current.path.slice(source.length)}` } : current);
+    try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); }
+    return true;
+  };
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); setNote(current => current?.path === p ? null : current); });
   const create = (path: string) => run(async () => {
     if (!tree) return;
@@ -29,5 +38,5 @@ export function useWorkspace() {
   const createDirectory = (path: string) => mutate(async () => {
     if (tree) await createFolder(tree.path, path);
   });
-  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move: (p: string, n: string) => renameOrMove(p, n), remove };
+  return { tree, note, error, setError, open, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move, remove };
 }

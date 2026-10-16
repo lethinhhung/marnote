@@ -94,6 +94,12 @@ pub fn file_move(root_path: String, source: String, destination: String) -> Resu
     let r = root(&root_path)?;
     let src = target(&r, &source, true)?;
     let dst = target(&r, &destination, false)?;
+    if src.is_dir() && (dst == src || dst.starts_with(&src)) {
+        return Err("A folder cannot be moved into itself or one of its subfolders".into());
+    }
+    if src == dst {
+        return Ok(());
+    }
     if dst.exists() {
         return Err("Destination already exists".into());
     }

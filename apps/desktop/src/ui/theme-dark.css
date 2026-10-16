@@ -5,6 +5,7 @@
 :root[data-theme="dark"] .workspace-open input, :root[data-theme="dark"] .open-workspace { border-color: #424a43; background: #292f2a; color: #c0c9bd; }
 :root[data-theme="dark"] .tree-item { color: #aeb7aa; }
 :root[data-theme="dark"] .tree-item:hover, :root[data-theme="dark"] .tree-item.selected { background: #343d35; color: #d1e0ce; }
+:root[data-theme="dark"] .tree-item.selected-folder { background: #323a48; color: #c2d1ed; }
 :root[data-theme="dark"] .sidebar-heading button { color: #a6afa2; }
 :root[data-theme="dark"] .sidebar-heading button:hover:not(:disabled) { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .new-note-form { border-color: #39413a; background: #292f2a; }

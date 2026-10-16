@@ -1,18 +1,72 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
 import type { Entry } from "./workspaceTypes";
 
-export function FileTree({ entries, selected, onOpen }: { entries: Entry[]; selected: string; onOpen: (entry: Entry) => void }) {
-  return <ul className="file-tree">{entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={selected} onOpen={onOpen} depth={0} />)}</ul>;
+type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
+type Drag = { path: string; x: number; y: number; moved: boolean };
+
+export function FileTree(props: Props) {
+  const [dragging, setDragging] = useState("");
+  const [expanded, setExpanded] = useState(() => new Set(props.entries.filter(entry => entry.kind === "directory").map(entry => entry.path)));
+  const drag = useRef<Drag | null>(null);
+  const skipClick = useRef(false);
+  useEffect(() => {
+    const finish = async (event: globalThis.PointerEvent) => {
+      const active = drag.current;
+      if (!active) return;
+      drag.current = null;
+      setDragging("");
+      if (!active.moved) return;
+      skipClick.current = true;
+      window.setTimeout(() => { skipClick.current = false; }, 0);
+      const tree = document.querySelector(".file-tree");
+      const bounds = tree?.getBoundingClientRect();
+      if (!bounds || event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) return;
+      const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".tree-item");
+      const kind = row?.dataset.kind;
+      const path = row?.dataset.path || "";
+      const folder = kind === "directory" ? path : path.slice(0, path.lastIndexOf("/"));
+      const name = active.path.split("/").pop() || "";
+      const destination = [folder, name].filter(Boolean).join("/");
+      if (destination && destination !== active.path && path !== active.path && !folder.startsWith(`${active.path}/`)) {
+        if (folder) setExpanded(current => new Set(current).add(folder));
+        await props.onMove(active.path, destination);
+      }
+    };
+    const move = (event: globalThis.PointerEvent) => {
+      if (!drag.current) return;
+      if (Math.hypot(event.clientX - drag.current.x, event.clientY - drag.current.y) > 5) {
+        drag.current.moved = true;
+        setDragging(drag.current.path);
+      }
+    };
+    window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
+    window.addEventListener("pointermove", move);
+    return () => { window.removeEventListener("pointerup", finish); window.removeEventListener("pointercancel", finish); window.removeEventListener("pointermove", move); };
+  }, [props.onMove]);
+  const start = (path: string, event: PointerEvent<HTMLButtonElement>) => {
+    if (event.button !== 0) return;
+    skipClick.current = false;
+    drag.current = { path, x: event.clientX, y: event.clientY, moved: false };
+  };
+  const click = (entry: Entry) => {
+    if (skipClick.current) { skipClick.current = false; return; }
+    if (entry.kind === "directory") props.onFolderSelect(entry.path);
+    else props.onOpen(entry);
+  };
+  return <ul className="file-tree">{props.entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} />)}</ul>;
 }
-function TreeRow({ entry, selected, onOpen, depth }: { entry: Entry; selected: string; onOpen: (entry: Entry) => void; depth: number }) {
-  const [expanded, setExpanded] = useState(depth < 1);
+
+function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, onExpanded, depth, onStart, onClick }: { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder"; dragging: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void }) {
   const folder = entry.kind === "directory";
+  const isExpanded = expanded.has(entry.path);
+  const selectedClass = folder ? focus === "folder" && selectedFolder === entry.path ? "selected-folder" : "" : focus === "note" && selected === entry.path ? "selected" : "";
   return <li>
-    <button className={`tree-item ${selected === entry.path ? "selected" : ""}`} style={{ paddingLeft: 9 + depth * 14 }} onClick={() => folder ? setExpanded(!expanded) : onOpen(entry)} title={entry.path}>
-      {folder ? expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : <span className="tree-indent" />}
+    <button data-kind={entry.kind} data-path={entry.path} className={`tree-item ${selectedClass} ${dragging === entry.path ? "dragging" : ""}`} style={{ paddingLeft: 9 + depth * 14 }} onPointerDown={event => onStart(entry.path, event)} onClick={() => { if (folder) onExpanded(current => { const next = new Set(current); if (next.has(entry.path)) next.delete(entry.path); else next.add(entry.path); return next; }); onClick(entry); }} title={entry.path}>
+      {folder ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : <span className="tree-indent" />}
       {folder ? <Folder size={15} /> : <FileText size={15} />}<span>{entry.name}</span>
     </button>
-    {folder && expanded && !!entry.children?.length && <ul>{entry.children.map(child => <TreeRow key={child.path} entry={child} selected={selected} onOpen={onOpen} depth={depth + 1} />)}</ul>}
+    {folder && isExpanded && !!entry.children?.length && <ul>{entry.children.map(child => <TreeRow key={child.path} entry={child} selected={selected} selectedFolder={selectedFolder} focus={focus} dragging={dragging} expanded={expanded} onExpanded={onExpanded} depth={depth + 1} onStart={onStart} onClick={onClick} />)}</ul>}
   </li>;
 }
