@@ -81,3 +81,23 @@ Boundaries:
 - `App.tsx:5` composes it via `../features/note-editor/NoteEditor`; props and call site
   are unchanged. No imports point back into the feature, and no `ui/<editor>` references
   remain anywhere in `apps/desktop`.
+
+## D-006 App composition separated from shared UI (stage `app-shell-shared-ui`)
+
+App composition and shared display components now have distinct locations, completing
+the three-way split required by `specs/tech.md` ("Organize desktop UI code by feature,
+keeping app composition, shared UI, and platform adapters separate").
+
+- `apps/desktop/src/app/` — app composition. `App.tsx` (moved from `src/ui/App.tsx`)
+  owns top-level state, autosave, external-change detection, and layout composition. It
+  imports features from `../features/*`, shared UI from `../ui/*`, and the adapter from
+  `../platform/workspaceApi`.
+- `apps/desktop/src/ui/` — shared UI: `HeaderBar.tsx`, `NoteFooter.tsx`, `useTheme.ts`,
+  `useWideContent.ts`, plus global `styles.css` and `theme-dark.css`. These are
+  cross-feature display/style modules, not feature- or app-specific.
+- `apps/desktop/src/main.tsx` — entry point imports `App` from `./app/App` and still
+  loads `./ui/styles.css` and `./ui/theme-dark.css`.
+- `apps/desktop/src/features/` — feature code (workspace, file-tree, note-editor).
+
+`src/ui/App.tsx` is removed; no stale `ui/App` references remain. This stage is
+move-only plus import-path updates: no behavior change.

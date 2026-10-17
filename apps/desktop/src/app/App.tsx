@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useTheme } from "./useTheme";
+import { useTheme } from "../ui/useTheme";
 import { useWorkspace } from "../features/workspace/useWorkspace";
 import { WorkspaceSidebar } from "../features/file-tree/WorkspaceSidebar";
 import { NoteEditor } from "../features/note-editor/NoteEditor";
 import { readFile } from "../platform/workspaceApi";
-import { HeaderBar } from "./HeaderBar";
-import { NoteFooter } from "./NoteFooter";
-import { useWideContent } from "./useWideContent";
+import { HeaderBar } from "../ui/HeaderBar";
+import { NoteFooter } from "../ui/NoteFooter";
+import { useWideContent } from "../ui/useWideContent";
 
 export function App() {
   const { theme, toggleTheme } = useTheme();

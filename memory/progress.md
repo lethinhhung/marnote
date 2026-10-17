@@ -75,3 +75,28 @@ under the 120-line limit (largest: TableEdgeControls at 119 lines; all others sm
 Caveats:
 
 - None affecting implementation. Changes were still staged/uncommitted at archive time.
+
+## Stage `app-shell-shared-ui` — passed (attempt 1)
+
+Objective: give app composition, shared UI, and feature code distinct locations and
+integrate the reorganized workspace and editor features via the entry point.
+
+Outcome:
+
+- Moved `App.tsx` from `apps/desktop/src/ui/` to `apps/desktop/src/app/` (git recorded
+  as a rename); `src/ui/App.tsx` is removed.
+- `main.tsx:3` now imports `App` from `./app/App`; it still loads `./ui/styles.css`
+  and `./ui/theme-dark.css`.
+- `src/ui/` retains only shared UI: `HeaderBar.tsx`, `NoteFooter.tsx`, `useTheme.ts`,
+  `useWideContent.ts`, `styles.css`, `theme-dark.css`.
+- `app/App.tsx` resolves `../ui/*` (theme/header/footer/wide-content), `../features/*`,
+  and `../platform/workspaceApi`. No stale `ui/App` references remain.
+
+Evidence: all supplied checks passed — `pnpm run test`, `pnpm run lint`,
+`pnpm run typecheck`, `pnpm run build`. Tester reported pass and Validator passed
+1/1 task validations. Files stay under the 120-line limit (App 56, HeaderBar 31,
+NoteFooter 11, useTheme 19, useWideContent 9).
+
+Caveats:
+
+- None affecting implementation. Changes were still staged/uncommitted at archive time.
