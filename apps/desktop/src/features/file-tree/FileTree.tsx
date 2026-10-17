@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
-import type { Entry } from "../features/workspace/types";
+import type { Entry } from "../workspace/types";
 import { TreeEditor } from "./TreeEditor";
 
 export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };

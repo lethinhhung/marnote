@@ -30,3 +30,29 @@ The change is import-path-only plus extraction of inline Tauri calls into `deskt
 helpers with identical runtime behavior. Command names, argument mappings, pointer
 conditions, and error handling are unchanged. `types.ts` is byte-identical to the
 former `workspaceTypes.ts`.
+
+## D-004 File-tree interactions grouped as a feature (stage `file-tree-feature`)
+
+File browsing, selection, and tree-editing interactions live together under
+`apps/desktop/src/features/file-tree/`, following `specs/core.md` (Architecture:
+"Organize desktop UI code by feature, keeping app composition, shared UI, and platform
+adapters separate").
+
+Feature contents:
+
+- `FileTree.tsx` — tree rendering, drag-to-move, context targeting, inline tree editor.
+- `TreeEditor.tsx` — the inline note/folder name editor.
+- `WorkspaceSidebar.tsx` — sidebar composition, workspace switching, create/rename/
+  delete actions, and the folder context menu.
+
+Dependencies point outward to prior stages, not inward to the platform:
+
+- Workspace data/types come from `../workspace/types` (`Entry`, `WorkspaceTree`).
+- Desktop-only capabilities come from `../../platform/desktopUi`
+  (`isDesktopApp`, `pickWorkspaceDirectory`).
+- The feature owns no native filesystem or Tauri access; all I/O flows through the
+  existing workspace callbacks (`onOpen`, `onMove`, `onCreate`, `onRename`,
+  `onDelete`) passed down from `App.tsx`.
+
+`App.tsx` (app composition, still in `src/ui/`) imports the sidebar from
+`../features/file-tree/WorkspaceSidebar`; no imports point back into the feature.

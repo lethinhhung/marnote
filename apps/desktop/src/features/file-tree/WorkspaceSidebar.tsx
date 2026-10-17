@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { FileTree, type TreeEdit } from "./FileTree";
-import type { Entry, WorkspaceTree } from "../features/workspace/types";
-import { isDesktopApp, pickWorkspaceDirectory } from "../platform/desktopUi";
+import type { Entry, WorkspaceTree } from "../workspace/types";
+import { isDesktopApp, pickWorkspaceDirectory } from "../../platform/desktopUi";
 
 type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; onDefault: () => void; onOpen: (path: string) => void; onSelect: (e: Entry) => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
 export function WorkspaceSidebar(props: Props) {
