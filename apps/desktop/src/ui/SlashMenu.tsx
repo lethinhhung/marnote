@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Braces, Heading1, Heading2, Heading3, List, ListChecks, ListOrdered, Minus, Pilcrow, Quote, Table2 } from "lucide-react";
 
 const choices = [
@@ -16,15 +17,19 @@ const choices = [
 ];
 export const matchingSlashIds = (query: string) => choices.filter(item => `${item.label} ${item.detail}`.toLowerCase().includes(query.toLowerCase())).map(item => item.id);
 
-type Props = { query: string; selected: number; position: { top: number; left: number }; onSelect: (id: string) => void };
+type Props = { query: string; selected: number; position: { top: number; left: number; maxHeight: number }; onSelect: (id: string) => void };
 
 export function SlashMenu({ query, selected, position, onSelect }: Props) {
+  const menu = useRef<HTMLDivElement>(null);
   const items = useMemo(() => choices.filter(item => `${item.label} ${item.detail}`.toLowerCase().includes(query.toLowerCase())), [query]);
+  useEffect(() => {
+    menu.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+  }, [query, selected, items.length]);
   if (!items.length) return null;
-  return <div className="slash-menu" role="listbox" aria-label="Insert a block" style={position}>
+  return createPortal(<div ref={menu} className="slash-menu" role="listbox" aria-label="Insert a block" style={position}>
     <div className="slash-menu-heading">BASIC BLOCKS</div>
     {items.map(({ id, label, detail, icon: Icon }, index) => <button key={id} type="button" role="option" aria-selected={index === selected} className={index === selected ? "slash-option selected" : "slash-option"} onMouseDown={event => event.preventDefault()} onClick={() => onSelect(id)}>
       <span className="slash-icon"><Icon size={16} /></span><span className="slash-label">{label}<small>{detail}</small></span>
     </button>)}
-  </div>;
+  </div>, document.body);
 }

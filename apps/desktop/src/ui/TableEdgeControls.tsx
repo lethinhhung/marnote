@@ -1,13 +1,25 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import type { Editor } from "@tiptap/react";
+import { applyColumnWidth, resizeTarget, type ResizeGesture } from "./tableResize";
 
 type Target = { wrapper: HTMLElement; table: HTMLTableElement };
 type Position = { right: { top: number; left: number }; bottom: { top: number; left: number } };
 
-export function TableEdgeControls({ editor, children }: { editor: Editor; children: ReactNode }) {
+export function TableEdgeControls({ editor, children, resizeEnabled }: { editor: Editor; children: ReactNode; resizeEnabled: boolean }) {
   const host = useRef<HTMLDivElement>(null);
   const [target, setTarget] = useState<Target | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
+  const drag = useRef<ResizeGesture | null>(null);
+  const hoveredCell = useRef<HTMLTableCellElement | null>(null);
+  useEffect(() => {
+    if (resizeEnabled) return;
+    const active = drag.current;
+    drag.current = null;
+    host.current?.classList.remove("is-column-resizing");
+    if (active && host.current?.hasPointerCapture(active.pointerId)) host.current.releasePointerCapture(active.pointerId);
+    hoveredCell.current?.classList.remove("table-resize-hover");
+    hoveredCell.current = null;
+  }, [resizeEnabled]);
   const hover = (event: PointerEvent<HTMLDivElement>) => {
     const element = event.target instanceof HTMLElement ? event.target : null;
     if (element?.closest(".table-edge-add")) return;
@@ -22,9 +34,10 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
     if (!container) return;
     const update = () => {
       const bounds = target.wrapper.getBoundingClientRect();
+      const tableBounds = target.table.getBoundingClientRect();
       const origin = container.getBoundingClientRect();
       setPosition({
-        right: { top: bounds.top - origin.top + bounds.height / 2 - 13, left: bounds.right - origin.left - 14 },
+        right: { top: tableBounds.top - origin.top + tableBounds.height / 2 - 13, left: tableBounds.right - origin.left - 14 },
         bottom: { top: bounds.bottom - origin.top - 14, left: bounds.left - origin.left + bounds.width / 2 - 25 },
       });
     };
@@ -34,6 +47,7 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
     window.addEventListener("resize", update);
     const observer = new ResizeObserver(update);
     observer.observe(target.wrapper);
+    observer.observe(target.table);
     return () => {
       editor.off("transaction", update);
       target.wrapper.removeEventListener("scroll", update);
@@ -43,15 +57,9 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
   }, [editor, target]);
   const add = (edge: "row" | "column") => {
     if (!target) return;
-    const bounds = target.wrapper.getBoundingClientRect();
-    const point = edge === "row"
-      ? { left: bounds.left + bounds.width / 2, top: bounds.bottom - 30 }
-      : { left: bounds.right - 30, top: bounds.top + bounds.height / 2 };
-    const hovered = document.elementFromPoint(point.left, point.top)?.closest<HTMLTableCellElement>("td, th");
-    const fallback = edge === "row"
-      ? target.table.querySelector("tr:last-child th, tr:last-child td")
-      : target.table.querySelector("tr:first-child th:last-child, tr:first-child td:last-child");
-    const cell = hovered || fallback;
+    const rows = target.table.querySelectorAll("tr"), row = edge === "row" ? rows.item(rows.length - 1) : rows.item(0);
+    const cells = row?.querySelectorAll<HTMLTableCellElement>("th, td");
+    const cell = edge === "row" ? cells?.item(0) : cells?.item(Math.max(0, (cells?.length ?? 1) - 1));
     const cellBounds = cell?.getBoundingClientRect();
     if (!cellBounds) return;
     const pos = editor.view.posAtCoords({ left: cellBounds.left + Math.min(8, cellBounds.width / 2), top: cellBounds.top + Math.min(8, cellBounds.height / 2) })?.pos;
@@ -60,7 +68,49 @@ export function TableEdgeControls({ editor, children }: { editor: Editor; childr
     if (edge === "row") chain.addRowAfter().run();
     else chain.addColumnAfter().run();
   };
-  return <div ref={host} className="table-edge-host" onPointerOver={hover} onPointerLeave={() => { setTarget(null); setPosition(null); }}>{children}
+  const move = (event: PointerEvent<HTMLDivElement>) => {
+    if (!resizeEnabled) {
+      hoveredCell.current?.classList.remove("table-resize-hover");
+      hoveredCell.current = null;
+      return;
+    }
+    if (drag.current) {
+      applyColumnWidth(editor, drag.current, drag.current.startWidth + event.clientX - drag.current.startX);
+      return;
+    }
+    const container = host.current;
+    const found = container && resizeTarget(editor, container, event.nativeEvent);
+    if (hoveredCell.current !== (found?.cellElement ?? null)) {
+      hoveredCell.current?.classList.remove("table-resize-hover");
+      hoveredCell.current = found?.cellElement ?? null;
+      hoveredCell.current?.classList.add("table-resize-hover");
+    }
+  };
+  const startResize = (event: PointerEvent<HTMLDivElement>) => {
+    if (!resizeEnabled || event.button !== 0 || !host.current) return;
+    const found = resizeTarget(editor, host.current, event.nativeEvent);
+    if (!found) return;
+    event.preventDefault();
+    event.stopPropagation();
+    drag.current = { ...found.gesture, pointerId: event.pointerId };
+    event.currentTarget.classList.add("is-column-resizing");
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const stopResize = (event: PointerEvent<HTMLDivElement>) => {
+    if (!drag.current) return;
+    applyColumnWidth(editor, drag.current, drag.current.startWidth + event.clientX - drag.current.startX);
+    drag.current = null;
+    event.currentTarget.classList.remove("is-column-resizing");
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+  const leave = () => {
+    if (drag.current) return;
+    hoveredCell.current?.classList.remove("table-resize-hover");
+    hoveredCell.current = null;
+    setTarget(null);
+    setPosition(null);
+  };
+  return <div ref={host} className="table-edge-host" onPointerOver={hover} onPointerMove={move} onPointerDown={startResize} onPointerUp={stopResize} onPointerCancel={stopResize} onPointerLeave={leave}>{children}
     {target && position && <>
       <button className="table-edge-add table-edge-column" type="button" style={position.right} aria-label="Add column to table" title="Add column" onPointerDown={event => event.preventDefault()} onClick={() => add("column")}>+</button>
       <button className="table-edge-add table-edge-row" type="button" style={position.bottom} aria-label="Add row to table" title="Add row" onPointerDown={event => event.preventDefault()} onClick={() => add("row")}>+</button>

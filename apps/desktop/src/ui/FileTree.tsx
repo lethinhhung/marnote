@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
 import type { Entry } from "./workspaceTypes";
+import { TreeEditor } from "./TreeEditor";
 
-type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; hideFoldersWithoutNotes: boolean; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
+export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };
+type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; hideFoldersWithoutNotes: boolean; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; onMove: (source: string, destination: string) => Promise<boolean> };
 type Drag = { path: string; x: number; y: number; moved: boolean };
 
 function containsNote(entry: Entry): boolean {
@@ -22,6 +24,13 @@ export function FileTree(props: Props) {
   const [expanded, setExpanded] = useState(() => new Set(props.entries.filter(entry => entry.kind === "directory").map(entry => entry.path)));
   const drag = useRef<Drag | null>(null);
   const skipClick = useRef(false);
+  useEffect(() => {
+    if (!props.edit) return;
+    const target = props.edit.kind.startsWith("rename") ? props.edit.path : props.edit.path.replace(/\/$/, "");
+    const parts = target.split("/").filter(Boolean);
+    const ancestors = props.edit.kind.startsWith("rename") ? parts.slice(0, -1) : parts;
+    setExpanded(current => { const next = new Set(current); ancestors.forEach((_, index) => next.add(ancestors.slice(0, index + 1).join("/"))); return next; });
+  }, [props.edit]);
   useEffect(() => {
     const finish = async (event: globalThis.PointerEvent) => {
       const active = drag.current;
@@ -68,18 +77,19 @@ export function FileTree(props: Props) {
     else props.onOpen(entry);
   };
   const entries = visibleEntries(props.entries, props.hideFoldersWithoutNotes);
-  return <ul className="file-tree">{entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} />)}</ul>;
+  const editor = props.edit;
+  return <ul className="file-tree" onContextMenu={event => { if ((event.target as HTMLElement).closest(".tree-item")) return; event.preventDefault(); props.onEntryContext("", "root", event.clientX, event.clientY); }}>{editor && (editor.kind === "note" || editor.kind === "folder") && !editor.path && <li><TreeEditor kind={editor.kind} value={editor.value} depth={0} onSubmit={props.onEditSubmit} onCancel={props.onEditCancel} /></li>}{entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} onEntryContext={props.onEntryContext} edit={editor} onEditSubmit={props.onEditSubmit} onEditCancel={props.onEditCancel} />)}</ul>;
 }
 
-function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, onExpanded, depth, onStart, onClick }: { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder"; dragging: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void }) {
+function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, onExpanded, depth, onStart, onClick, onEntryContext, edit, onEditSubmit, onEditCancel }: { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder"; dragging: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void; onEntryContext: Props["onEntryContext"]; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void }) {
   const folder = entry.kind === "directory";
   const isExpanded = expanded.has(entry.path);
   const selectedClass = folder ? focus === "folder" && selectedFolder === entry.path ? "selected-folder" : "" : focus === "note" && selected === entry.path ? "selected" : "";
   return <li>
-    <button data-kind={entry.kind} data-path={entry.path} className={`tree-item ${selectedClass} ${dragging === entry.path ? "dragging" : ""}`} style={{ paddingLeft: 9 + depth * 14 }} onPointerDown={event => onStart(entry.path, event)} onClick={() => { if (folder) onExpanded(current => { const next = new Set(current); if (next.has(entry.path)) next.delete(entry.path); else next.add(entry.path); return next; }); onClick(entry); }} title={entry.path}>
+    {edit?.path === entry.path ? <TreeEditor kind={folder ? "folder" : "note"} value={edit.value} depth={depth} onSubmit={onEditSubmit} onCancel={onEditCancel} /> : <button data-kind={entry.kind} data-path={entry.path} className={`tree-item ${selectedClass} ${dragging === entry.path ? "dragging" : ""}`} style={{ paddingLeft: 5 + depth * 14 }} onPointerDown={event => { if (event.button !== 0) { event.preventDefault(); return; } onStart(entry.path, event); }} onContextMenu={event => { event.preventDefault(); event.stopPropagation(); onEntryContext(entry.path, folder ? "folder" : "note", event.clientX, event.clientY); }} onClick={() => { if (folder) onExpanded(current => { const next = new Set(current); if (next.has(entry.path)) next.delete(entry.path); else next.add(entry.path); return next; }); onClick(entry); }} title={entry.path}>
       {folder ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : <span className="tree-indent" />}
       {folder ? <Folder size={15} /> : <FileText size={15} />}<span>{entry.name}</span>
-    </button>
-    {folder && isExpanded && !!entry.children?.length && <ul>{entry.children.map(child => <TreeRow key={child.path} entry={child} selected={selected} selectedFolder={selectedFolder} focus={focus} dragging={dragging} expanded={expanded} onExpanded={onExpanded} depth={depth + 1} onStart={onStart} onClick={onClick} />)}</ul>}
+    </button>}
+    {folder && isExpanded && (!!entry.children?.length || edit?.path === `${entry.path}/`) && <ul>{entry.children?.map(child => <TreeRow key={child.path} entry={child} selected={selected} selectedFolder={selectedFolder} focus={focus} dragging={dragging} expanded={expanded} onExpanded={onExpanded} depth={depth + 1} onStart={onStart} onClick={onClick} onEntryContext={onEntryContext} edit={edit} onEditSubmit={onEditSubmit} onEditCancel={onEditCancel} />)}{edit?.path === `${entry.path}/` && <li><TreeEditor kind={edit.kind === "note" ? "note" : "folder"} value={edit.value} depth={depth + 1} onSubmit={onEditSubmit} onCancel={onEditCancel} /></li>}</ul>}
   </li>;
 }
