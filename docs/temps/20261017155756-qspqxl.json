@@ -1,8 +1,8 @@
 {
   "id": "20261017155756-qspqxl",
-  "status": "running",
+  "status": "complete",
   "created_at": "2026-10-17T15:57:56.753Z",
-  "updated_at": "2026-10-17T16:28:56.943Z",
+  "updated_at": "2026-10-17T16:28:58.725Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "refactor desktop app follow feature-based mentioned in specs",
   "epic_file": "(inline epic)",
@@ -354,7 +354,7 @@
         "Entry-point and internal imports resolve; existing behavior is preserved.",
         "Desktop lint, typecheck, and build pass."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -492,6 +492,15 @@
       "type": "archive",
       "stage": "app-shell-shared-ui",
       "result": "Now I'll record the decisions and progress.\nUpdated memory entries:\n\n- `memory/decisions.md` — added **D-006 App composition separated from shared UI**: documents the three-way split (`src/app` composition, `src/ui` shared display, `src/features` features), the `App.tsx` move, `main.tsx` entry-point wiring, and that it was move-only with no behavior change.\n- `memory/progress.md` — added **Stage `app-shell-shared-ui` — passed (attempt 1)** with outcome, evidence (all four checks pass, Tester/Validator pass, files under 120 lines), and no implementation caveats.\n\nNo prior entries were duplicated, and no product specs or implementation files were touched."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "app-shell-shared-ui",
+      "at": "2026-10-17T16:28:58.724Z"
+    },
+    {
+      "type": "complete",
+      "at": "2026-10-17T16:28:58.725Z"
     }
   ]
 }
