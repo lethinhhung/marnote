@@ -7,7 +7,7 @@ extra_args = ["-c", "model_reasoning_effort=\"medium\""]
 
 [models.worker]
 provider = "opencode"
-model = "deepseek/deepseek-v4-pro"
+model = "opencode/deepseek-v4.1-flash-free"
 command = "opencode"
 timeout_seconds = 1800
 idle_timeout_seconds = 360

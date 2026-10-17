@@ -1,0 +1,276 @@
+{
+  "id": "20261017155756-qspqxl",
+  "status": "running",
+  "created_at": "2026-10-17T15:57:56.753Z",
+  "updated_at": "2026-10-17T16:15:05.972Z",
+  "repo": "/Users/macos/Projects/marnote",
+  "epic": "refactor desktop app follow feature-based mentioned in specs",
+  "epic_file": "(inline epic)",
+  "branch": "feat/feature-based",
+  "stages": [
+    {
+      "id": "workspace-adapters",
+      "title": "Workspace state and platform adapters",
+      "objective": "Move workspace state, API access, and shared workspace types out of the flat UI directory into clear workspace and platform-adapter boundaries. Update imports without changing behavior.",
+      "dependencies": [],
+      "completion_criteria": [
+        "Workspace state, API, and types have a feature-based organization consistent with their responsibilities.",
+        "Tauri command access remains behind the platform adapter boundary.",
+        "Affected imports resolve and desktop typecheck passes."
+      ],
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "Moved `Entry`, `WorkspaceTree`, and `NoteData` to [types.ts](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/types.ts) and updated the three scoped UI imports. Kept `workspaceTypes.ts` as a re-export because `useWorkspace.ts` and `workspaceApi.ts` still import from that path.\n\nDesktop typecheck passed: `pnpm --filter @marnote/desktop typecheck`. No UI behavior changed.",
+            "Moved the Tauri workspace API wrappers into [workspaceApi.ts](/Users/macos/Projects/marnote/apps/desktop/src/platform/workspaceApi.ts). `App.tsx` now imports `readFile` from the adapter, and `ui/workspaceApi.ts` re-exports it for the existing `useWorkspace.ts` consumer.\n\nThe existing command names and argument mappings are preserved. Confirmed Tauri `invoke` appears only in the platform adapter, and `pnpm --filter @marnote/desktop typecheck` passes.",
+            "Moved the hook implementation to [useWorkspace.ts](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/useWorkspace.ts), with imports pointing to the platform API adapter and workspace types. Kept a re-export at the old UI path so `App.tsx` continues to resolve without an out-of-scope edit.\n\nDesktop typecheck passed: `pnpm --filter @marnote/desktop typecheck`.",
+            "Updated the workspace imports and removed the obsolete flat UI modules: `useWorkspace.ts`, `workspaceApi.ts`, and `workspaceTypes.ts`. The UI now points to the workspace feature and platform adapter paths.\n\nValidation passed: `pnpm --filter @marnote/desktop typecheck`. A search found no remaining imports of the old flat workspace paths."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 10ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  23:01:22\npackages/core test:    Duration  226ms (transform 31ms, setup 0ms, collect 32ms, tests 10ms, environment 0ms, prepare 35ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2072 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-Cq5Y-iiy.js   893.85 kB │ gzip: 281.57 kB\napps/desktop build: ✓ built in 1.75s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Workspace types, state, and Tauri API now live under feature and platform boundaries. UI imports resolve, no old flat workspace module references remain, and Tauri invoke is confined to the platform adapter. The provided checks passed: pnpm run test, pnpm run lint, pnpm run typecheck, and pnpm run build. No focused rerun was needed."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "4/4 task validations passed."
+          },
+          "passed": true
+        },
+        {
+          "attempt": 1,
+          "implementations": [
+            "Added [desktopUi.ts](/Users/macos/Projects/marnote/apps/desktop/src/platform/desktopUi.ts) with a Tauri runtime check, a workspace directory picker that returns `null` when canceled, and a window drag helper that preserves the existing error handling.\n\nThe desktop TypeScript check passed. The existing UI call sites still import Tauri APIs directly; updating them is outside this task’s file scope.",
+            "Updated [HeaderBar.tsx](/Users/macos/Projects/marnote/apps/desktop/src/ui/HeaderBar.tsx) to use the platform adapter for the Tauri runtime check and window dragging. The existing pointer conditions and swallowed drag errors are preserved.\n\nDesktop TypeScript check passed: `pnpm --filter @marnote/desktop typecheck`.",
+            "Updated [WorkspaceSidebar.tsx](/Users/macos/Projects/marnote/apps/desktop/src/ui/WorkspaceSidebar.tsx) to use `isDesktopApp` and `pickWorkspaceDirectory` from the platform adapter. The sidebar no longer imports Tauri APIs directly; canceled selection remains a no-op, and picker errors keep the existing message.\n\nDesktop typecheck passed."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 9ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  23:03:37\npackages/core test:    Duration  214ms (transform 30ms, setup 0ms, collect 31ms, tests 9ms, environment 0ms, prepare 40ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2073 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-DcdDWJqK.js   893.95 kB │ gzip: 281.59 kB\napps/desktop build: ✓ built in 1.63s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Reviewed the adapter and both UI call sites against the task contract. Tauri UI imports are contained in the adapter, picker cancellation returns null and remains a no-op in the sidebar, and window dragging preserves the existing pointer conditions and error handling. The supplied desktop typecheck and full check results passed; no additional checks were run."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "3/3 task validations passed."
+          },
+          "passed": true
+        },
+        {
+          "attempt": 1,
+          "implementations": [
+            "The stage is already fully implemented in the current worktree and verified. No edits were required.\n\nVerification:\n- Workspace state/types: `apps/desktop/src/features/workspace/types.ts`, `useWorkspace.ts`\n- Platform adapter: `apps/desktop/src/platform/workspaceApi.ts` (only place importing `invoke`), `desktopUi.ts`\n- Obsolete flat modules `src/ui/{useWorkspace,workspaceApi,workspaceTypes}.ts` are deleted; no stale imports remain (checked via grep)\n- `pnpm --filter @marnote/desktop typecheck` ✅, `lint` ✅, `test` ✅\n\nCompletion criteria are satisfied; the task's file index listing the old `src/ui/*` paths is stale. Only outstanding item is coordinator bookkeeping: `docs/temps/20261017155756-qspqxl.json` still shows the stage `in_progress` while its attempts passed."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 10ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  23:13:34\npackages/core test:    Duration  229ms (transform 29ms, setup 0ms, collect 30ms, tests 10ms, environment 0ms, prepare 37ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2073 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-DcdDWJqK.js   893.95 kB │ gzip: 281.59 kB\napps/desktop build: ✓ built in 1.64s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Stage workspace-adapters verified. Workspace state/hook (apps/desktop/src/features/workspace/useWorkspace.ts), types (features/workspace/types.ts), and platform adapters (platform/workspaceApi.ts, platform/desktopUi.ts) are correctly organized; deleted flat modules src/ui/{useWorkspace,workspaceApi,workspaceTypes}.ts have no remaining references (grep across apps/desktop returned none). `invoke` is imported only in platform/workspaceApi.ts, keeping Tauri command access behind the platform adapter boundary as required. Diff against HEAD confirms the change is import-path-only plus the extract of inline Tauri calls into desktopUi helpers with identical runtime behavior; types file is byte-identical. Supplied checks all pass (test, lint, typecheck, build). All three completion criteria are satisfied. Non-blocking note: docs/temps/20261017155756-qspqxl.json still lists the stage in_progress; that is coordinator bookkeeping, not an implementation defect."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "1/1 task validations passed."
+          },
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "file-tree-feature",
+      "title": "File-tree feature",
+      "objective": "Organize workspace browsing, selection, and file-tree interactions as a focused feature, using the workspace interfaces established in the preceding stage.",
+      "dependencies": [
+        "workspace-adapters"
+      ],
+      "completion_criteria": [
+        "File-tree components and their feature-specific interactions are grouped together.",
+        "The file-tree feature uses callbacks or workspace interfaces rather than owning native filesystem access.",
+        "Affected imports resolve and desktop typecheck passes."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "note-editor-feature",
+      "title": "Note-editor feature",
+      "objective": "Group the editor, its toolbar and menus, and editor-specific helpers into a focused feature while preserving Markdown behavior.",
+      "dependencies": [
+        "workspace-adapters"
+      ],
+      "completion_criteria": [
+        "Editor components and editor-only helpers are organized together.",
+        "Editor integration with app composition uses clear feature boundaries.",
+        "Affected imports resolve and desktop typecheck passes."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "app-shell-shared-ui",
+      "title": "App shell and shared UI",
+      "objective": "Keep app composition and shared display components separate from feature folders; update the entry point and integrate the reorganized workspace and editor features.",
+      "dependencies": [
+        "file-tree-feature",
+        "note-editor-feature"
+      ],
+      "completion_criteria": [
+        "App composition, shared UI, and feature code have distinct locations consistent with specs/tech.md.",
+        "Entry-point and internal imports resolve; existing behavior is preserved.",
+        "Desktop lint, typecheck, and build pass."
+      ],
+      "status": "pending",
+      "attempts": []
+    }
+  ],
+  "blockers": [],
+  "history": [
+    {
+      "type": "plan",
+      "summary": "Refactor the desktop app into feature-based folders, following the architecture guidance in specs/tech.md while preserving existing behavior and keeping app composition, shared UI, and platform adapters separate.",
+      "stages": 4
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "workspace-adapters",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "workspace-adapters",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "workspace-adapters",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "workspace-adapters",
+      "result": "No existing `memory/` structure. I'll create a concise, factual one.\nCreated the `memory/` store (none existed) with three factual entries.\n\nUpdated:\n- `memory/README.md` — index and scope note.\n- `memory/decisions.md` — D-001 feature-based layout, D-002 Tauri access confined to `platform/workspaceApi.ts`, D-003 move-only/no-behavior-change.\n- `memory/progress.md` — stage `workspace-adapters` passed (attempt 1), files added/deleted, check evidence, non-blocking caveat about the `in_progress` run-record bookkeeping.\n\nNo product specs or implementation files were changed."
+    }
+  ]
+}

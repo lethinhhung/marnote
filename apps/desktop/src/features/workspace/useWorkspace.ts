@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, writeFile } from "./workspaceApi";
-import type { Entry, WorkspaceTree } from "./workspaceTypes";
+import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, writeFile } from "../../platform/workspaceApi";
+import type { Entry, WorkspaceTree } from "./types";
 
 function loadRecent(): string[] {
   try {

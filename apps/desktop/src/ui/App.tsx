@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./useTheme";
-import { useWorkspace } from "./useWorkspace";
+import { useWorkspace } from "../features/workspace/useWorkspace";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
 import { NoteEditor } from "./NoteEditor";
-import { readFile } from "./workspaceApi";
+import { readFile } from "../platform/workspaceApi";
 import { HeaderBar } from "./HeaderBar";
 import { NoteFooter } from "./NoteFooter";
 import { useWideContent } from "./useWideContent";
