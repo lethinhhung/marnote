@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTheme } from "./useTheme";
 import { useWorkspace } from "../features/workspace/useWorkspace";
 import { WorkspaceSidebar } from "../features/file-tree/WorkspaceSidebar";
-import { NoteEditor } from "./NoteEditor";
+import { NoteEditor } from "../features/note-editor/NoteEditor";
 import { readFile } from "../platform/workspaceApi";
 import { HeaderBar } from "./HeaderBar";
 import { NoteFooter } from "./NoteFooter";

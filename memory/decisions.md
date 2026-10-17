@@ -56,3 +56,28 @@ Dependencies point outward to prior stages, not inward to the platform:
 
 `App.tsx` (app composition, still in `src/ui/`) imports the sidebar from
 `../features/file-tree/WorkspaceSidebar`; no imports point back into the feature.
+
+## D-005 Note-editor grouped as a feature (stage `note-editor-feature`)
+
+The editor, its toolbar and menus, and editor-only helpers live together under
+`apps/desktop/src/features/note-editor/`, following `specs/core.md` (Architecture:
+"Organize desktop UI code by feature, keeping app composition, shared UI, and platform
+adapters separate as the app grows").
+
+Feature contents (all move-only from the former `src/ui/`):
+
+- `NoteEditor.tsx` — editor surface and composition of the toolbar, slash menu, block
+  handle, and table controls.
+- `EditorToolbar.tsx` — formatting toolbar.
+- `SlashMenu.tsx` — slash-command menu and matching helper.
+- `BlockDragHandle.tsx` — top-level block drag handle.
+- `TableEdgeControls.tsx` — table row/column edge controls.
+- `blockDnd.ts`, `tableResize.ts`, `initialMarkdown.ts` — editor-only helpers.
+
+Boundaries:
+
+- The feature is self-contained: every intra-feature import resolves with `./`; it has
+  no workspace, platform, or Tauri dependency.
+- `App.tsx:5` composes it via `../features/note-editor/NoteEditor`; props and call site
+  are unchanged. No imports point back into the feature, and no `ui/<editor>` references
+  remain anywhere in `apps/desktop`.

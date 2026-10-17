@@ -50,3 +50,28 @@ WorkspaceSidebar 74, App 56).
 Caveats:
 
 - None affecting implementation. Files were still staged/uncommitted at archive time.
+
+## Stage `note-editor-feature` — passed (attempt 1)
+
+Objective: group the editor, its toolbar and menus, and editor-specific helpers into a
+focused feature while preserving Markdown behavior.
+
+Outcome:
+
+- Moved `NoteEditor.tsx`, `EditorToolbar.tsx`, `SlashMenu.tsx`, `BlockDragHandle.tsx`,
+  `TableEdgeControls.tsx`, `blockDnd.ts`, `tableResize.ts`, and `initialMarkdown.ts`
+  from `apps/desktop/src/ui/` into `apps/desktop/src/features/note-editor/`; deleted
+  the old `ui/` copies.
+- Repointed `App.tsx:5` to import `NoteEditor` from
+  `../features/note-editor/NoteEditor`; props and call site unchanged.
+- All intra-feature imports are feature-local (`./`); the feature has no workspace,
+  platform, or Tauri dependency (see D-005).
+
+Evidence: all supplied checks passed on attempt 1 — `pnpm run test`, `pnpm run lint`,
+`pnpm run typecheck`, `pnpm run build`. Tester reported pass and Validator passed 3/3
+task validations. No stale `ui/<editor>` references remain in `apps/desktop`. Files stay
+under the 120-line limit (largest: TableEdgeControls at 119 lines; all others smaller).
+
+Caveats:
+
+- None affecting implementation. Changes were still staged/uncommitted at archive time.
