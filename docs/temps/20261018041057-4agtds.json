@@ -1,8 +1,8 @@
 {
   "id": "20261018041057-4agtds",
-  "status": "running",
+  "status": "complete",
   "created_at": "2026-10-18T04:10:57.677Z",
-  "updated_at": "2026-10-18T07:51:09.446Z",
+  "updated_at": "2026-10-18T07:51:11.295Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "add all unit tests",
   "epic_file": "(inline epic)",
@@ -581,7 +581,7 @@
         "The full test suite passes, including existing core tests.",
         "Lint, typecheck, and build checks pass for the changed packages."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -758,6 +758,15 @@
       "type": "archive",
       "stage": "unit-test-integration",
       "result": "\n\n\n\n\n\n\n\n\nDone. Updated all three memory files with the `unit-test-integration` stage results:\n\n**progress.md** — Added stage entry showing root test script now orchestrates all three test suites (core 5, desktop 89, Rust 36 = 130 total), all passing with lint/typecheck/build.\n\n**decisions.md** — Added \"Unified test workflow\" decision documenting the root `package.json` test script that runs all three suites via package-local commands, with each package retaining its own test tooling (independent Vitest for core/desktop, Cargo for Rust).\n\n**notes.md** — Added implementation notes for the integration: root script uses `pnpm --filter` to invoke core test, desktop test, and new desktop `test:rust` script (`cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml`); all 130 tests pass; no spec or behavior changes."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "unit-test-integration",
+      "at": "2026-10-18T07:51:11.292Z"
+    },
+    {
+      "type": "complete",
+      "at": "2026-10-18T07:51:11.295Z"
     }
   ]
 }
