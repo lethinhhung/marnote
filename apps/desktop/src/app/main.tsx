@@ -1,8 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { App } from "./ui/App";
-import "./ui/styles.css";
-import "./ui/theme-dark.css";
+import { App } from "./App";
+import "../shared/theme/styles.css";
+import "../shared/theme/theme-dark.css";
 
 const root = document.getElementById("root");
 

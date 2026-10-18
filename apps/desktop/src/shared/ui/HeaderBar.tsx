@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { FileText, Moon, Search, Sun } from "lucide-react";
 import { isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import type { Entry, WorkspaceTree } from "./workspaceTypes";
+import type { Entry, WorkspaceTree } from "../workspaceTypes";
 
 type Props = { tree: WorkspaceTree | null; path: string; theme: string; toggleTheme: () => void; onSelect: (entry: Entry) => void };
 function files(entries: Entry[]): Entry[] { return entries.flatMap(entry => entry.kind === "directory" ? files(entry.children || []) : entry.path.toLowerCase().endsWith(".md") ? [entry] : []); }

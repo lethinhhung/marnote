@@ -3,7 +3,7 @@ import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff } f
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { isTauri } from "@tauri-apps/api/core";
 import { FileTree, type TreeEdit } from "./FileTree";
-import type { Entry, WorkspaceTree } from "./workspaceTypes";
+import type { Entry, WorkspaceTree } from "../workspaceTypes";
 
 type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; onDefault: () => void; onOpen: (path: string) => void; onSelect: (e: Entry) => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
 export function WorkspaceSidebar(props: Props) {

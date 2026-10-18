@@ -1,0 +1,163 @@
+{
+  "id": "20261018031021-tl9be7",
+  "status": "running",
+  "created_at": "2026-10-18T03:10:21.685Z",
+  "updated_at": "2026-10-18T03:17:32.146Z",
+  "repo": "/Users/macos/Projects/marnote",
+  "epic": "refactor desktop app follow feature-based mentioned in specs",
+  "epic_file": "(inline epic)",
+  "branch": "feat/feature-based-strata-improved",
+  "stages": [
+    {
+      "id": "app-and-shared-ui",
+      "title": "Separate app composition and shared UI",
+      "objective": "Move the desktop entry point and shell into clear app and shared UI locations, keeping composition distinct from reusable chrome and theme behavior. Preserve existing app behavior and stylesheet loading.",
+      "dependencies": [],
+      "completion_criteria": [
+        "Desktop entry and app composition are organized separately from shared UI and theme code.",
+        "All affected imports and entry references resolve, and the desktop typecheck and build pass."
+      ],
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "I'll start by inspecting the current worktree structure and the key files.\nLet me read the key files and spec guidance.\nNow let me check for any other references to these paths across the repo (configs, tauri, eslint).\nI have a clear picture. Let me set up a task list and execute the move.\nNow fix all imports. Starting with app files:\nNow the shared/ui imports:\nAll imports resolved correctly. Now run the checks.\nTypecheck, lint, and build pass. Let me run tests and confirm the built entry.\nStage `app-and-shared-ui` complete.\n\n**Boundary decisions** (pure relative moves via `git mv`, no behavior change):\n- `src/app/` — composition/shell: `main.tsx`, `App.tsx`, `useWorkspace.ts`\n- `src/shared/theme/` — theme behavior: `useTheme.ts`, `styles.css`, `theme-dark.css`\n- `src/shared/ui/` — reusable chrome/editor components (10 files)\n- `src/shared/` — cross-boundary helpers: `workspaceTypes.ts`, `workspaceApi.ts`, `blockDnd.ts`, `tableResize.ts`, `initialMarkdown.ts`, `useWideContent.ts`\n- Removed the now-empty `src/ui/`; updated `index.html` entry to `/src/app/main.tsx`.\n\nComposition now only imports from `shared/*`; `workspaceTypes.ts` remains the shared seam. `workspaceApi.ts` (Tauri adapter) stays in `shared/` pending the `platform-adapters` stage.\n\n**Verification** (focused checks, all pass):\n- `tsc --noEmit` ✓\n- `tsc -b && vite build` ✓ (CSS emitted as one `assets/index-*.css`, entry rewritten correctly)\n- `eslint src vite.config.ts` ✓\n- `vitest run --passWithNoTests` ✓ (no desktop tests exist)\n\nPreserved: stylesheet loading (both CSS imports retained in `main.tsx`), StrictMode root render, and all module imports. No files under `specs/` touched. No unresolved blockers."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 10ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  10:16:32\npackages/core test:    Duration  224ms (transform 33ms, setup 0ms, collect 34ms, tests 10ms, environment 0ms, prepare 41ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2072 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-Cq5Y-iiy.js   893.85 kB │ gzip: 281.57 kB\napps/desktop build: ✓ built in 1.66s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Stage app-and-shared-ui satisfies its criteria. Composition now lives in apps/desktop/src/app (main.tsx, App.tsx, useWorkspace.ts) and reusable chrome/theme/helpers in apps/desktop/src/shared (ui/, theme/, blockDnd.ts, tableResize.ts, initialMarkdown.ts, useWideContent.ts, workspaceApi.ts, workspaceTypes.ts). The old src/ui directory is gone. index.html entry updated to /src/app/main.tsx; no stale src/ui or ./ui import references remain, and all relative imports resolve to existing files. No behavioral changes: the git diff is limited to import-path and entry-point updates, with both stylesheet imports and the StrictMode root render preserved in main.tsx. Verified independently with focused checks: desktop `tsc --noEmit` (exit 0), `tsc -b` (exit 0), and `vite build` (exit 0, emits a single assets/index-*.css and correct entry reference); the supplied pnpm test/lint/typecheck/build checks all passed. workspaceApi.ts remaining under shared/ is consistent with the plan (deferred to platform-adapters). No spec files modified; no remaining findings."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "1/1 task validations passed."
+          },
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "workspace-feature",
+      "title": "Organize workspace feature",
+      "objective": "Group workspace navigation, tree rendering, state, and types into a workspace feature while keeping filesystem access behind the existing platform adapter seam.",
+      "dependencies": [
+        "app-and-shared-ui"
+      ],
+      "completion_criteria": [
+        "Workspace UI, state, and types are organized as a feature with filesystem calls remaining behind an adapter.",
+        "Workspace selection, tree navigation, and file operations retain their existing behavior.",
+        "Desktop typecheck and build pass."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "editor-feature",
+      "title": "Organize editor feature",
+      "objective": "Group editor components and supporting Markdown, drag-and-drop, table, and preference logic into an editor feature, preserving serialization and interaction behavior.",
+      "dependencies": [
+        "app-and-shared-ui"
+      ],
+      "completion_criteria": [
+        "Editor components and supporting logic are organized together as a feature.",
+        "Editor interactions and Markdown serialization retain their existing behavior.",
+        "Desktop typecheck and build pass."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "platform-adapters",
+      "title": "Separate platform adapters",
+      "objective": "Place desktop-specific Tauri integrations behind a distinct adapter boundary and update feature and shared UI callers to use it, without changing platform behavior.",
+      "dependencies": [
+        "workspace-feature",
+        "app-and-shared-ui"
+      ],
+      "completion_criteria": [
+        "Tauri-specific frontend imports are isolated behind platform adapters.",
+        "Workspace filesystem, dialog, and window operations continue to work through their adapter interfaces.",
+        "Desktop typecheck and build pass."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "desktop-integration",
+      "title": "Verify feature-based desktop organization",
+      "objective": "Review the completed frontend reorganization against repository architecture rules and resolve any remaining import, boundary, or file-organization issues caused by the migration.",
+      "dependencies": [
+        "workspace-feature",
+        "editor-feature",
+        "platform-adapters"
+      ],
+      "completion_criteria": [
+        "Desktop source organization separates app composition, features, shared UI, and platform adapters in line with specs/tech.md.",
+        "All desktop source imports and entry references resolve, and desktop lint, typecheck, and build pass.",
+        "The refactor preserves current desktop behavior and does not alter product specifications."
+      ],
+      "status": "pending",
+      "attempts": []
+    }
+  ],
+  "blockers": [],
+  "history": [
+    {
+      "type": "plan",
+      "summary": "Organize the desktop frontend around the feature boundaries required by specs/tech.md, preserving behavior and existing adapter responsibilities.",
+      "stages": 5
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "app-and-shared-ui",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "app-and-shared-ui",
+      "result": "Created the `memory/` structure (none existed) and recorded this stage.\n\nUpdated entries:\n- `memory/README.md` — memory index and scope.\n- `memory/decisions.md` — feature-based desktop layout (`app/`, `shared/ui/`, `shared/theme/`, `shared/`), retirement of `src/ui/`, entry-point and stylesheet decisions, deferred `workspaceApi.ts` move.\n- `memory/progress.md` — `app-and-shared-ui` passed (attempt 1) with criteria, checks, and validation.\n- `memory/notes.md` — path-only diff evidence, new file locations, preserved strict-mode/stylesheet behavior, and the one follow-up.\n\nNo spec or implementation files were touched."
+    }
+  ]
+}
