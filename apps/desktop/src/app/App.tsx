@@ -7,6 +7,7 @@ import { readFile } from "../platform/workspace";
 import { HeaderBar } from "../shared/ui/HeaderBar";
 import { NoteFooter } from "../features/editor/NoteFooter";
 import { useWideContent } from "../features/editor/useWideContent";
+import { isExternalConflict } from "./workspaceConflict";
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
@@ -36,7 +37,7 @@ export function App() {
   }, [draft, path, workspace.note?.content]);
   useEffect(() => {
     if (!path || !workspace.note) return;
-    const timer = window.setInterval(() => { void readFile(workspace.tree?.path || "", path).then(value => { if (value.content !== workspace.note?.content && value.content !== draft) setExternal(value.content); }).catch(error => workspace.setError(String(error))); }, 2500);
+    const timer = window.setInterval(() => { void readFile(workspace.tree?.path || "", path).then(value => { if (isExternalConflict(value.content, workspace.note?.content || "", draft)) setExternal(value.content); }).catch(error => workspace.setError(String(error))); }, 2500);
     return () => window.clearInterval(timer);
   }, [path, workspace.tree?.path, workspace.note?.content, draft]);
   const renameTitle = (title: string) => {

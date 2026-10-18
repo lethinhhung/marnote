@@ -2,22 +2,11 @@ import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
 import type { Entry } from "./workspaceTypes";
 import { TreeEditor } from "./TreeEditor";
+import { visibleEntries } from "./treeVisibility";
 
 export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };
 type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; hideFoldersWithoutNotes: boolean; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; onMove: (source: string, destination: string) => Promise<boolean> };
 type Drag = { path: string; x: number; y: number; moved: boolean };
-
-function containsNote(entry: Entry): boolean {
-  return entry.kind === "file" ? entry.path.toLowerCase().endsWith(".md") : (entry.children || []).some(containsNote);
-}
-
-function visibleEntries(entries: Entry[], hideFoldersWithoutNotes: boolean): Entry[] {
-  return entries.flatMap(entry => {
-    if (entry.kind === "file") return [entry];
-    const children = visibleEntries(entry.children || [], hideFoldersWithoutNotes);
-    return hideFoldersWithoutNotes && !containsNote(entry) ? [] : [{ ...entry, children }];
-  });
-}
 
 export function FileTree(props: Props) {
   const [dragging, setDragging] = useState("");

@@ -2,7 +2,7 @@
   "id": "20261018041057-4agtds",
   "status": "running",
   "created_at": "2026-10-18T04:10:57.677Z",
-  "updated_at": "2026-10-18T04:29:49.565Z",
+  "updated_at": "2026-10-18T07:08:56.517Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "add all unit tests",
   "epic_file": "(inline epic)",
@@ -91,7 +91,7 @@
         "Tests use focused fixtures or mocks and do not require full editor UI rendering.",
         "All added test files comply with the repository’s code-file size limit."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -166,8 +166,198 @@
         "Tests cover save and conflict outcomes using mocked platform adapters.",
         "All added test files comply with the repository’s code-file size limit."
       ],
-      "status": "pending",
-      "attempts": []
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "Done.\n\n- Added `apps/desktop/src/features/workspace/treeVisibility.ts` (13 lines) exporting `containsNote` and `visibleEntries`, preserving case-insensitive `.md` matching and filtered child directories.\n- Updated `FileTree.tsx` (now 84 lines) to import `visibleEntries` from the helper and removed the inlined logic.\n- `pnpm --filter desktop typecheck` and `lint` both pass; both changed files remain under 120 lines.",
+            "Done.\n\n- Added `apps/desktop/src/features/workspace/treeVisibility.test.ts` (47 lines) with 7 tests using small `Entry` fixtures.\n- Covers: nested `.md` keeping ancestor folders visible, `containsNote` case-insensitive `.MD` matching, folder without notes hidden, nested empty child directories filtered, and hidden-folder preservation when disabled.\n- Focused run: `vitest run treeVisibility.test.ts` → 7 passed. `eslint` clean; file under 120-line limit.",
+            "Extracted recent-workspace persistence into a focused helper and wired `useWorkspace` to it.\n\n- Added `apps/desktop/src/features/workspace/recentWorkspaces.ts` (12 lines): `loadRecentWorkspaces()` (key `marnote-workspaces`, malformed→`[]`, non-string filtering) and `rememberRecentWorkspace(current, path)` (prepend, dedupe, 5-item limit, persist).\n- Updated `useWorkspace.ts` (53 lines): removed inline `loadRecent`/localStorage logic; now imports and delegates via `useState(loadRecentWorkspaces)` and `setRecent(current => rememberRecentWorkspace(current, path))`.\n\nVerification: `pnpm --filter @marnote/desktop typecheck` and `lint` both pass; both changed files are under 120 lines. No blockers.",
+            "Added `recentWorkspaces.test.ts` (65 lines) covering persistence logic.\n\n- **Isolation**: `beforeEach(() => localStorage.clear())` in both suites.\n- **Load**: empty/missing key, ordered strings, malformed JSON, non-array value, non-string filtering.\n- **Remember**: prepend + persist under `marnote-workspaces`, dedupe/move-to-front, five-entry cap dropping oldest, and truncation of over-long input.\n\nVerification: focused Vitest run passes (9/9), `typecheck` and `lint` clean, file under 120 lines.",
+            "Now I understand the structure. Let me create the pure helpers and refactor the hook.\nNow let me verify with typecheck and lint.\nDone. Extracted the path logic into pure helpers and wired the hook to use them.\n\nChanges:\n- `apps/desktop/src/features/workspace/workspacePaths.ts` (new, 8 lines): `isSameOrDescendant(path, root)` and `rebasePath(path, source, destination)` (returns unchanged for unrelated paths).\n- `apps/desktop/src/features/workspace/useWorkspace.ts` (60 lines): added `rebaseNote`/`dropNote` wrappers; `renameOrMove`, `move`, and `remove` now use `rebasePath` and `isSameOrDescendant`.\n\nBehavior preserved: unrelated notes keep object identity; `root` matching uses `root/` prefix so siblings like `root-old` aren't matched.\n\nVerification:\n- `pnpm --filter @marnote/desktop typecheck` — pass\n- `pnpm --filter @marnote/desktop lint` — pass\n- `pnpm --filter @marnote/desktop test` — 32/32 pass\n- Both changed code files under 120 lines.\n\nNote: focused tests for the helpers are the dependent task's responsibility; I ran the existing suite (including `treeVisibility`/`recentWorkspaces`) with no regressions.",
+            "Added six focused tests in [workspacePaths.test.ts](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/workspacePaths.test.ts) for exact and descendant rebasing, unchanged unrelated paths, similarly prefixed siblings, and exact/descendant removed-path matching.\n\nThe focused Vitest file passes (6 tests). The file is 35 lines, within the 120-line limit.",
+            "Implemented the workspace save and external-conflict helpers.\n\n- Added `saveWorkspace`, which accepts an injectable write adapter and returns a success or error result. `useWorkspace` uses it while preserving its boolean return and error handling.\n- Added `isExternalConflict` and wired it into the external-file polling logic without changing the comparison behavior.\n- All changed code files are under 120 lines. Desktop typecheck passed with `pnpm --filter @marnote/desktop typecheck`.\n\nThe worktree also contains other workspace changes; I left them untouched.",
+            "Added focused tests in [saveWorkspace.test.ts](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/saveWorkspace.test.ts) and [workspaceConflict.test.ts](/Users/macos/Projects/marnote/apps/desktop/src/app/workspaceConflict.test.ts).\n\nThe save tests check adapter arguments, success, and the surfaced failure message. Conflict tests cover unchanged content, external changes, and locally edited drafts. Both Vitest files passed: 6 tests total. Each file is under 120 lines."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 10ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  11:51:17\npackages/core test:    Duration  226ms (transform 33ms, setup 0ms, collect 33ms, tests 10ms, environment 0ms, prepare 37ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test:  ✓ src/app/workspaceConflict.test.ts (4 tests) 1ms\napps/desktop test:  ✓ src/features/workspace/workspacePaths.test.ts (6 tests) 2ms\napps/desktop test:  ✓ src/features/workspace/saveWorkspace.test.ts (2 tests) 3ms\napps/desktop test:  ✓ src/features/workspace/treeVisibility.test.ts (7 tests) 3ms\napps/desktop test:  ✓ src/features/workspace/recentWorkspaces.test.ts (9 tests) 4ms\napps/desktop test:  ✓ src/features/editor/blockDnd.test.ts (6 tests) 7ms\napps/desktop test:  ✓ src/features/editor/tableResize.test.ts (5 tests) 5ms\napps/desktop test:  ✓ src/features/editor/SlashMenu.test.ts (5 tests) 3ms\napps/desktop test:  Test Files  8 passed (8)\napps/desktop test:       Tests  44 passed (44)\napps/desktop test:    Start at  11:51:18\napps/desktop test:    Duration  832ms (transform 179ms, setup 63ms, collect 433ms, tests 26ms, environment 3.19s, prepare 494ms)\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2079 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.06 kB\napps/desktop build: dist/assets/index-_5eCHkNo.js   894.24 kB │ gzip: 282.50 kB\napps/desktop build: ✓ built in 1.79s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "fail",
+            "findings": [
+              "Cannot verify the workspace-logic-tests stage: the supplied full suite results report only aggregate `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, and `pnpm run build` passes, without current assertion output for the focused tests. The task specifically says to base findings on supplied latest check output and not rerun the full suite; no focused failure is identified to diagnose.",
+              "The implementation report claims focused tests passed, but no output for `recentWorkspaces.test.ts` or `workspacePaths.test.ts` is included in the supplied stage excerpts, so those results cannot be independently checked here."
+            ],
+            "summary": "The reported full checks pass and the provided test excerpts cover the stated behaviors. The supplied current check evidence is insufficient to confirm all required focused tests, so the stage does not meet the tester's verification criteria."
+          },
+          "validation": {
+            "status": "fail",
+            "findings": [
+              "The `extract-path-rebasing` scope requires focused tests for `workspacePaths.ts`, but the supplied current excerpts show the helper and hook with no `workspacePaths.test.ts`; the latest checks only report aggregate test success and do not identify focused helper assertions. Add tests covering exact and descendant rebasing, unrelated paths, and removal matching without matching prefixed siblings."
+            ],
+            "summary": "7/8 task validations passed."
+          },
+          "passed": false
+        },
+        {
+          "attempt": 2,
+          "implementations": [
+            "The requested extraction is already present in the scoped files, so I made no changes. `FileTree.tsx` uses the exported `visibleEntries` helper, which preserves case-insensitive `.md` matching and filters child directories when hiding folders without notes.\n\nThe focused test passed: 7 tests. Both scoped code files are under 120 lines.",
+            "The scoped test file already covers nested note visibility, hiding folders without notes, filtering nested children, case-insensitive `.md` matching, and behavior when hiding is disabled. I made no changes.\n\nFocused check passed: `treeVisibility.test.ts` — 7 tests. The file is 47 lines, under the 120-line limit.",
+            "The scoped implementation is already present in the worktree:\n\n- [recentWorkspaces.ts](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/recentWorkspaces.ts) handles loading and remembering recent workspaces.\n- [useWorkspace.ts](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/useWorkspace.ts) delegates to the helper.\n\nBoth files are under 120 lines. The focused test passed: **9 tests**. I made no additional changes.",
+            "The scoped test file already covers persistence ordering, malformed JSON, non-array and non-string values, deduplication, and the five-item limit. Each suite clears `localStorage` before its cases.\n\nFocused Vitest passed: **9 tests**. The file is **65 lines**, under the 120-line limit. I made no changes.",
+            "The scoped implementation is already complete, so I made no edits. `useWorkspace.ts` uses the pure helpers for rename/move and removal.\n\nFocused verification passed: `workspacePaths.test.ts` — 6 tests. Both scoped code files are under 120 lines.",
+            "The scoped test file already covered exact and descendant rebasing, unrelated paths, similarly prefixed siblings, and exact/descendant removal matching, so I made no edits.\n\nFocused Vitest run passed: 6 tests. The file is 35 lines, under the 120-line limit.",
+            "The scoped implementation is already present in the worktree, so I made no changes.\n\nThe save helper uses an injectable write adapter and preserves success and error results. The conflict helper preserves the existing content comparisons. Focused tests passed: 6 tests across `saveWorkspace.test.ts` and `workspaceConflict.test.ts`. All scoped code files are under 120 lines.",
+            "The scoped tests are already present and meet the task criteria, so I made no changes.\n\nThe focused Vitest run passed: **2 files, 6 tests**. Both test files are under 120 lines."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 9ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  13:11:38\npackages/core test:    Duration  212ms (transform 34ms, setup 0ms, collect 32ms, tests 9ms, environment 0ms, prepare 39ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test:  ✓ src/app/workspaceConflict.test.ts (4 tests) 2ms\napps/desktop test:  ✓ src/features/workspace/saveWorkspace.test.ts (2 tests) 3ms\napps/desktop test:  ✓ src/features/workspace/treeVisibility.test.ts (7 tests) 3ms\napps/desktop test:  ✓ src/features/workspace/workspacePaths.test.ts (6 tests) 2ms\napps/desktop test:  ✓ src/features/workspace/recentWorkspaces.test.ts (9 tests) 4ms\napps/desktop test:  ✓ src/features/editor/blockDnd.test.ts (6 tests) 6ms\napps/desktop test:  ✓ src/features/editor/tableResize.test.ts (5 tests) 5ms\napps/desktop test:  ✓ src/features/editor/SlashMenu.test.ts (5 tests) 3ms\napps/desktop test:  Test Files  8 passed (8)\napps/desktop test:       Tests  44 passed (44)\napps/desktop test:    Start at  13:11:38\napps/desktop test:    Duration  808ms (transform 147ms, setup 37ms, collect 374ms, tests 26ms, environment 3.04s, prepare 490ms)\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2079 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.06 kB\napps/desktop build: dist/assets/index-_5eCHkNo.js   894.24 kB │ gzip: 282.50 kB\napps/desktop build: ✓ built in 1.75s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "The implementation and focused tests cover all stage criteria. All added test files are under 120 lines, and the supplied full test, lint, typecheck, and build checks passed. No failures requiring a focused rerun or fix were found."
+          },
+          "validation": {
+            "status": "fail",
+            "findings": [
+              "Agent response did not contain JSON or a labeled pass/fail status. Response: {\"status\":\"blocked\",\"findings\":[],\"summary\":\"I could not complete a current-worktree validation with the tools exposed in this session. The supplied excerpt shows saveWorkspace.ts injecting the write adapter and returning success/error results, and workspaceConflict.ts comparing external, saved, and draft content. However, the excerpt omits the tests and most of App.tsx, so I cannot verify test coverage or the full scoped integration. Latest checks report test, lint, typecheck, and build passing, but they do not establish those criteria. The task prohibits shell/terminal inspection, and no repository file-reading tool is available.\"}"
+            ],
+            "summary": "7/8 task validations passed."
+          },
+          "passed": false
+        },
+        {
+          "attempt": 1,
+          "implementations": [
+            "\n\nAll tests pass, lint passes, typecheck passes. The stage is complete - all five test files exist and cover the required criteria:\n\n- **treeVisibility.test.ts** (47 lines, 7 tests): `containsNote` (case-insensitive .md) and `visibleEntries` (ancestor preservation, folder hiding, nested filtering)\n- **workspaceConflict.test.ts** (20 lines, 4 tests): `isExternalConflict` (unchanged external, external changes, local draft protection, draft match)\n- **saveWorkspace.test.ts** (24 lines, 2 tests): success/failure paths with mocked `WriteWorkspaceFile` adapter\n- **workspacePaths.test.ts** (35 lines, 6 tests): `rebasePath` and `isSameOrDescendant` (exact, descendant, unrelated, sibling-prefix)\n- **recentWorkspaces.test.ts** (65 lines, 9 tests): `loadRecentWorkspaces` (empty, ordered, malformed JSON, non-array, non-string filtering) and `rememberRecentWorkspace` (prepend, dedupe, 5-item limit)\n\nAll test files are well under the 120-line limit."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 9ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  14:08:01\npackages/core test:    Duration  229ms (transform 32ms, setup 0ms, collect 32ms, tests 9ms, environment 0ms, prepare 36ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test:  ✓ src/app/workspaceConflict.test.ts (4 tests) 4ms\napps/desktop test:  ✓ src/features/workspace/saveWorkspace.test.ts (2 tests) 3ms\napps/desktop test:  ✓ src/features/workspace/workspacePaths.test.ts (6 tests) 2ms\napps/desktop test:  ✓ src/features/editor/blockDnd.test.ts (6 tests) 6ms\napps/desktop test:  ✓ src/features/workspace/recentWorkspaces.test.ts (9 tests) 4ms\napps/desktop test:  ✓ src/features/editor/tableResize.test.ts (5 tests) 6ms\napps/desktop test:  ✓ src/features/workspace/treeVisibility.test.ts (7 tests) 3ms\napps/desktop test:  ✓ src/features/editor/SlashMenu.test.ts (5 tests) 3ms\napps/desktop test:  Test Files  8 passed (8)\napps/desktop test:       Tests  44 passed (44)\napps/desktop test:    Start at  14:08:02\napps/desktop test:    Duration  894ms (transform 114ms, setup 27ms, collect 309ms, tests 29ms, environment 3.25s, prepare 718ms)\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2079 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.06 kB\napps/desktop build: dist/assets/index-_5eCHkNo.js   894.24 kB │ gzip: 282.50 kB\napps/desktop build: ✓ built in 2.15s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "All five test files implemented and pass checks. treeVisibility.test.ts (47 lines, 7 tests) covers containsNote and visibleEntries. workspaceConflict.test.ts (20 lines, 4 tests) covers isExternalConflict. saveWorkspace.test.ts (24 lines, 2 tests) covers success/failure with mocked WriteWorkspaceFile adapter. workspacePaths.test.ts (35 lines, 6 tests) covers rebasePath and isSameOrDescendant. recentWorkspaces.test.ts (65 lines, 9 tests) covers loadRecentWorkspaces and rememberRecentWorkspace with 5-item limit. All files under 120-line limit. Completion criteria satisfied: note visibility/path rebasing covered, recent-workspace persistence and limit covered, save/conflict with mocked adapters covered. All configured checks (test, lint, typecheck, build) pass."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "1/1 task validations passed."
+          },
+          "passed": true
+        }
+      ]
     },
     {
       "id": "desktop-state-tests",
@@ -249,6 +439,34 @@
       "type": "archive",
       "stage": "editor-logic-tests",
       "result": "Recorded the editor-logic-tests stage in memory (no product/implementation files touched).\n\n**Updated entries**\n\n- `memory/progress.md` — added `editor-logic-tests — passed (attempt 1)` (criteria, 3 files/16 tests, evidence, checks, 3/3 validation) and updated `## Next`.\n- `memory/notes.md` — added a factual `editor-logic-tests (attempt 1)` section detailing each test file (line counts, test counts, cases: slash label/detail/case/order/empty, DnD midpoint/document-end/earlier-later/no-op, table rounding/120px min/non-table/colwidth cleanup/no-dispatch), the fixture/stub approach, focused run result, and checks; refreshed the unresolved follow-ups to reflect current coverage.\n- `memory/decisions.md` — added durable testing conventions under \"Desktop unit testing\": colocated test files with default discovery, no full-editor rendering (raw schema + stubbed view/dispatch), locally declared ProseMirror fixtures with `TableMap` read-back, and the 120-line file split.\n\n**Knowledge captured:** editor helpers `SlashMenu`, `blockDnd`, and `tableResize` are now unit-covered without jsdom-heavy UI rendering; remaining untested modules are noted as follow-ups. No spec or implementation changes made."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "editor-logic-tests",
+      "at": "2026-10-18T04:29:51.372Z"
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "workspace-logic-tests",
+      "attempt": 1,
+      "passed": false
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "workspace-logic-tests",
+      "attempt": 2,
+      "passed": false
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "workspace-logic-tests",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "workspace-logic-tests",
+      "result": "\n\n\nUpdated memory files:\n\n- **progress.md** — Added `workspace-logic-tests` stage completion (attempt 3, passed with 1/1 validations). Documented the 5 test files, 28 tests, coverage areas, and evidence.\n- **notes.md** — Added detailed implementation notes for the stage: test file breakdown, helper coverage, mocked adapters used, and updated unresolved items to reflect workspace logic is now covered.\n- **decisions.md** — No changes needed; no new architectural decisions from this test-only stage.\n\nThe stage is complete: all 5 workspace logic test files implemented (treeVisibility, workspaceConflict, saveWorkspace, workspacePaths, recentWorkspaces), all under 120 lines, all checks passing."
     }
   ]
 }

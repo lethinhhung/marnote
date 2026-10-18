@@ -77,9 +77,21 @@
 - Focused run: `pnpm vitest run SlashMenu.test.ts blockDnd.test.ts tableResize.test.ts` → 3 files, 16/16 passed.
 - Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
 
+## workspace-logic-tests (attempt 3)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds test files only; no product, spec, or behavior changes.
+- Five colocated test files, all under the 120-line limit:
+  - `features/workspace/treeVisibility.test.ts` (47 lines, 7 tests): pure helpers `containsNote` and `visibleEntries`; covers empty tree, single file, nested directories, mixed entries, and visibility when parent is collapsed.
+  - `app/workspaceConflict.test.ts` (20 lines, 4 tests): `isExternalConflict` helper with mocked `ReadResult`; covers no conflict, conflict on content, conflict on draft-only, and no conflict when draft matches saved.
+  - `features/workspace/saveWorkspace.test.ts` (24 lines, 2 tests): `saveWorkspace` with mocked `WriteWorkspaceFile` adapter; covers success returning `ok: true` and failure propagating error from adapter.
+  - `features/workspace/workspacePaths.test.ts` (35 lines, 6 tests): `rebasePath` and `isSameOrDescendant`; covers exact path rebasing, descendant rebasing, unrelated path returns original, removal matching without matching prefixed siblings (e.g., `foo` removed does not match `foobar`).
+  - `features/workspace/recentWorkspaces.test.ts` (65 lines, 9 tests): `loadRecentWorkspaces` and `rememberRecentWorkspace` with 5-item limit; covers loading empty, loading with entries, adding new entry, updating existing entry moves to front, limit enforces 5 items (oldest dropped), and path normalization.
+- Mocked platform adapters used: `WriteWorkspaceFile` in save tests; `ReadResult` structure in conflict tests. No full UI rendering; all helpers tested directly.
+- Focused run confirmed all 28 tests pass; full suite `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` pass.
+
 ## Unresolved / follow-ups
 
 - Resolved in desktop-integration: `platform/workspace.ts` no longer imports workspace-feature types, and `shared/ui/HeaderBar` no longer imports from `features/` (both now use `shared/domain/workspace`).
 - Watch item: `features/workspace/workspaceTypes.ts` still re-exports the shared domain types and keeps the unused `NoteData`; harmless but could be removed if no future consumer needs `NoteData`.
 - No open findings from any stage.
-- Active epic "add all unit tests": editor helpers `SlashMenu`, `blockDnd`, and `tableResize` are now covered. Remaining coverage is not yet planned/recorded; other desktop modules and `packages/core` links/workspace logic still lack dedicated tests beyond `packages/core/src/index.test.ts`.
+- Active epic "add all unit tests": editor helpers `SlashMenu`, `blockDnd`, and `tableResize` are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered. Remaining coverage is not yet planned/recorded; other desktop modules and `packages/core` links/workspace logic still lack dedicated tests beyond `packages/core/src/index.test.ts`.

@@ -19,9 +19,21 @@ Branch: `test/add-unit-tests`.
 - Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`.
 - Validation: pass, 3/3 task validations. No spec or product changes.
 
+## workspace-logic-tests — passed (attempt 3)
+
+- Completion criteria: tests cover note visibility and relevant path construction or rebasing behavior; tests cover recent-workspace persistence and its item limit; tests cover save and conflict outcomes using mocked platform adapters; all added test files comply with the repository's code-file size limit (120 lines).
+- Outcome: five colocated test files added under `apps/desktop/src/`:
+  - `features/workspace/treeVisibility.test.ts` (47 lines, 7 tests) — covers `containsNote` and `visibleEntries`.
+  - `app/workspaceConflict.test.ts` (20 lines, 4 tests) — covers `isExternalConflict`.
+  - `features/workspace/saveWorkspace.test.ts` (24 lines, 2 tests) — covers success/failure with mocked `WriteWorkspaceFile` adapter.
+  - `features/workspace/workspacePaths.test.ts` (35 lines, 6 tests) — covers `rebasePath` and `isSameOrDescendant` (exact/descendant rebasing, unrelated paths, removal matching without matching prefixed siblings).
+  - `features/workspace/recentWorkspaces.test.ts` (65 lines, 9 tests) — covers `loadRecentWorkspaces` and `rememberRecentWorkspace` with 5-item limit.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; focused test output confirms all 28 tests pass.
+- Validation: pass, 1/1 task validations. No spec or behavior changes.
+
 ## Next
 
-- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, and tableResize are now covered.
+- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, and tableResize are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered.
 
 # Prior epic: refactor desktop app to feature-based structure
 
