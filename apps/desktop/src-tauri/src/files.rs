@@ -127,7 +127,11 @@ fn trash_name(path: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{fs, path::PathBuf, sync::atomic::{AtomicU64, Ordering}};
+    use std::{
+        fs,
+        path::PathBuf,
+        sync::atomic::{AtomicU64, Ordering},
+    };
 
     static TEST_WS_COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -135,7 +139,11 @@ mod tests {
         let mut base = std::env::temp_dir();
         base.push(format!("marnote-test-{}", std::process::id()));
         let counter = TEST_WS_COUNTER.fetch_add(1, Ordering::Relaxed);
-        base.push(format!("ws-{}-{}", UNIX_EPOCH.elapsed().unwrap().as_nanos(), counter));
+        base.push(format!(
+            "ws-{}-{}",
+            UNIX_EPOCH.elapsed().unwrap().as_nanos(),
+            counter
+        ));
         fs::create_dir_all(&base).unwrap();
         base
     }
@@ -147,7 +155,8 @@ mod tests {
     #[test]
     fn file_create_markdown_requires_md_extension() {
         let ws = temp_workspace();
-        let err = file_create_markdown(ws_root(&ws), "note.txt".into(), "content".into()).unwrap_err();
+        let err =
+            file_create_markdown(ws_root(&ws), "note.txt".into(), "content".into()).unwrap_err();
         assert_eq!(err, "Expected a .md path");
     }
 
@@ -157,7 +166,9 @@ mod tests {
         let path = "note.md";
         file_create_markdown(ws_root(&ws), path.into(), "first".into()).unwrap();
         let err = file_create_markdown(ws_root(&ws), path.into(), "second".into()).unwrap_err();
-        assert!(err.contains("already exists") || err.contains("File exists") || err.contains("exist"));
+        assert!(
+            err.contains("already exists") || err.contains("File exists") || err.contains("exist")
+        );
         let content = fs::read_to_string(ws.join(path)).unwrap();
         assert_eq!(content, "first");
     }
@@ -174,7 +185,13 @@ mod tests {
     fn file_update_markdown_requires_md_extension() {
         let ws = temp_workspace();
         fs::write(ws.join("note.txt"), "initial").unwrap();
-        let err = file_update_markdown(ws_root(&ws), "note.txt".into(), "new".into(), "initial".into()).unwrap_err();
+        let err = file_update_markdown(
+            ws_root(&ws),
+            "note.txt".into(),
+            "new".into(),
+            "initial".into(),
+        )
+        .unwrap_err();
         assert_eq!(err, "Expected a Markdown file");
     }
 
@@ -182,7 +199,9 @@ mod tests {
     fn file_update_markdown_rejects_stale_expected_content() {
         let ws = temp_workspace();
         file_create_markdown(ws_root(&ws), "note.md".into(), "initial".into()).unwrap();
-        let err = file_update_markdown(ws_root(&ws), "note.md".into(), "new".into(), "stale".into()).unwrap_err();
+        let err =
+            file_update_markdown(ws_root(&ws), "note.md".into(), "new".into(), "stale".into())
+                .unwrap_err();
         assert_eq!(err, "Conflict: file changed since it was read");
         let content = fs::read_to_string(ws.join("note.md")).unwrap();
         assert_eq!(content, "initial");
@@ -192,7 +211,13 @@ mod tests {
     fn file_update_markdown_succeeds_atomically() {
         let ws = temp_workspace();
         file_create_markdown(ws_root(&ws), "note.md".into(), "initial".into()).unwrap();
-        file_update_markdown(ws_root(&ws), "note.md".into(), "updated".into(), "initial".into()).unwrap();
+        file_update_markdown(
+            ws_root(&ws),
+            "note.md".into(),
+            "updated".into(),
+            "initial".into(),
+        )
+        .unwrap();
         let content = fs::read_to_string(ws.join("note.md")).unwrap();
         assert_eq!(content, "updated");
     }
@@ -205,11 +230,19 @@ mod tests {
         let tmp_name = format!(".marnote-{}.tmp", std::process::id());
         let tmp_path = path.with_file_name(tmp_name);
         fs::write(&tmp_path, "malicious").unwrap();
-        let result = file_update_markdown(ws_root(&ws), "note.md".into(), "updated".into(), "initial".into());
+        let result = file_update_markdown(
+            ws_root(&ws),
+            "note.md".into(),
+            "updated".into(),
+            "initial".into(),
+        );
         assert!(result.is_err());
         let content = fs::read_to_string(&path).unwrap();
         assert_eq!(content, "initial");
-        assert!(!tmp_path.exists(), "temp file should be cleaned up on error");
+        assert!(
+            !tmp_path.exists(),
+            "temp file should be cleaned up on error"
+        );
     }
 
     #[test]
@@ -253,7 +286,10 @@ mod tests {
         let ws = temp_workspace();
         fs::create_dir_all(ws.join("folder")).unwrap();
         let err = file_move(ws_root(&ws), "folder".into(), "folder".into()).unwrap_err();
-        assert_eq!(err, "A folder cannot be moved into itself or one of its subfolders");
+        assert_eq!(
+            err,
+            "A folder cannot be moved into itself or one of its subfolders"
+        );
         assert!(ws.join("folder").exists());
     }
 
@@ -262,7 +298,10 @@ mod tests {
         let ws = temp_workspace();
         fs::create_dir_all(ws.join("folder/sub")).unwrap();
         let err = file_move(ws_root(&ws), "folder".into(), "folder/sub".into()).unwrap_err();
-        assert_eq!(err, "A folder cannot be moved into itself or one of its subfolders");
+        assert_eq!(
+            err,
+            "A folder cannot be moved into itself or one of its subfolders"
+        );
         assert!(ws.join("folder").exists());
         assert!(ws.join("folder/sub").exists());
     }
@@ -272,7 +311,10 @@ mod tests {
         let ws = temp_workspace();
         fs::create_dir_all(ws.join("folder/a/b/c")).unwrap();
         let err = file_move(ws_root(&ws), "folder".into(), "folder/a/b/c".into()).unwrap_err();
-        assert_eq!(err, "A folder cannot be moved into itself or one of its subfolders");
+        assert_eq!(
+            err,
+            "A folder cannot be moved into itself or one of its subfolders"
+        );
         assert!(ws.join("folder").exists());
     }
 
@@ -293,7 +335,12 @@ mod tests {
     fn file_delete_trash_name_uses_underscores_for_separators() {
         let ws = temp_workspace();
         fs::create_dir_all(ws.join("folder/sub")).unwrap();
-        file_create_markdown(ws_root(&ws), "folder/sub/deep.md".into(), "deep content".into()).unwrap();
+        file_create_markdown(
+            ws_root(&ws),
+            "folder/sub/deep.md".into(),
+            "deep content".into(),
+        )
+        .unwrap();
         let trash_path = file_delete(ws_root(&ws), "folder/sub/deep.md".into()).unwrap();
         assert!(!ws.join("folder/sub/deep.md").exists());
         assert!(ws.join(&trash_path).exists());

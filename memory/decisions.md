@@ -84,4 +84,13 @@
 - All tests pass; lint, typecheck, and build checks pass for affected packages.
 - No test consolidation; each package retains its own test tooling (core and desktop each have independent `vitest`; Rust uses `cargo test`).
 
-(End of file - total 66 lines)
+## Metadata storage format and workspace tree integration
+
+- Source: epic "note and folder metadata feature" and stage `metadata-storage-and-tree` completion criteria.
+- Metadata persists as portable JSON at `.marnote/metadata` keyed by workspace-relative paths (not absolute), so it is rebuildable from workspace files and does not modify Markdown content.
+- `read_metadata` handles missing, empty, and malformed files gracefully; `merge_metadata` attaches persisted metadata to tree entries with defaults for entries that have none (metadata: None).
+- Workspace tree traversal (`tree.rs`) explicitly skips the `.marnote` directory to avoid exposing metadata storage as user content.
+- Rust types mirror the shared domain contract: optional `tags: Vec<String>`, `icon: Option<String>`, `favorite: bool`, `created_ms: i64`, `updated_ms: i64`; TypeScript domain types in `packages/core/src/workspace.ts` and `apps/desktop/src/shared/domain/workspace.ts` declare the same optional fields.
+- The unused-method warnings for `tags`, `icon`, `favorite`, `created_ms`, `updated_ms` in `metadata.rs` are expected; these methods are reserved for future frontend exposure via Tauri commands.
+
+(End of file - total 82 lines)

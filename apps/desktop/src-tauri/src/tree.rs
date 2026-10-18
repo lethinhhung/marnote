@@ -6,7 +6,10 @@ pub fn collect(dir: &Path, base: &Path) -> Result<Vec<Entry>, String> {
     for item in std::fs::read_dir(dir).map_err(|e| e.to_string())? {
         let item = item.map_err(|e| e.to_string())?;
         let meta = item.file_type().map_err(|e| e.to_string())?;
-        if meta.is_symlink() || item.file_name() == ".marnote-trash" {
+        if meta.is_symlink()
+            || item.file_name() == ".marnote-trash"
+            || item.file_name() == ".marnote"
+        {
             continue;
         }
         let p = item.path();
@@ -31,6 +34,7 @@ pub fn collect(dir: &Path, base: &Path) -> Result<Vec<Entry>, String> {
                 path,
                 kind: if directory { "directory" } else { "file" }.into(),
                 children,
+                metadata: None,
             });
         }
     }
@@ -51,7 +55,11 @@ mod tests {
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
             .as_nanos();
-        path.push(format!("marnote_tree_test_{}_{}", std::process::id(), nanos));
+        path.push(format!(
+            "marnote_tree_test_{}_{}",
+            std::process::id(),
+            nanos
+        ));
         let _ = fs::remove_dir_all(&path);
         fs::create_dir_all(&path).unwrap();
         path
@@ -150,7 +158,10 @@ mod tests {
         let entries = collect(&temp, &base).unwrap();
 
         let names: Vec<&str> = entries.iter().map(|e| e.name.as_str()).collect();
-        assert_eq!(names, vec!["alpha.md", "Beta.md", "Delta", "gamma", "zebra.md"]);
+        assert_eq!(
+            names,
+            vec!["alpha.md", "Beta.md", "Delta", "gamma", "zebra.md"]
+        );
     }
 
     #[test]
@@ -165,7 +176,11 @@ mod tests {
         let entries = collect(&temp, &base).unwrap();
 
         let folder_entry = entries.iter().find(|e| e.name == "folder").unwrap();
-        let child_names: Vec<&str> = folder_entry.children.iter().map(|e| e.name.as_str()).collect();
+        let child_names: Vec<&str> = folder_entry
+            .children
+            .iter()
+            .map(|e| e.name.as_str())
+            .collect();
         assert_eq!(child_names, vec!["alpha.md", "zebra.md"]);
     }
 

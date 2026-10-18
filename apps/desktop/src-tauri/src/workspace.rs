@@ -1,3 +1,4 @@
+use crate::metadata::{merge_metadata, read_metadata};
 use crate::tree::collect;
 use serde::Serialize;
 use std::{
@@ -7,11 +8,14 @@ use std::{
 use tauri::Manager;
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Entry {
     pub(crate) name: String,
     pub(crate) path: String,
     pub(crate) kind: String,
     pub(crate) children: Vec<Entry>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) metadata: Option<crate::metadata::EntryMetadata>,
 }
 #[derive(Serialize)]
 pub struct Workspace {
@@ -62,6 +66,7 @@ pub fn target(root: &Path, path: &str, exists: bool) -> Result<PathBuf, String> 
 #[tauri::command]
 pub fn open_workspace(path: String) -> Result<Workspace, String> {
     let r = root(&path)?;
+    let metadata = read_metadata(&r)?;
     let name = r
         .file_name()
         .unwrap_or_default()
@@ -70,7 +75,7 @@ pub fn open_workspace(path: String) -> Result<Workspace, String> {
     Ok(Workspace {
         name,
         path: r.to_string_lossy().into_owned(),
-        entries: collect(&r, &r)?,
+        entries: merge_metadata(collect(&r, &r)?, &metadata),
     })
 }
 
@@ -83,15 +88,17 @@ pub fn default_workspace(app: tauri::AppHandle) -> Result<Workspace, String> {
         .join("workspace");
     fs::create_dir_all(&path).map_err(|e| e.to_string())?;
     let root = root(&path.to_string_lossy())?;
+    let metadata = read_metadata(&root)?;
     Ok(Workspace {
         name: "My Notes".into(),
         path: root.to_string_lossy().into_owned(),
-        entries: collect(&root, &root)?,
+        entries: merge_metadata(collect(&root, &root)?, &metadata),
     })
 }
 #[tauri::command]
 pub fn list_workspace_tree(root_path: String) -> Result<Workspace, String> {
     let r = root(&root_path)?;
+    let metadata = read_metadata(&r)?;
     let name = r
         .file_name()
         .unwrap_or_default()
@@ -100,7 +107,7 @@ pub fn list_workspace_tree(root_path: String) -> Result<Workspace, String> {
     Ok(Workspace {
         name,
         path: r.to_string_lossy().into_owned(),
-        entries: collect(&r, &r)?,
+        entries: merge_metadata(collect(&r, &r)?, &metadata),
     })
 }
 
@@ -114,7 +121,14 @@ mod tests {
     where
         F: FnOnce(&PathBuf),
     {
-        let tmp = std::env::temp_dir().join(format!("marnote_test_{}_{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        let tmp = std::env::temp_dir().join(format!(
+            "marnote_test_{}_{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
         fs::create_dir_all(&tmp).unwrap();
         let ws = tmp.join("workspace");
         fs::create_dir_all(&ws).unwrap();
@@ -169,7 +183,10 @@ mod tests {
         with_temp_workspace(|ws| {
             let result = target(ws, "", false);
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Path must be a non-empty workspace-relative path");
+            assert_eq!(
+                result.unwrap_err(),
+                "Path must be a non-empty workspace-relative path"
+            );
         });
     }
 
@@ -178,7 +195,10 @@ mod tests {
         with_temp_workspace(|ws| {
             let result = target(ws, "notes/../escape.md", false);
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Path must be a non-empty workspace-relative path");
+            assert_eq!(
+                result.unwrap_err(),
+                "Path must be a non-empty workspace-relative path"
+            );
         });
     }
 
@@ -187,7 +207,10 @@ mod tests {
         with_temp_workspace(|ws| {
             let result = target(ws, "../outside.md", false);
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Path must be a non-empty workspace-relative path");
+            assert_eq!(
+                result.unwrap_err(),
+                "Path must be a non-empty workspace-relative path"
+            );
         });
     }
 
@@ -202,7 +225,11 @@ mod tests {
                 use std::os::unix::fs::symlink;
                 symlink(&target_file, &link).unwrap();
                 let result = target(ws, "link.md", true);
-                assert!(result.is_err(), "expected error for symlink, got: {:?}", result);
+                assert!(
+                    result.is_err(),
+                    "expected error for symlink, got: {:?}",
+                    result
+                );
                 assert_eq!(result.unwrap_err(), "Symlinks are not supported");
             }
             #[cfg(windows)]
@@ -210,7 +237,11 @@ mod tests {
                 use std::os::windows::fs::symlink_file;
                 symlink_file(&target_file, &link).unwrap();
                 let result = target(ws, "link.md", true);
-                assert!(result.is_err(), "expected error for symlink, got: {:?}", result);
+                assert!(
+                    result.is_err(),
+                    "expected error for symlink, got: {:?}",
+                    result
+                );
                 assert_eq!(result.unwrap_err(), "Symlinks are not supported");
             }
         });
@@ -219,7 +250,8 @@ mod tests {
     #[test]
     fn target_rejects_existing_symlink_escaping_workspace() {
         with_temp_workspace(|ws| {
-            let outside_dir = std::env::temp_dir().join(format!("marnote_outside_{}", std::process::id()));
+            let outside_dir =
+                std::env::temp_dir().join(format!("marnote_outside_{}", std::process::id()));
             fs::create_dir_all(&outside_dir).unwrap();
             let outside_canon = fs::canonicalize(&outside_dir).unwrap();
             let outside_file = outside_canon.join("secret.md");
@@ -230,7 +262,11 @@ mod tests {
                 use std::os::unix::fs::symlink;
                 symlink(&outside_file, &link).unwrap();
                 let result = target(ws, "escape.md", true);
-                assert!(result.is_err(), "expected error for escaping symlink, got: {:?}", result);
+                assert!(
+                    result.is_err(),
+                    "expected error for escaping symlink, got: {:?}",
+                    result
+                );
                 assert_eq!(result.unwrap_err(), "Symlinks are not supported");
             }
             #[cfg(windows)]
@@ -238,7 +274,11 @@ mod tests {
                 use std::os::windows::fs::symlink_file;
                 symlink_file(&outside_file, &link).unwrap();
                 let result = target(ws, "escape.md", true);
-                assert!(result.is_err(), "expected error for escaping symlink, got: {:?}", result);
+                assert!(
+                    result.is_err(),
+                    "expected error for escaping symlink, got: {:?}",
+                    result
+                );
                 assert_eq!(result.unwrap_err(), "Symlinks are not supported");
             }
             let _ = fs::remove_dir_all(&outside_dir);
@@ -258,7 +298,10 @@ mod tests {
         with_temp_workspace(|ws| {
             let result = target(ws, "/absolute/path.md", false);
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Path must be a non-empty workspace-relative path");
+            assert_eq!(
+                result.unwrap_err(),
+                "Path must be a non-empty workspace-relative path"
+            );
         });
     }
 
@@ -267,7 +310,10 @@ mod tests {
         with_temp_workspace(|ws| {
             let result = target(ws, "./relative.md", false);
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Path must be a non-empty workspace-relative path");
+            assert_eq!(
+                result.unwrap_err(),
+                "Path must be a non-empty workspace-relative path"
+            );
         });
     }
 
@@ -276,7 +322,148 @@ mod tests {
         with_temp_workspace(|ws| {
             let result = target(ws, "a/../../b.md", false);
             assert!(result.is_err());
-            assert_eq!(result.unwrap_err(), "Path must be a non-empty workspace-relative path");
+            assert_eq!(
+                result.unwrap_err(),
+                "Path must be a non-empty workspace-relative path"
+            );
+        });
+    }
+
+    #[test]
+    fn open_workspace_attaches_metadata_to_matching_entries() {
+        with_temp_workspace(|ws| {
+            fs::write(ws.join("note.md"), "# Note").unwrap();
+            fs::create_dir_all(ws.join("folder")).unwrap();
+            fs::write(ws.join("folder/inner.md"), "# Inner").unwrap();
+
+            let marnote_dir = ws.join(".marnote");
+            fs::create_dir_all(&marnote_dir).unwrap();
+            let json = r#"{
+                "entries": {
+                    "note.md": {
+                        "tags": ["work", "urgent"],
+                        "icon": "📝",
+                        "favorite": true,
+                        "createdMs": 1000,
+                        "updatedMs": 2000
+                    },
+                    "folder": {
+                        "tags": ["project"],
+                        "favorite": false
+                    }
+                }
+            }"#;
+            fs::write(marnote_dir.join("metadata.json"), json).unwrap();
+
+            let result = open_workspace(ws.to_string_lossy().into_owned()).unwrap();
+
+            assert_eq!(result.entries.len(), 2);
+
+            let note = result.entries.iter().find(|e| e.name == "note.md").unwrap();
+            assert!(note.metadata.is_some());
+            let meta = note.metadata.as_ref().unwrap();
+            assert_eq!(meta.tags.as_deref(), Some(&["work".to_string(), "urgent".to_string()][..]));
+            assert_eq!(meta.icon.as_deref(), Some("📝"));
+            assert_eq!(meta.favorite, Some(true));
+            assert_eq!(meta.created_ms, Some(1000));
+            assert_eq!(meta.updated_ms, Some(2000));
+
+            let folder = result.entries.iter().find(|e| e.name == "folder").unwrap();
+            assert!(folder.metadata.is_some());
+            let folder_meta = folder.metadata.as_ref().unwrap();
+            assert_eq!(folder_meta.tags.as_deref(), Some(&["project".to_string()][..]));
+            assert_eq!(folder_meta.favorite, Some(false));
+
+            let inner = &folder.children[0];
+            assert_eq!(inner.name, "inner.md");
+            assert!(inner.metadata.is_none());
+        });
+    }
+
+    #[test]
+    fn open_workspace_without_metadata_file_returns_tree_without_metadata() {
+        with_temp_workspace(|ws| {
+            fs::write(ws.join("note.md"), "# Note").unwrap();
+            fs::create_dir_all(ws.join("folder")).unwrap();
+            fs::write(ws.join("folder/inner.md"), "# Inner").unwrap();
+
+            let result = open_workspace(ws.to_string_lossy().into_owned()).unwrap();
+
+            assert_eq!(result.entries.len(), 2);
+            for entry in &result.entries {
+                assert!(entry.metadata.is_none(), "Entry {} should have no metadata", entry.name);
+                for child in &entry.children {
+                    assert!(child.metadata.is_none(), "Child {} should have no metadata", child.name);
+                }
+            }
+
+            let metadata_path = ws.join(".marnote").join("metadata.json");
+            assert!(!metadata_path.exists(), "Metadata file should not be created");
+        });
+    }
+
+    #[test]
+    fn open_workspace_does_not_modify_markdown_files() {
+        with_temp_workspace(|ws| {
+            let note_content = "# Original Note\n\nContent here.";
+            fs::write(ws.join("note.md"), note_content).unwrap();
+            fs::create_dir_all(ws.join("folder")).unwrap();
+            fs::write(ws.join("folder/inner.md"), "# Inner").unwrap();
+
+            let marnote_dir = ws.join(".marnote");
+            fs::create_dir_all(&marnote_dir).unwrap();
+            let json = r#"{"entries": {"note.md": {"tags": ["test"]}}}"#;
+            fs::write(marnote_dir.join("metadata.json"), json).unwrap();
+
+            let _ = open_workspace(ws.to_string_lossy().into_owned()).unwrap();
+
+            let note_content_after = fs::read_to_string(ws.join("note.md")).unwrap();
+            assert_eq!(note_content_after, note_content);
+
+            let inner_content_after = fs::read_to_string(ws.join("folder/inner.md")).unwrap();
+            assert_eq!(inner_content_after, "# Inner");
+        });
+    }
+
+    #[test]
+    fn list_workspace_tree_attaches_metadata() {
+        with_temp_workspace(|ws| {
+            fs::write(ws.join("note.md"), "# Note").unwrap();
+            fs::create_dir_all(ws.join("folder")).unwrap();
+
+            let marnote_dir = ws.join(".marnote");
+            fs::create_dir_all(&marnote_dir).unwrap();
+            let json = r#"{"entries": {"note.md": {"favorite": true}}}"#;
+            fs::write(marnote_dir.join("metadata.json"), json).unwrap();
+
+            let result = list_workspace_tree(ws.to_string_lossy().into_owned()).unwrap();
+
+            let note = result.entries.iter().find(|e| e.name == "note.md").unwrap();
+            assert!(note.metadata.is_some());
+            assert_eq!(note.metadata.as_ref().unwrap().favorite, Some(true));
+
+            let folder = result.entries.iter().find(|e| e.name == "folder").unwrap();
+            assert!(folder.metadata.is_none());
+        });
+    }
+
+    #[test]
+    fn default_workspace_attaches_metadata() {
+        with_temp_workspace(|ws| {
+            fs::write(ws.join("note.md"), "# Note").unwrap();
+
+            let marnote_dir = ws.join(".marnote");
+            fs::create_dir_all(&marnote_dir).unwrap();
+            let json = r#"{"entries": {"note.md": {"icon": "⭐"}}}"#;
+            fs::write(marnote_dir.join("metadata.json"), json).unwrap();
+
+            let metadata = crate::metadata::read_metadata(ws).unwrap();
+            let entries = crate::tree::collect(ws, ws).unwrap();
+            let merged = crate::metadata::merge_metadata(entries, &metadata);
+
+            let note = merged.iter().find(|e| e.name == "note.md").unwrap();
+            assert!(note.metadata.is_some());
+            assert_eq!(note.metadata.as_ref().unwrap().icon.as_deref(), Some("⭐"));
         });
     }
 }

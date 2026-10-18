@@ -133,4 +133,27 @@
 - All 130 tests pass; lint, typecheck, and build pass for affected packages.
 - Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
 
-(End of file - total 109 lines)
+## metadata-storage-and-tree (attempt 2)
+
+- Epic: "Implement the note and folder metadata feature"; stage `metadata-storage-and-tree`.
+- Attempt 1: test command returned exit code 101 (test failure reported), but lint/typecheck/build passed. Tester reported all criteria satisfied; Validator failed due to agent response format (missing JSON status), not implementation.
+- Attempt 2: all checks pass (`pnpm run test`, `lint`, `typecheck`, `build` exit 0). Tester and Validator both pass.
+- Implementation details:
+  - **Domain types** (`packages/core/src/workspace.ts:12-20`, `apps/desktop/src/shared/domain/workspace.ts:6-14`): `NoteMetadata` / `EntryMetadata` with optional `tags: string[]`, `icon: string`, `favorite: boolean`, `createdMs: number`, `updatedMs: number`. TypeScript `typecheck` passes.
+  - **Rust storage** (`apps/desktop/src-tauri/src/metadata.rs`): 
+    - `MetadataStore` with path `.marnote/metadata` (workspace-relative).
+    - `read_metadata(path)` → `Result<MetadataMap>` handles missing file (returns empty map), empty file, and malformed JSON (returns empty map with warning).
+    - `merge_metadata(tree, metadata)` attaches `EntryMetadata` to matching entries by path; entries without records get `metadata: None` (defaults applied at call site).
+    - Portable: keyed by workspace-relative paths, no absolute paths stored; rebuildable by reading the JSON file.
+  - **Workspace integration** (`apps/desktop/src-tauri/src/workspace.rs`):
+    - `open_workspace`, `default_workspace`, `list_workspace_tree` all call `read_metadata` then `merge_metadata`.
+    - Tree entries expose `metadata` field (Option<EntryMetadata>); UI can read tags, icon, favorite, timestamps.
+  - **Tree traversal** (`apps/desktop/src-tauri/src/tree.rs:23-25`): `collect_workspace_tree` skips `.marnote` directory so metadata storage never appears as user content.
+  - **Tests** (49 Rust tests in `metadata.rs` and `workspace.rs`):
+    - `metadata.rs`: `read_metadata_missing_file`, `read_metadata_empty_file`, `read_metadata_malformed_json`, `merge_metadata_applies_to_entries`, `merge_metadata_defaults_for_missing`.
+    - `workspace.rs`: `open_workspace_attaches_metadata_to_matching_entries`, `open_workspace_without_metadata_file`, `list_workspace_tree_includes_metadata`.
+  - **Dead-code warning**: `metadata.rs` methods `tags`, `icon`, `favorite`, `created_ms`, `updated_ms` are unused (warning only, not error); reserved for future Tauri command exposure to frontend.
+- Total test count now 143 (5 core + 89 desktop TS + 49 Rust).
+- No changes to `specs/`, Markdown content, or product behavior; metadata is additive and optional.
+
+(End of file - total 136 lines)

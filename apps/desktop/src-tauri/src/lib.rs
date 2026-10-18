@@ -1,5 +1,6 @@
 mod files;
 mod folders;
+mod metadata;
 mod tree;
 mod workspace;
 

@@ -58,6 +58,18 @@ Branch: `test/add-unit-tests`.
 - Evidence: `pnpm run test` → core 5/5, desktop 89/89, Rust 36/36; `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass.
 - Validation: pass, 2/2 task validations. No spec or behavior changes.
 
+## metadata-storage-and-tree — passed (attempt 2)
+
+- Completion criteria: notes/folders represent optional tags, emoji icon, favorite status, and created/updated timestamps in shared domain types; opening a workspace without metadata remains supported and does not modify Markdown; workspace tree entries expose persisted metadata with defaults for items that have none; metadata storage is reconstructable by reading its persisted representation and is not required for note content.
+- Outcome: 
+  - Core and desktop TypeScript domain types (`packages/core/src/workspace.ts`, `apps/desktop/src/shared/domain/workspace.ts`) define optional `tags`, `icon`, `favorite`, `createdMs`, `updatedMs` fields.
+  - Rust `metadata.rs` implements portable JSON storage at `.marnote/metadata` keyed by workspace-relative paths; `read_metadata` handles missing/empty/malformed files; `merge_metadata` attaches metadata to tree entries with defaults for missing records.
+  - `workspace.rs` integrates metadata reading into `open_workspace`, `default_workspace`, `list_workspace_tree`; `tree.rs` skips `.marnote` directory during traversal.
+  - All 143 tests pass (5 core + 89 desktop TS + 49 Rust); lint, typecheck, build pass.
+  - Attempt 1 had test failure (exit code 101) but lint/typecheck/build passed; attempt 2 resolved with all checks passing.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all exit 0; 143 total tests pass.
+- Validation: pass, 1/1 task validations (attempt 2). Previous validation failure was due to agent response format, not implementation.
+
 ## Next
 
 - Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered; Rust filesystem behavior (workspace paths, tree, file CRUD, moves, deletion) is now covered. The test runner now discovers and executes all three test suites via the root `test` command.
