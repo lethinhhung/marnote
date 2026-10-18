@@ -1,0 +1,14 @@
+{
+  "id": "20261018040915-be0eur",
+  "status": "failed",
+  "created_at": "2026-10-18T04:09:15.121Z",
+  "updated_at": "2026-10-18T04:10:31.662Z",
+  "repo": "/Users/macos/Projects/marnote",
+  "epic": "add all unit tests",
+  "epic_file": "(inline epic)",
+  "branch": "test/add-unit-tests",
+  "stages": [],
+  "blockers": [],
+  "history": [],
+  "error": "A read-only workflow agent changed the target worktree; its changes were reverted."
+}
