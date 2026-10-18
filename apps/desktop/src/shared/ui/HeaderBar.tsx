@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { FileText, Moon, Search, Sun } from "lucide-react";
-import { isTauri } from "@tauri-apps/api/core";
-import { getCurrentWindow } from "@tauri-apps/api/window";
-import type { Entry, WorkspaceTree } from "./workspaceTypes";
+import { startWindowDrag } from "../../platform/window";
+import type { Entry, WorkspaceTree } from "../domain/workspace";
 
 type Props = { tree: WorkspaceTree | null; path: string; theme: string; toggleTheme: () => void; onSelect: (entry: Entry) => void };
 function files(entries: Entry[]): Entry[] { return entries.flatMap(entry => entry.kind === "directory" ? files(entry.children || []) : entry.path.toLowerCase().endsWith(".md") ? [entry] : []); }
@@ -19,7 +18,7 @@ export function HeaderBar({ tree, path, theme, toggleTheme, onSelect }: Props) {
   const choose = (entry: Entry) => { onSelect(entry); setQuery(""); setFocused(false); input.current?.blur(); };
   const dragWindow = (event: PointerEvent<HTMLElement>) => {
     if (event.button !== 0 || (event.target as HTMLElement).closest(".global-search, button")) return;
-    if (isTauri()) void getCurrentWindow().startDragging().catch(() => undefined);
+    startWindowDrag();
   };
   const parts = path.split("/").filter(Boolean);
   return <header className={navigator.platform.includes("Mac") ? "topbar mac-titlebar" : "topbar"} onPointerDown={dragWindow}>

@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { WorkspaceTree } from "./workspaceTypes";
+import type { WorkspaceTree } from "../shared/domain/workspace";
 
 export type ReadResult = { path: string; content: string; modifiedMs: number };
 export const openWorkspace = (path: string) => invoke<WorkspaceTree>("open_workspace", { path });

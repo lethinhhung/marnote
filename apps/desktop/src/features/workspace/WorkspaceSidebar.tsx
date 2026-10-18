@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
-import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { isTauri } from "@tauri-apps/api/core";
+import { isDesktop, openWorkspaceFolder } from "../../platform/dialog";
 import { FileTree, type TreeEdit } from "./FileTree";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 
@@ -24,12 +23,12 @@ export function WorkspaceSidebar(props: Props) {
   const actionLabel = folderFocused ? "folder" : "note";
   const browse = async () => {
     setBrowseError("");
-    if (!isTauri()) {
+    if (!isDesktop()) {
       setBrowseError("Folder browsing works in the Marnote desktop app. Start it with pnpm --filter @marnote/desktop desktop:dev.");
       return;
     }
     try {
-      const path = await openDialog({ directory: true, multiple: false, defaultPath: tree?.path, title: "Open workspace folder" });
+      const path = await openWorkspaceFolder({ defaultPath: tree?.path, title: "Open workspace folder" });
       if (typeof path === "string") props.onOpen(path);
     } catch (error) {
       setBrowseError(`Could not open folder picker: ${String(error)}`);
