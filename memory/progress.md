@@ -1,7 +1,23 @@
 # Progress
 
-Epic: refactor desktop app to feature-based structure (per `specs/core.md`).
-Branch: `feat/feature-based-strata-improved`.
+Epic: add all unit tests.
+Branch: `test/add-unit-tests`.
+
+## desktop-test-foundation — passed (attempt 1)
+
+- Completion criteria: desktop declares its test runner dependency and runs tests without relying on root-level binary hoisting; Vitest config supports the browser APIs needed by planned desktop tests; the test command discovers colocated tests and remains usable with no matching tests.
+- Outcome: `apps/desktop/package.json` adds package-local `vitest ^2.1.8` and `jsdom ^25.0.1` devDependencies plus `"test": "vitest run --passWithNoTests"`; `apps/desktop/vite.config.ts` uses `vitest/config` with `environment: "jsdom"` and `setupFiles: ["./src/test/setup.ts"]`; new `apps/desktop/src/test/setup.ts` stubs `matchMedia` and `ResizeObserver` only when missing.
+- Evidence: `pnpm-lock.yaml` records both packages under `apps/desktop`; `apps/desktop/node_modules/.bin/vitest` and `node_modules/{vitest,jsdom}` resolve package-locally; `packages/core` retains its own `vitest` entry.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`.
+- Validation: pass, 2/2 task validations. No spec or behavior changes.
+
+## Next
+
+- Remaining epic work: add the actual desktop unit tests that use this foundation (colocated under `apps/desktop/src`).
+
+# Prior epic: refactor desktop app to feature-based structure
+
+(Complete; retained for reference.)
 
 ## app-and-shared-ui — passed (attempt 1)
 
@@ -37,8 +53,3 @@ Branch: `feat/feature-based-strata-improved`.
 - Outcome: canonical `Entry`/`WorkspaceTree` moved to `apps/desktop/src/shared/domain/workspace.ts`; `features/workspace/workspaceTypes.ts` re-exports them (plus `NoteData`); `platform/workspace.ts` and `shared/ui/HeaderBar.tsx` import from `shared/domain`. No `features/` imports remain under `platform/` or `shared/`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 - Validation: pass, 3/3 task validations. Type-relocation/import-path only; no spec or behavior changes.
-
-## Next
-
-- Remaining epic work: none outstanding for the active stages; feature organization (app, features, shared, platform) is complete and boundaries are clean.
-- Follow-up candidate: remove `features/workspace/workspaceTypes.ts` re-export shim and unused `NoteData` if no future consumer needs them.

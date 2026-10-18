@@ -1,0 +1,179 @@
+{
+  "id": "20261018041057-4agtds",
+  "status": "running",
+  "created_at": "2026-10-18T04:10:57.677Z",
+  "updated_at": "2026-10-18T04:22:21.492Z",
+  "repo": "/Users/macos/Projects/marnote",
+  "epic": "add all unit tests",
+  "epic_file": "(inline epic)",
+  "branch": "test/add-unit-tests",
+  "stages": [
+    {
+      "id": "desktop-test-foundation",
+      "title": "Set up desktop unit testing",
+      "objective": "Make desktop TypeScript tests a supported, package-local workflow with the environment needed for browser-dependent modules.",
+      "dependencies": [],
+      "completion_criteria": [
+        "The desktop package declares its test runner dependency and can run tests without relying on root-level binary hoisting.",
+        "The Vitest configuration supports the browser APIs needed by planned desktop tests.",
+        "The desktop test command discovers colocated tests and remains usable with no matching tests."
+      ],
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "Done. Added desktop-local test dependencies and synced the workspace lockfile.\n\n**Changed files**\n- `apps/desktop/package.json:39-41` — added `\"jsdom\": \"^25.0.1\"` and `\"vitest\": \"^2.1.8\"` to `devDependencies`.\n- `pnpm-lock.yaml` — regenerated via `pnpm install --lockfile-only`, adding the `apps/desktop` importer entries plus jsdom's transitive packages.\n\n**Decision**: selected `jsdom` as the DOM environment (most conventional Vitest environment; planned tests mock `matchMedia`/`ResizeObserver` per the later state-test criteria, so no native support is required).\n\n**Verification**\n- `pnpm install --frozen-lockfile` → \"Lockfile is up to date\" (lockfile consistent with manifests).\n- `apps/desktop/node_modules/.bin/vitest` and `apps/desktop/node_modules/{vitest,jsdom}` now resolved package-locally (no root hoisting).\n- `pnpm --filter @marnote/desktop test` → runs `vitest run --passWithNoTests`, discovers colocated tests, exits 0 with no tests.\n\nNote: the lockfile now records root/core `vitest` as `2.1.9(jsdom@25.0.1)` because pnpm's `autoInstallPeers` satisfies vitest's optional jsdom peer workspace-wide; no other manifest changed. No files under `specs/` touched. No blockers.",
+            "Implemented Vitest DOM configuration in the existing desktop Vite config.\n\n**Changed files**\n- `apps/desktop/vite.config.ts` — switched to `defineConfig` from `vitest/config`, added `test.environment: \"jsdom\"` and `test.setupFiles: [\"./src/test/setup.ts\"]`, preserving `plugins: [react()]` and default colocated discovery / `--passWithNoTests`.\n- `apps/desktop/src/test/setup.ts` (new) — conditionally installs a `matchMedia` stub and a `ResizeObserver` stub only when the DOM environment omits them (jsdom supplies neither).\n\n**Decision**: vitest 2.1.9 resolves its own `vite@5` while desktop uses `vite@6`, so `vite`'s `UserConfig` augmentation (`/// <reference types=\"vitest/config\" />`) applies to the v5 copy and the `test` key is unknown. Using `vitest/config`'s `defineConfig` is the documented path and correctly types `test`; the one cast `react() as unknown as Plugin` bridges the v6/v5 plugin type mismatch without affecting runtime (`@vitejs/plugin-react` supports vite 5).\n\n**Verification**\n- `pnpm --filter @marnote/desktop typecheck` → clean.\n- `pnpm --filter @marnote/desktop lint` → clean.\n- `pnpm --filter @marnote/desktop test` → jsdom run, \"No test files found, exiting with code 0\".\n- Temporary colocated test (since removed) confirmed `document` present, `window.matchMedia(...).matches === false`, and `new window.ResizeObserver(...)` constructible — environment `jsdom`, setup loaded.\n\nNo files under `specs/` touched. No blockers."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 9ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  11:20:22\npackages/core test:    Duration  211ms (transform 36ms, setup 0ms, collect 33ms, tests 9ms, environment 0ms, prepare 39ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2074 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.06 kB\napps/desktop build: dist/assets/index-DuKaMOR3.js   894.03 kB │ gzip: 282.34 kB\napps/desktop build: ✓ built in 1.75s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Coverage reviewed for stage desktop-test-foundation. Verified against current repository state: apps/desktop/package.json declares package-local devDependencies jsdom ^25.0.1 and vitest ^2.1.8, with test script `vitest run --passWithNoTests`; pnpm-lock.yaml importers record both under apps/desktop and no other manifest changed; apps/desktop/node_modules/.bin/vitest plus node_modules/{vitest,jsdom} resolve package-locally so the workflow does not depend on root-level binary hoisting; packages/core retains its own vitest entry. apps/desktop/vite.config.ts uses defineConfig from vitest/config with test.environment 'jsdom' and setupFiles ['./src/test/setup.ts'], preserving default colocated discovery and no-tests success. apps/desktop/src/test/setup.ts supplies matchMedia and ResizeObserver only when the DOM environment lacks them. Provided automated checks all passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Completion criteria satisfied; no regressions or spec edits detected. No blockers."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "2/2 task validations passed."
+          },
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "editor-logic-tests",
+      "title": "Test editor logic",
+      "objective": "Add unit coverage for editor helpers, including slash matching, block drag-and-drop calculations, and table resize behavior.",
+      "dependencies": [
+        "desktop-test-foundation"
+      ],
+      "completion_criteria": [
+        "Tests cover matching slash choices, block drop target and move behavior, and table width calculations and cleanup.",
+        "Tests use focused fixtures or mocks and do not require full editor UI rendering.",
+        "All added test files comply with the repository’s code-file size limit."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "workspace-logic-tests",
+      "title": "Test workspace behavior",
+      "objective": "Add unit coverage for workspace tree visibility, recent-workspace persistence, path updates, and save/conflict behavior.",
+      "dependencies": [
+        "desktop-test-foundation"
+      ],
+      "completion_criteria": [
+        "Tests cover note visibility and relevant path construction or rebasing behavior.",
+        "Tests cover recent-workspace persistence and its item limit.",
+        "Tests cover save and conflict outcomes using mocked platform adapters.",
+        "All added test files comply with the repository’s code-file size limit."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "desktop-state-tests",
+      "title": "Test desktop state and utility logic",
+      "objective": "Cover independently testable application, theme, search, and note-footer logic without testing component wiring.",
+      "dependencies": [
+        "desktop-test-foundation"
+      ],
+      "completion_criteria": [
+        "Tests cover autosave sequencing and debounce behavior, theme initialization and toggle behavior, search filtering and result limits, and word, character, and reading-time calculations.",
+        "Browser globals and timers are controlled by focused test fixtures or mocks.",
+        "All added test files comply with the repository’s code-file size limit."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "rust-filesystem-tests",
+      "title": "Test Rust filesystem behavior",
+      "objective": "Add Rust unit tests for workspace path safety, tree collection, file updates, moves, and deletion behavior using isolated filesystem fixtures.",
+      "dependencies": [],
+      "completion_criteria": [
+        "Tests cover workspace path validation, traversal and symlink protections, and tree filtering and ordering.",
+        "Tests cover file conflict detection, atomic update behavior, move guards, and deletion or trash naming behavior.",
+        "Rust tests run with cargo test from the Tauri crate without relying on user workspace data."
+      ],
+      "status": "pending",
+      "attempts": []
+    },
+    {
+      "id": "unit-test-integration",
+      "title": "Integrate unit test checks",
+      "objective": "Ensure the completed unit test suites are discoverable and run through the repository’s existing check workflow.",
+      "dependencies": [
+        "editor-logic-tests",
+        "workspace-logic-tests",
+        "desktop-state-tests",
+        "rust-filesystem-tests"
+      ],
+      "completion_criteria": [
+        "The repository test workflow runs all core, desktop, and Rust unit tests.",
+        "The full test suite passes, including existing core tests.",
+        "Lint, typecheck, and build checks pass for the changed packages."
+      ],
+      "status": "pending",
+      "attempts": []
+    }
+  ],
+  "blockers": [],
+  "history": [
+    {
+      "type": "plan",
+      "summary": "Add unit tests for the repository’s independently testable logic, extending the existing Vitest setup for desktop code and adding Rust unit tests for filesystem behavior. Keep UI wiring and thin adapters out of scope unless implementation reveals testable logic that must be extracted.",
+      "stages": 6
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "desktop-test-foundation",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "desktop-test-foundation",
+      "result": "I'll explore the existing memory structure first, then record the stage knowledge.\nI'll verify the stage artifacts before recording.\nNow I'll record the stage knowledge in memory.\nNow update progress.md to reflect the new active epic while preserving prior-epic history.\nMemory updated. Handoff:\n\n**Entries updated**\n- `memory/progress.md` — new active epic \"add all unit tests\" (`test/add-unit-tests`); added `desktop-test-foundation — passed (attempt 1)` with criteria, outcome, evidence, checks, and validation; reset \"Next\" to the remaining work. Prior epic's per-stage history retained under \"Prior epic\".\n- `memory/decisions.md` — added \"Desktop unit testing\" decision: package-local `vitest`+`jsdom` devDeps, no root-hoisting reliance, `vitest/config` jsdom environment + setup file, and conditional `matchMedia`/`ResizeObserver` stubs.\n- `memory/notes.md` — added `desktop-test-foundation (attempt 1)` evidence (manifest/lockfile changes, config details, conditional stubs, checks) and a follow-up noting no desktop test files exist yet.\n\n**Knowledge captured**: desktop test tooling is package-local and hoisting-independent; core keeps its own vitest; colocated discovery with `--passWithNoTests`; jsdom setup provides only-missing browser API stubs. No product/spec files changed."
+    }
+  ]
+}

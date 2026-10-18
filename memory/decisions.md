@@ -44,6 +44,15 @@
 - `apps/desktop/index.html` references `/src/app/main.tsx`.
 - `main.tsx` keeps both stylesheet imports (`shared/theme/styles.css`, `shared/theme/theme-dark.css`) and the `React.StrictMode` root render.
 
+## Desktop unit testing
+
+- Source: epic "add all unit tests" — make desktop TypeScript tests a supported, package-local workflow with the environment needed for browser-dependent modules.
+- `apps/desktop` owns its test tooling: `vitest ^2.1.8` and `jsdom ^25.0.1` are declared as package-local `devDependencies`, with test script `vitest run --passWithNoTests`.
+- Tests must not rely on root-level binary hoisting; `pnpm-lock.yaml` records the desktop devDependencies under the `apps/desktop` importer, and `apps/desktop/node_modules/.bin/vitest` plus `node_modules/{vitest,jsdom}` resolve package-locally.
+- `packages/core` keeps its own independent `vitest ^2.1.8` devDependency and `test` script; the two packages are not consolidated.
+- `apps/desktop/vite.config.ts` imports `defineConfig` from `vitest/config` (not `vite`) and configures `test.environment: "jsdom"` with `test.setupFiles: ["./src/test/setup.ts"]`; default colocated test discovery is retained, so `--passWithNoTests` keeps the command usable with no matches.
+- `apps/desktop/src/test/setup.ts` is the shared setup file; it stubs `window.matchMedia` and `window.ResizeObserver` only when the DOM environment lacks them, leaving jsdom's native implementations untouched when present.
+
 ## Shared domain types
 
 - Source: `specs/core.md` — organize desktop UI by feature, keeping app composition, shared UI, and platform adapters separate; keep domain logic platform-independent.

@@ -55,8 +55,20 @@
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`; focused `pnpm --filter @marnote/desktop typecheck`.
 - `docs/temps/20261018031021-tl9be7.json` (modified in worktree) is coordinator run metadata, unrelated to the implementation.
 
+## desktop-test-foundation (attempt 1)
+
+- Epic: "add all unit tests"; branch `test/add-unit-tests`. Change adds desktop test tooling only; no product, spec, or behavior changes.
+- `apps/desktop/package.json`: added devDependencies `jsdom ^25.0.1` and `vitest ^2.1.8`; added script `"test": "vitest run --passWithNoTests"`. Existing `lint` (`eslint src vite.config.ts`) and `typecheck` (`tsc --noEmit`) unchanged.
+- `pnpm-lock.yaml`: both new packages recorded under the `apps/desktop` importer; no other manifest changed. Verified package-local resolution via `apps/desktop/node_modules/.bin/vitest` and `node_modules/{vitest,jsdom}`, so tests do not depend on root-level binary hoisting.
+- `apps/desktop/vite.config.ts` (10 lines): switched `defineConfig` import to `vitest/config` and added a `test` block with `environment: "jsdom"` and `setupFiles: ["./src/test/setup.ts"]`; react plugin retained. Default colocated discovery and no-tests success preserved.
+- `apps/desktop/src/test/setup.ts` (new): guards on `typeof window !== "undefined"`; installs a `matchMedia` stub and `ResizeObserverStub` class only when `window.matchMedia` / `window.ResizeObserver` are absent.
+- No test files added yet in this stage; `packages/core/src/index.test.ts` and the core `vitest` entry remain the only pre-existing tests.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
+- `docs/temps/20261018041057-4agtds.json` (untracked) is coordinator run metadata, unrelated to the implementation.
+
 ## Unresolved / follow-ups
 
 - Resolved in desktop-integration: `platform/workspace.ts` no longer imports workspace-feature types, and `shared/ui/HeaderBar` no longer imports from `features/` (both now use `shared/domain/workspace`).
 - Watch item: `features/workspace/workspaceTypes.ts` still re-exports the shared domain types and keeps the unused `NoteData`; harmless but could be removed if no future consumer needs `NoteData`.
 - No open findings from any stage.
+- Active epic "add all unit tests": only the desktop testing foundation is in place; no desktop test files exist yet, so later stages still need to add colocated tests that exercise the jsdom environment and setup stubs.
