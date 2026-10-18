@@ -9,3 +9,14 @@ Branch: `feat/feature-based-strata-improved`.
 - Outcome: composition moved to `apps/desktop/src/app`; reusable chrome/theme/helpers moved to `apps/desktop/src/shared`; `src/ui/` removed; `index.html` entry updated.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`; independent `tsc --noEmit`, `tsc -b`, and `vite build`.
 - Validation: pass, no findings. No spec or behavior changes.
+
+## workspace-feature — passed (attempt 1)
+
+- Completion criteria: workspace UI/state/types organized as a feature with filesystem calls behind an adapter; selection, tree navigation, and file operations retain behavior; desktop typecheck and build pass.
+- Outcome: `FileTree`, `TreeEditor`, `WorkspaceSidebar`, `useWorkspace`, and `workspaceTypes` grouped under `apps/desktop/src/features/workspace`; `shared/workspaceApi.ts` remains the filesystem adapter and imports feature types.
+- Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` (re-verified `typecheck` and `lint` clean).
+- Validation: pass, 5/5 task validations. Import-path/relocation only; no spec or behavior changes.
+
+## Next
+
+- Remaining epic work: move `shared/workspaceApi.ts` to a platform-adapters seam (deferred) and feature-organize any further domains.
