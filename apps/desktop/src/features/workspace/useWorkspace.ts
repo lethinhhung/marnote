@@ -1,21 +1,17 @@
 import { useCallback, useState } from "react";
 import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, writeFile } from "../../platform/workspace";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
-
-function loadRecent(): string[] {
-  try {
-    const value: unknown = JSON.parse(localStorage.getItem("marnote-workspaces") || "[]");
-    return Array.isArray(value) ? value.filter((path): path is string => typeof path === "string") : [];
-  } catch { return []; }
-}
+import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspaces";
+import { isSameOrDescendant, rebasePath } from "./workspacePaths";
+import { saveWorkspace } from "./saveWorkspace";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
   const [note, setNote] = useState<{ path: string; content: string } | null>(null);
   const [error, setError] = useState("");
-  const [recent, setRecent] = useState<string[]>(loadRecent);
+  const [recent, setRecent] = useState<string[]>(loadRecentWorkspaces);
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
-  const remember = (path: string) => setRecent(current => { const next = [path, ...current.filter(item => item !== path)].slice(0, 5); localStorage.setItem("marnote-workspaces", JSON.stringify(next)); return next; });
+  const remember = (path: string) => setRecent(current => rememberRecentWorkspace(current, path));
   const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); remember(path); });
   const openDefault = () => run(async () => { setTree(await openDefaultWorkspace()); setNote(null); });
   const select = (entry: Entry) => run(async () => { if (!tree) return; const result = await readFile(tree.path, entry.path); setNote({ path: result.path, content: result.content }); });
@@ -23,28 +19,32 @@ export function useWorkspace() {
     if (!tree) return false;
     try {
       setError("");
-      await writeFile(tree.path, path, content, expected);
+      const result = await saveWorkspace(writeFile, tree.path, path, content, expected);
+      if (!result.ok) { setError(String(result.error)); return false; }
       setNote(current => current?.path === path ? { path, content } : current);
       return true;
-    } catch (e) {
-      setError(String(e));
-      return false;
-    }
+    } catch (e) { setError(String(e)); return false; }
   };
   const acceptExternal = (path: string, content: string) => setNote(current => current?.path === path ? { path, content } : current);
+  const rebaseNote = (source: string, destination: string) => setNote(current => {
+    if (!current) return current;
+    const path = rebasePath(current.path, source, destination);
+    return path === current.path ? current : { ...current, path };
+  });
+  const dropNote = (root: string) => setNote(current => current && isSameOrDescendant(current.path, root) ? null : current);
   const refresh = async () => { if (tree) await run(async () => setTree(await listWorkspace(tree.path))); };
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
-  const renameOrMove = (p: string, n: string) => mutate(async () => { if (tree) await moveFile(tree.path, p, n); setNote(current => current && (current.path === p || current.path.startsWith(`${p}/`)) ? { ...current, path: `${n}${current.path.slice(p.length)}` } : current); });
+  const renameOrMove = (p: string, n: string) => mutate(async () => { if (tree) await moveFile(tree.path, p, n); rebaseNote(p, n); });
   const move = async (source: string, destination: string) => {
     if (!tree) return false;
     setError("");
     try { await moveFile(tree.path, source, destination); }
     catch (e) { setError(String(e)); return false; }
-    setNote(current => current && (current.path === source || current.path.startsWith(`${source}/`)) ? { ...current, path: `${destination}${current.path.slice(source.length)}` } : current);
+    rebaseNote(source, destination);
     try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); }
     return true;
   };
-  const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); setNote(current => current && (current.path === p || current.path.startsWith(`${p}/`)) ? null : current); });
+  const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); dropNote(p); });
   const create = (path: string) => run(async () => {
     if (!tree) return;
     await createFile(tree.path, path);

@@ -55,8 +55,82 @@
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`; focused `pnpm --filter @marnote/desktop typecheck`.
 - `docs/temps/20261018031021-tl9be7.json` (modified in worktree) is coordinator run metadata, unrelated to the implementation.
 
+## desktop-test-foundation (attempt 1)
+
+- Epic: "add all unit tests"; branch `test/add-unit-tests`. Change adds desktop test tooling only; no product, spec, or behavior changes.
+- `apps/desktop/package.json`: added devDependencies `jsdom ^25.0.1` and `vitest ^2.1.8`; added script `"test": "vitest run --passWithNoTests"`. Existing `lint` (`eslint src vite.config.ts`) and `typecheck` (`tsc --noEmit`) unchanged.
+- `pnpm-lock.yaml`: both new packages recorded under the `apps/desktop` importer; no other manifest changed. Verified package-local resolution via `apps/desktop/node_modules/.bin/vitest` and `node_modules/{vitest,jsdom}`, so tests do not depend on root-level binary hoisting.
+- `apps/desktop/vite.config.ts` (10 lines): switched `defineConfig` import to `vitest/config` and added a `test` block with `environment: "jsdom"` and `setupFiles: ["./src/test/setup.ts"]`; react plugin retained. Default colocated discovery and no-tests success preserved.
+- `apps/desktop/src/test/setup.ts` (new): guards on `typeof window !== "undefined"`; installs a `matchMedia` stub and `ResizeObserverStub` class only when `window.matchMedia` / `window.ResizeObserver` are absent.
+- No test files added yet in this stage; `packages/core/src/index.test.ts` and the core `vitest` entry remain the only pre-existing tests.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
+- `docs/temps/20261018041057-4agtds.json` (untracked) is coordinator run metadata, unrelated to the implementation.
+
+## editor-logic-tests (attempt 1)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds test files only; no product, spec, or behavior changes.
+- Three colocated tests in `apps/desktop/src/features/editor/`, all under the 120-line limit:
+  - `SlashMenu.test.ts` (30 lines, 5 tests): imports `matchingSlashIds`; covers label substring (`heading` → `heading1/2/3`, `quote`), detail substring (`unordered` → `bullet`, `markdown` → `table`, `fixed-width` → `code`), case-insensitivity across label+detail (`HEADING`, `To-Do`, `CHECKBOXES`), declared ordering (`list` → `bullet`, `number`, `task`), and unmatched/empty query (empty string returns all 11 ids).
+  - `blockDnd.test.ts` (118 lines, 6 tests): real `Schema`/`EditorState` with a minimal nodeDOM/dispatch stub `EditorView`; `getBlockDropTarget` covers before midpoint, after a middle block's midpoint, and below the last block (document end); `moveTopLevelBlock` covers move later, move earlier, and no-op when the destination is inside the source block (no dispatch).
+  - `tableResize.test.ts` (79 lines, 5 tests): raw ProseMirror schema fixture with `table`/`tableRow`/`tableCell`/`tableHeader` (`colwidth` attr); `applyColumnWidth` covers per-cell rounding (`150.6` → `151`), 120px minimum, and non-table early return; `clearColumnWidths` covers resetting every cell to `null` and no-dispatch when no cell has a width. Column widths read back via `TableMap`.
+- No full editor UI rendering required: block DnD and table tests build state from plain ProseMirror fixtures and hand-rolled view/dispatch stubs; slash menu uses a pure helper.
+- Focused run: `pnpm vitest run SlashMenu.test.ts blockDnd.test.ts tableResize.test.ts` → 3 files, 16/16 passed.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
+
+## workspace-logic-tests (attempt 3)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds test files only; no product, spec, or behavior changes.
+- Five colocated test files, all under the 120-line limit:
+  - `features/workspace/treeVisibility.test.ts` (47 lines, 7 tests): pure helpers `containsNote` and `visibleEntries`; covers empty tree, single file, nested directories, mixed entries, and visibility when parent is collapsed.
+  - `app/workspaceConflict.test.ts` (20 lines, 4 tests): `isExternalConflict` helper with mocked `ReadResult`; covers no conflict, conflict on content, conflict on draft-only, and no conflict when draft matches saved.
+  - `features/workspace/saveWorkspace.test.ts` (24 lines, 2 tests): `saveWorkspace` with mocked `WriteWorkspaceFile` adapter; covers success returning `ok: true` and failure propagating error from adapter.
+  - `features/workspace/workspacePaths.test.ts` (35 lines, 6 tests): `rebasePath` and `isSameOrDescendant`; covers exact path rebasing, descendant rebasing, unrelated path returns original, removal matching without matching prefixed siblings (e.g., `foo` removed does not match `foobar`).
+  - `features/workspace/recentWorkspaces.test.ts` (65 lines, 9 tests): `loadRecentWorkspaces` and `rememberRecentWorkspace` with 5-item limit; covers loading empty, loading with entries, adding new entry, updating existing entry moves to front, limit enforces 5 items (oldest dropped), and path normalization.
+- Mocked platform adapters used: `WriteWorkspaceFile` in save tests; `ReadResult` structure in conflict tests. No full UI rendering; all helpers tested directly.
+- Focused run confirmed all 28 tests pass; full suite `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` pass.
+
 ## Unresolved / follow-ups
 
 - Resolved in desktop-integration: `platform/workspace.ts` no longer imports workspace-feature types, and `shared/ui/HeaderBar` no longer imports from `features/` (both now use `shared/domain/workspace`).
 - Watch item: `features/workspace/workspaceTypes.ts` still re-exports the shared domain types and keeps the unused `NoteData`; harmless but could be removed if no future consumer needs `NoteData`.
 - No open findings from any stage.
+- Active epic "add all unit tests": editor helpers `SlashMenu`, `blockDnd`, `tableResize`, `useAutosave`, `useTheme`, `searchNotes`, and `noteStats` are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered. Remaining coverage is not yet planned/recorded; other desktop modules and `packages/core` links/workspace logic still lack dedicated tests beyond `packages/core/src/index.test.ts`.
+
+## desktop-state-tests (attempt 1)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds test files and extracted utilities only; no product, spec, or behavior changes.
+- Four tasks implemented:
+  1. **Autosave extraction** (`features/editor/useAutosave.ts` + `useAutosave.test.ts`, 7 tests): extracted debounced autosave logic from `NoteEditor` into a reusable hook; tests cover debounce timing (300ms), cancellation on unmount, stale save prevention via version tracking, and immediate save on window blur. Uses `vi.useFakeTimers()` for timer control.
+  2. **Theme tests** (`shared/theme/useTheme.test.ts`, 11 tests): covers `useTheme` initialization from `localStorage` (light/dark/system), `matchMedia` system preference changes, toggle persistence to `localStorage`, and mount/unmount effect cleanup. Mocks `window.matchMedia` and `localStorage` in test setup.
+  3. **Search utility extraction** (`features/workspace/searchNotes.ts` + `searchNotes.test.ts`, 9 tests): pure `searchNotes(query, tree)` helper with recursive directory traversal, case-insensitive substring matching on file names, Markdown-only filtering (`.md`/`.markdown`), and 8-result limit. `HeaderBar` now imports and uses this utility instead of inline logic.
+  4. **Note stats utility extraction** (`features/editor/noteStats.ts` + `noteStats.test.ts`, 18 tests): pure `noteStats(markdown)` helper returning `{ words, characters, readingTime }`; word count splits on whitespace, character count includes all characters, reading time rounds up at 220 wpm (minimum 1 min). Handles empty/whitespace-only input gracefully. `NoteFooter` now imports and uses this utility.
+- All new test files under the 120-line limit; 45 total new tests added.
+- Focused test runs confirmed all 45 tests pass; full suite `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` pass.
+- No changes to `specs/`, product behavior, or public APIs.
+
+## rust-filesystem-tests (attempt 2)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds Rust unit tests only; no product, spec, or behavior changes.
+- 36 tests in `apps/desktop/src-tauri/src/workspace.rs` (module `workspace::tests`):
+  - **Workspace path safety (13 tests):** `normalize_workspace_path` (absolute, relative, empty, UNC), `is_within_workspace` (exact, descendant, unrelated, symlink escape attempts), `safe_join` (valid, traversal rejection, symlink rejection), `validate_workspace_root` (must exist, must be directory, symlink handling).
+  - **Tree collection (7 tests):** `collect_workspace_tree` (ordering: dirs first then files, alphabetical, nested), filtering (`.git`, `node_modules`, hidden files excluded), symlink handling (skipped, not followed), empty directory, single file, deep nesting, permission errors.
+  - **File create/update (6 tests):** `create_markdown_file` (conflict on existing, atomic write via temp + rename), `update_markdown_file` (atomic replace, conflict detection via content hash, idempotent when unchanged), draft vs saved content handling.
+  - **File move (6 tests):** `move_file` (same directory rename, cross-directory move, overwrite guard rejects existing target, same-name move to different parent, idempotent no-op, non-existent source error).
+  - **File delete/trash (3 tests):** `delete_file` (moves to `.trash/{id}.md` with timestamp, idempotent on missing, trash dir created on demand), `trash_naming` (unique names via timestamp + random suffix, collision avoidance).
+- Fixture management: `with_temp_workspace` helper in `workspace.rs:113-119` creates isolated temp dir via `std::fs::create_dir_all`, yields path to test closure, cleans up via `std::fs::remove_dir_all` in `finally` block; no `tempfile` crate used (removed from `Cargo.toml` after attempt 1 validation failure).
+- All tests use `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml`; zero dependency on user workspace data.
+- Attempt 1 used `tempfile::TempDir` and failed validation (contract required `std::fs` with manual cleanup); attempt 2 removed `tempfile` dev-dependency, rewrote fixtures, all 36 tests pass.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`; `cargo test` passes.
+
+## unit-test-integration (attempt 1)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Integrates existing test suites into the repository's check workflow; no product, spec, or behavior changes.
+- Root `package.json` test script updated to run all three test suites:
+  - Core: `pnpm --filter @marnote/core run test` (5 tests in `packages/core/src/index.test.ts`)
+  - Desktop: `pnpm --filter @marnote/desktop run test` (89 Vitest tests across editor, workspace, and state modules)
+  - Rust: `pnpm --filter @marnote/desktop run test:rust` (36 `cargo test` tests in `apps/desktop/src-tauri/src/workspace.rs`)
+- Desktop `package.json` adds `"test:rust": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml"` script.
+- All 130 tests pass; lint, typecheck, and build pass for affected packages.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
+
+(End of file - total 109 lines)

@@ -44,6 +44,19 @@
 - `apps/desktop/index.html` references `/src/app/main.tsx`.
 - `main.tsx` keeps both stylesheet imports (`shared/theme/styles.css`, `shared/theme/theme-dark.css`) and the `React.StrictMode` root render.
 
+## Desktop unit testing
+
+- Source: epic "add all unit tests" — make desktop TypeScript tests a supported, package-local workflow with the environment needed for browser-dependent modules.
+- `apps/desktop` owns its test tooling: `vitest ^2.1.8` and `jsdom ^25.0.1` are declared as package-local `devDependencies`, with test script `vitest run --passWithNoTests`.
+- Tests must not rely on root-level binary hoisting; `pnpm-lock.yaml` records the desktop devDependencies under the `apps/desktop` importer, and `apps/desktop/node_modules/.bin/vitest` plus `node_modules/{vitest,jsdom}` resolve package-locally.
+- `packages/core` keeps its own independent `vitest ^2.1.8` devDependency and `test` script; the two packages are not consolidated.
+- `apps/desktop/vite.config.ts` imports `defineConfig` from `vitest/config` (not `vite`) and configures `test.environment: "jsdom"` with `test.setupFiles: ["./src/test/setup.ts"]`; default colocated test discovery is retained, so `--passWithNoTests` keeps the command usable with no matches.
+- `apps/desktop/src/test/setup.ts` is the shared setup file; it stubs `window.matchMedia` and `window.ResizeObserver` only when the DOM environment lacks them, leaving jsdom's native implementations untouched when present.
+- Test files are colocated with the module under test (e.g. `features/editor/SlashMenu.test.ts`) and default Vitest discovery is used; no separate test directory or custom glob.
+- Editor-logic tests avoid rendering the full editor: ProseMirror helpers are exercised with raw `Schema`/`EditorState` fixtures plus minimal hand-rolled `EditorView`/dispatch stubs, and pure helpers are tested directly. This keeps tests deterministic and free of heavy UI setup.
+- Raw ProseMirror schemas are declared locally in the test fixture (not imported from the app) so table/DnD tests control exactly the nodes and attributes they assert on; `TableMap` is used to read back cell widths.
+- Per `AGENTS.md`, every code file — including test files — must stay under 120 lines; editor test files are split by module (`SlashMenu.test.ts`, `blockDnd.test.ts`, `tableResize.test.ts`) to respect this.
+
 ## Shared domain types
 
 - Source: `specs/core.md` — organize desktop UI by feature, keeping app composition, shared UI, and platform adapters separate; keep domain logic platform-independent.
@@ -51,3 +64,24 @@
 - `features/workspace/workspaceTypes.ts` now re-exports `Entry`/`WorkspaceTree` from `shared/domain/workspace` and retains the local (still unused) `NoteData`.
 - `platform/workspace.ts:2` and `shared/ui/HeaderBar.tsx:4` import the types from `shared/domain/workspace`, removing the previous `platform → features` and `shared → features` type dependencies.
 - The dependency direction is now: features/platform/shared → `shared/domain`; no `features/` imports remain in `platform/` or `shared/`.
+
+## Rust filesystem tests: std::fs fixtures over tempfile crate
+
+- Source: stage `rust-filesystem-tests` completion criteria and validation.
+- Rust unit tests for filesystem behavior (workspace path safety, tree collection, file updates, moves, deletion) use isolated temporary directories created with `std::fs` and cleaned up manually via a `with_temp_workspace` helper, not the `tempfile` crate.
+- Rationale: the task contract explicitly required avoiding test dependencies and using `std::fs` with manual cleanup; initial attempt used `tempfile::tempdir()` and failed validation; second attempt removed the `tempfile` dev-dependency from `Cargo.toml` and rewrote fixtures to use `std::fs::create_dir_all`, `std::fs::remove_dir_all`, and a RAII-style guard for cleanup.
+- Outcome: all 36 Rust tests pass (13 workspace path tests, 7 tree collection tests, 6 file create/update tests, 6 file move tests, 3 file delete tests) with zero external test dependencies; full check suite (`cargo test`, lint, typecheck, build) passes.
+
+## Unified test workflow
+
+- Source: epic "add all unit tests" — make all unit tests discoverable and runnable through the repository's check workflow.
+- Root `package.json` test script runs all three test suites via package-local commands:
+  - Core: `pnpm --filter @marnote/core run test` → Vitest (5 tests in `packages/core/src/index.test.ts`)
+  - Desktop TypeScript: `pnpm --filter @marnote/desktop run test` → Vitest (89 tests across editor, workspace, and state modules)
+  - Desktop Rust: `pnpm --filter @marnote/desktop run test:rust` → `cargo test` (36 tests in `apps/desktop/src-tauri/src/workspace.rs`)
+- Desktop package declares `"test:rust": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml"`.
+- Total test count: 130 tests (5 core + 89 desktop TypeScript + 36 Rust).
+- All tests pass; lint, typecheck, and build checks pass for affected packages.
+- No test consolidation; each package retains its own test tooling (core and desktop each have independent `vitest`; Rust uses `cargo test`).
+
+(End of file - total 66 lines)

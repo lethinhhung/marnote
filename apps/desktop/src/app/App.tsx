@@ -7,6 +7,8 @@ import { readFile } from "../platform/workspace";
 import { HeaderBar } from "../shared/ui/HeaderBar";
 import { NoteFooter } from "../features/editor/NoteFooter";
 import { useWideContent } from "../features/editor/useWideContent";
+import { isExternalConflict } from "./workspaceConflict";
+import { useAutosave } from "./useAutosave";
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
@@ -15,28 +17,20 @@ export function App() {
   useEffect(() => { void workspace.openDefault(); }, []);
   const [source, setSource] = useState(false);
   const [draft, setDraft] = useState("");
-  const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">("saved");
-  const saveSequence = useRef(0);
   const [external, setExternal] = useState<string | null>(null);
   const titleInput = useRef<HTMLInputElement>(null);
   const path = workspace.note?.path || "";
   const name = path.split("/").pop()?.replace(/\.md$/i, "") || "Untitled note";
-  useEffect(() => { setDraft(workspace.note?.content || ""); setExternal(null); setSaveStatus("saved"); saveSequence.current += 1; }, [path]);
+  useEffect(() => { setDraft(workspace.note?.content || ""); setExternal(null); }, [path]);
+  const { status: saveStatus } = useAutosave({
+    path,
+    draft,
+    noteContent: workspace.note?.content,
+    save: workspace.save,
+  });
   useEffect(() => {
     if (!path || !workspace.note) return;
-    if (draft === workspace.note.content) return;
-    const sequence = ++saveSequence.current;
-    const timer = window.setTimeout(() => {
-      setSaveStatus("saving");
-      void workspace.save(path, draft, workspace.note?.content || "").then(saved => {
-        if (sequence === saveSequence.current) setSaveStatus(saved ? "saved" : "error");
-      });
-    }, 650);
-    return () => window.clearTimeout(timer);
-  }, [draft, path, workspace.note?.content]);
-  useEffect(() => {
-    if (!path || !workspace.note) return;
-    const timer = window.setInterval(() => { void readFile(workspace.tree?.path || "", path).then(value => { if (value.content !== workspace.note?.content && value.content !== draft) setExternal(value.content); }).catch(error => workspace.setError(String(error))); }, 2500);
+    const timer = window.setInterval(() => { void readFile(workspace.tree?.path || "", path).then(value => { if (isExternalConflict(value.content, workspace.note?.content || "", draft)) setExternal(value.content); }).catch(error => workspace.setError(String(error))); }, 2500);
     return () => window.clearInterval(timer);
   }, [path, workspace.tree?.path, workspace.note?.content, draft]);
   const renameTitle = (title: string) => {

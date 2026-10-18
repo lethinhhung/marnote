@@ -3,6 +3,7 @@ dist/
 .turbo/
 .vite/
 coverage/
+prompt/
 *.tsbuildinfo
 apps/desktop/src-tauri/target/
 .DS_Store
