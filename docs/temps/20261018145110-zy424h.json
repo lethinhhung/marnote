@@ -1,8 +1,8 @@
 {
   "id": "20261018145110-zy424h",
-  "status": "running",
+  "status": "complete",
   "created_at": "2026-10-18T14:51:10.441Z",
-  "updated_at": "2026-10-18T17:04:15.166Z",
+  "updated_at": "2026-10-18T17:04:17.314Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "Implement the note and folder metadata feature from the core spec: optional tags, emoji icons, favorite status, and created/updated timestamps. Persist it locally in a portable, rebuildable form and expose it in app logic and UI. Defer MCP exposure.",
   "epic_file": "(inline epic)",
@@ -295,7 +295,7 @@
         "Created and updated timestamps are visible in an appropriate note or folder UI surface.",
         "Metadata changes refresh the relevant tree and editor views without requiring a workspace reopen."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -551,6 +551,15 @@
       "type": "archive",
       "stage": "metadata-application-ui",
       "result": "\n\n\n\n\n\nNow I'll update the memory files with the completed stage information.\n\n\n\n\n\n\n\nDone. I've updated all three memory files with the `metadata-application-ui` stage completion:\n\n**decisions.md** — Added two new decisions:\n1. **Metadata application state and UI integration** (from attempt 2): Application state reads/updates metadata via `useWorkspace` hook; `WorkspaceSidebar` exposes tag/emoji/favorite controls; `NoteFooter` shows timestamps via `noteStats`; `updateMetadata` calls Tauri `metadata_update` then refreshes tree via `listWorkspace`; focused test verifies call, refresh, and updated hook state.\n\n2. **FileTree metadata display** (from attempt 3): `FileTree.tsx` renders folder metadata inline (tags `#tag`, timestamps with Clock icons, emoji icons, favorite stars); notes retain icon+favorite only; 6 focused tests cover full/partial/no metadata and note preservation.\n\n**notes.md** — Added detailed implementation notes covering all 3 attempts, including the initial wiring failure (Attempt 1), the successful wiring and hook test (Attempt 2), and the FileTree metadata rendering (Attempt 3).\n\n**progress.md** — Added stage progress entry documenting all 3 attempts, completion criteria, outcomes, evidence, and validation status."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "metadata-application-ui",
+      "at": "2026-10-18T17:04:17.313Z"
+    },
+    {
+      "type": "complete",
+      "at": "2026-10-18T17:04:17.314Z"
     }
   ]
 }
