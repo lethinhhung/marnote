@@ -156,4 +156,23 @@
 - Total test count now 143 (5 core + 89 desktop TS + 49 Rust).
 - No changes to `specs/`, Markdown content, or product behavior; metadata is additive and optional.
 
+## metadata-lifecycle (attempt 2)
+
+- Epic: "Implement the note and folder metadata feature"; stage `metadata-lifecycle`.
+- Attempt 1: all automated checks passed (test, lint, typecheck, build); Tester passed (69 Rust tests: 11 metadata + 60 file/folder including 21 new regression tests); Validator failed — `metadata.rs` at 360 lines exceeded 120-line guidance.
+- Attempt 2: refactored into `apps/desktop/src-tauri/src/files/` module tree (all ≤ 120 lines):
+  - `files.rs` (55 lines) — Tauri command wrappers (`file_create`, `file_read`, `file_update`, `file_move`, `file_delete`, `folder_create`)
+  - `create.rs` (37 lines) — `create_file`/`create_folder` initializing metadata with timestamps
+  - `read.rs` (30 lines) — `read_file`
+  - `update.rs` (57 lines) — `update_file` advances `updated_ms`, preserves `created_ms`
+  - `delete.rs` (28 lines) — `delete_file` removes metadata entry
+  - `move_file.rs` (27 lines) — `move_file` updates metadata paths for moved/renamed items
+  - `metadata_paths.rs` (40 lines) — metadata path helpers
+  - `metadata_paths_tests.rs` (67 lines) — tests for path helpers
+- Removed old `files/mod.rs` to resolve module conflict; Tauri macros moved to `files.rs` as thin wrappers (fixing E0433).
+- Test flakiness fixed: temp directories cleaned before each test.
+- Metadata writes use atomic temp-file + rename; malformed metadata and write failures return errors without corrupting existing file; unrelated records preserved.
+- All 43 Rust tests + 94 frontend tests pass; lint, typecheck, build, `git diff --check` pass.
+- Validator passed 2/2 task validations.
+
 (End of file - total 136 lines)

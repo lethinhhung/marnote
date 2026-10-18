@@ -93,4 +93,26 @@
 - Rust types mirror the shared domain contract: optional `tags: Vec<String>`, `icon: Option<String>`, `favorite: bool`, `created_ms: i64`, `updated_ms: i64`; TypeScript domain types in `packages/core/src/workspace.ts` and `apps/desktop/src/shared/domain/workspace.ts` declare the same optional fields.
 - The unused-method warnings for `tags`, `icon`, `favorite`, `created_ms`, `updated_ms` in `metadata.rs` are expected; these methods are reserved for future frontend exposure via Tauri commands.
 
+## Metadata lifecycle: modular file structure
+
+- Source: stage `metadata-lifecycle` validation (attempt 1 failure: file-size guidance).
+- The 360-line `metadata.rs` was split into focused modules under `apps/desktop/src-tauri/src/files/`:
+  - `files.rs` (55 lines) — main module with Tauri command wrappers
+  - `create.rs` (37 lines) — file/folder creation with metadata initialization
+  - `read.rs` (30 lines) — file reading
+  - `update.rs` (57 lines) — content updates advancing `updated_ms` while preserving `created_ms`
+  - `delete.rs` (28 lines) — deletion removing metadata entries
+  - `move_file.rs` (27 lines) — move/rename updating metadata paths
+  - `metadata_paths.rs` (40 lines) — metadata path helpers
+  - `metadata_paths_tests.rs` (67 lines) — tests for path helpers
+- All modules under the 120-line limit; conflict between `files.rs` and `files/mod.rs` resolved by removing the old `mod.rs`.
+- Tauri command macros moved to `files.rs` as thin wrappers calling implementation functions in submodules, fixing E0433 compilation errors.
+
+## Data-safety: atomic temp-file + rename writes
+
+- Source: stage `metadata-lifecycle` completion criteria.
+- All metadata writes use atomic temp-file + rename pattern to avoid silently losing metadata on failure or conflict.
+- Malformed metadata and write failures return errors without corrupting the existing metadata file.
+- Unrelated metadata records are preserved during create/edit/move/rename/delete operations.
+
 (End of file - total 82 lines)

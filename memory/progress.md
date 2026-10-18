@@ -70,9 +70,14 @@ Branch: `test/add-unit-tests`.
 - Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all exit 0; 143 total tests pass.
 - Validation: pass, 1/1 task validations (attempt 2). Previous validation failure was due to agent response format, not implementation.
 
-## Next
+## metadata-lifecycle — passed (attempt 2)
 
-- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered; Rust filesystem behavior (workspace paths, tree, file CRUD, moves, deletion) is now covered. The test runner now discovers and executes all three test suites via the root `test` command.
+- Completion criteria: metadata persists on create/edit/move/rename/delete through workspace services; timestamps advance correctly (updated advances, created preserved); unrelated records preserved; atomic temp-file + rename writes follow data-safety conventions; malformed metadata and write failures return errors without corrupting the metadata file.
+- Outcome: 
+  - Attempt 1: all automated checks passed (test, lint, typecheck, build) but validation failed — `metadata.rs` was 360 lines, exceeding the 120-line guidance.
+  - Attempt 2: split `metadata.rs` into focused modules under `apps/desktop/src-tauri/src/files/` (8 files, all ≤ 120 lines); resolved `files.rs` vs `files/mod.rs` module conflict; moved Tauri command macros to `files.rs` as thin wrappers; fixed test flakiness by cleaning temp directories before each test.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; 43 Rust tests and 94 frontend tests pass; `git diff --check` passes.
+- Validation: pass, 2/2 task validations (attempt 2). Previous validation failure was due to file-size guidance.
 
 # Prior epic: refactor desktop app to feature-based structure
 
