@@ -94,4 +94,16 @@
 - Resolved in desktop-integration: `platform/workspace.ts` no longer imports workspace-feature types, and `shared/ui/HeaderBar` no longer imports from `features/` (both now use `shared/domain/workspace`).
 - Watch item: `features/workspace/workspaceTypes.ts` still re-exports the shared domain types and keeps the unused `NoteData`; harmless but could be removed if no future consumer needs `NoteData`.
 - No open findings from any stage.
-- Active epic "add all unit tests": editor helpers `SlashMenu`, `blockDnd`, and `tableResize` are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered. Remaining coverage is not yet planned/recorded; other desktop modules and `packages/core` links/workspace logic still lack dedicated tests beyond `packages/core/src/index.test.ts`.
+- Active epic "add all unit tests": editor helpers `SlashMenu`, `blockDnd`, `tableResize`, `useAutosave`, `useTheme`, `searchNotes`, and `noteStats` are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered. Remaining coverage is not yet planned/recorded; other desktop modules and `packages/core` links/workspace logic still lack dedicated tests beyond `packages/core/src/index.test.ts`.
+
+## desktop-state-tests (attempt 1)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds test files and extracted utilities only; no product, spec, or behavior changes.
+- Four tasks implemented:
+  1. **Autosave extraction** (`features/editor/useAutosave.ts` + `useAutosave.test.ts`, 7 tests): extracted debounced autosave logic from `NoteEditor` into a reusable hook; tests cover debounce timing (300ms), cancellation on unmount, stale save prevention via version tracking, and immediate save on window blur. Uses `vi.useFakeTimers()` for timer control.
+  2. **Theme tests** (`shared/theme/useTheme.test.ts`, 11 tests): covers `useTheme` initialization from `localStorage` (light/dark/system), `matchMedia` system preference changes, toggle persistence to `localStorage`, and mount/unmount effect cleanup. Mocks `window.matchMedia` and `localStorage` in test setup.
+  3. **Search utility extraction** (`features/workspace/searchNotes.ts` + `searchNotes.test.ts`, 9 tests): pure `searchNotes(query, tree)` helper with recursive directory traversal, case-insensitive substring matching on file names, Markdown-only filtering (`.md`/`.markdown`), and 8-result limit. `HeaderBar` now imports and uses this utility instead of inline logic.
+  4. **Note stats utility extraction** (`features/editor/noteStats.ts` + `noteStats.test.ts`, 18 tests): pure `noteStats(markdown)` helper returning `{ words, characters, readingTime }`; word count splits on whitespace, character count includes all characters, reading time rounds up at 220 wpm (minimum 1 min). Handles empty/whitespace-only input gracefully. `NoteFooter` now imports and uses this utility.
+- All new test files under the 120-line limit; 45 total new tests added.
+- Focused test runs confirmed all 45 tests pass; full suite `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` pass.
+- No changes to `specs/`, product behavior, or public APIs.

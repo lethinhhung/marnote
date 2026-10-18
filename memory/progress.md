@@ -31,9 +31,20 @@ Branch: `test/add-unit-tests`.
 - Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; focused test output confirms all 28 tests pass.
 - Validation: pass, 1/1 task validations. No spec or behavior changes.
 
+## desktop-state-tests — passed (attempt 1)
+
+- Completion criteria: tests cover autosave sequencing and debounce behavior, theme initialization and toggle behavior, search filtering and result limits, and word, character, and reading-time calculations; browser globals and timers controlled by focused test fixtures or mocks; all added test files comply with the 120-line code-file limit.
+- Outcome: four task implementations under `apps/desktop/src/`:
+  - Task 1: extracted autosave logic into `features/editor/useAutosave.ts` with 7 tests in `useAutosave.test.ts` (covers debounce timing, cancellation, stale save handling).
+  - Task 2: 11 tests added for `shared/theme/useTheme.ts` covering initialization from localStorage/system preference, toggle persistence, and mount effects with controlled `matchMedia` and `localStorage` mocks.
+  - Task 3: extracted `features/workspace/searchNotes.ts` utility with 9 tests in `searchNotes.test.ts` (recursive directory traversal, case-insensitive matching, Markdown filtering, 8-result limit); `HeaderBar` now uses the utility.
+  - Task 4: extracted `features/editor/noteStats.ts` utility with 18 tests in `noteStats.test.ts` (word/character counting, reading-time rounding at 220 wpm, empty-input handling); `NoteFooter` uses the utility.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; 45 new tests added.
+- Validation: pass, 4/4 task validations. No spec or behavior changes.
+
 ## Next
 
-- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, and tableResize are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered.
+- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered.
 
 # Prior epic: refactor desktop app to feature-based structure
 

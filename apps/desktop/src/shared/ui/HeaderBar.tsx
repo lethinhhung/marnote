@@ -2,14 +2,14 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
 import { FileText, Moon, Search, Sun } from "lucide-react";
 import { startWindowDrag } from "../../platform/window";
 import type { Entry, WorkspaceTree } from "../domain/workspace";
+import { searchNotes } from "./searchNotes";
 
 type Props = { tree: WorkspaceTree | null; path: string; theme: string; toggleTheme: () => void; onSelect: (entry: Entry) => void };
-function files(entries: Entry[]): Entry[] { return entries.flatMap(entry => entry.kind === "directory" ? files(entry.children || []) : entry.path.toLowerCase().endsWith(".md") ? [entry] : []); }
 export function HeaderBar({ tree, path, theme, toggleTheme, onSelect }: Props) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const input = useRef<HTMLInputElement>(null);
-  const matches = useMemo(() => files(tree?.entries || []).filter(file => (file.name + " " + file.path).toLowerCase().includes(query.toLowerCase())).slice(0, 8), [tree, query]);
+  const matches = useMemo(() => searchNotes(tree?.entries, query), [tree, query]);
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") { event.preventDefault(); input.current?.focus(); } if (event.key === "Escape") { setFocused(false); input.current?.blur(); } };
     window.addEventListener("keydown", keydown);
