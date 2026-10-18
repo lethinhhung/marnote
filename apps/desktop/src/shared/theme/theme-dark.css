@@ -6,6 +6,8 @@
 :root[data-theme="dark"] .tree-item { color: #aeb7aa; }
 :root[data-theme="dark"] .tree-item:hover, :root[data-theme="dark"] .tree-item.selected { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .tree-item.selected-folder { background: #323a48; color: #c2d1ed; }
+:root[data-theme="dark"] .tree-folder-tag { background: #343d35; color: #c5d7c4; }
+:root[data-theme="dark"] .tree-folder-timestamps { color: #9ca796; }
 :root[data-theme="dark"] .folder-context-menu { border-color: #414a41; background: #292f2a; box-shadow: 0 8px 24px #0008; }
 :root[data-theme="dark"] .folder-context-menu button { color: #c2c9bd; }
 :root[data-theme="dark"] .folder-context-menu button svg { color: #9ca796; }

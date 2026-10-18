@@ -70,6 +70,16 @@ Branch: `test/add-unit-tests`.
 - Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all exit 0; 143 total tests pass.
 - Validation: pass, 1/1 task validations (attempt 2). Previous validation failure was due to agent response format, not implementation.
 
+## metadata-application-ui — passed (attempt 3)
+
+- Completion criteria: application state can read and update metadata using shared workspace services; UI displays metadata for notes and folders with controls to edit tags, emoji icons, and toggle favorite status; created/updated timestamps visible in appropriate UI surfaces; metadata changes refresh tree and editor views without workspace reopen.
+- Outcome:
+  - **Attempt 1**: checks passed but Tester/Validator failed — `WorkspaceSidebar` controls not wired (`App.tsx` missing `onUpdateMetadata`), no focused hook test for `updateMetadata` tree refresh.
+  - **Attempt 2**: wired `onUpdateMetadata` through `App.tsx` → `WorkspaceSidebar`; implemented `useWorkspace.updateMetadata` calling `metadata_update` then `listWorkspace`; added focused test verifying call, refresh, and updated hook state; `NoteFooter` shows timestamps via `noteStats`. All checks and validations pass.
+  - **Attempt 3**: `FileTree.tsx` renders folder metadata (tags `#tag`, timestamps with Clock icons, emoji icons, favorite stars); notes retain icon+favorite only (no tags/timestamps). 6 focused FileTree tests pass.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; focused `useWorkspace.updateMetadata` test and 6 FileTree tests pass.
+- Validation: pass, 1/1 task validations (attempt 3). Previous attempts failed on UI wiring and hook refresh verification.
+
 ## metadata-lifecycle — passed (attempt 2)
 
 - Completion criteria: metadata persists on create/edit/move/rename/delete through workspace services; timestamps advance correctly (updated advances, created preserved); unrelated records preserved; atomic temp-file + rename writes follow data-safety conventions; malformed metadata and write failures return errors without corrupting the metadata file.

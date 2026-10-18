@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { isDesktop, openWorkspaceFolder } from "../../platform/dialog";
+import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import { FileTree, type TreeEdit } from "./FileTree";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 
-type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; onDefault: () => void; onOpen: (path: string) => void; onSelect: (e: Entry) => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean> };
+type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; onDefault: () => void; onOpen: (path: string) => void; onSelect: (e: Entry) => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean>; onUpdateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void };
 export function WorkspaceSidebar(props: Props) {
   const { tree } = props;
   const [browseError, setBrowseError] = useState("");
@@ -18,6 +19,18 @@ export function WorkspaceSidebar(props: Props) {
   useEffect(() => { if (!folderMenu) return; const close = () => setFolderMenu(null); const key = (event: KeyboardEvent) => { if (event.key === "Escape") close(); }; document.addEventListener("pointerdown", close); document.addEventListener("keydown", key); return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", key); }; }, [folderMenu]);
   const selectFolder = (path: string) => { setSelectedFolder(path); setTreeFocus("folder"); };
   const selectNote = (entry: Entry) => { setTreeFocus("note"); props.onSelect(entry); };
+  const menuEntry = (entries: Entry[], path: string): Entry | undefined => {
+    for (const entry of entries) {
+      if (entry.path === path) return entry;
+      const child = entry.children && menuEntry(entry.children, path);
+      if (child) return child;
+    }
+  };
+  const updateMenuMetadata = (metadata: UpdateEntryMetadataInput) => {
+    if (!folderMenu || !props.onUpdateMetadata) return;
+    props.onUpdateMetadata(folderMenu.path, metadata);
+    setFolderMenu(null);
+  };
   const folderFocused = treeFocus === "folder" && !!selectedFolder;
   const actionPath = folderFocused ? selectedFolder : props.selected;
   const actionLabel = folderFocused ? "folder" : "note";
@@ -63,6 +76,11 @@ export function WorkspaceSidebar(props: Props) {
     {tree && <><div className="sidebar-heading"><span>{tree.name}</span><div><button type="button" title={hideFoldersWithoutNotes ? "Show folders without notes" : "Hide folders without notes"} aria-label={hideFoldersWithoutNotes ? "Show folders without notes" : "Hide folders without notes"} aria-pressed={hideFoldersWithoutNotes} onClick={() => setHideFoldersWithoutNotes(value => !value)}>{hideFoldersWithoutNotes ? <EyeOff size={15} /> : <Eye size={15} />}</button><button title="New Markdown note" aria-label="New Markdown note" onClick={() => beginCreate("note")}><FilePlus size={15} /></button><button title="New folder" aria-label="New folder" onClick={() => beginCreate("folder")}><FolderPlus size={15} /></button><button title={`Rename / move selected ${actionLabel}`} aria-label={`Rename / move selected ${actionLabel}`} onClick={() => beginRename()} disabled={!actionPath}><Pencil size={14} /></button><button title={`Move selected ${actionLabel} to trash`} aria-label={`Move selected ${actionLabel} to trash`} onClick={() => { if (!actionPath) return; const item = folderFocused ? "folder and all its contents" : "note"; if (window.confirm(`Move this ${item} to the workspace trash?`)) { props.onDelete(actionPath); if (folderFocused) { setSelectedFolder(""); setTreeFocus("note"); } }} } disabled={!actionPath}><Trash2 size={14} /></button></div></div>
       <FileTree entries={tree.entries} selected={props.selected} selectedFolder={selectedFolder} focus={treeFocus} hideFoldersWithoutNotes={hideFoldersWithoutNotes} edit={edit} onEditSubmit={saveEdit} onEditCancel={() => setEdit(null)} onOpen={selectNote} onFolderSelect={selectFolder} onEntryContext={(path, kind, x, y) => { if (kind === "folder") selectFolder(path); if (kind === "note") setTreeFocus("note"); setFolderMenu({ path, kind, x: Math.max(8, Math.min(x, window.innerWidth - 200)), y: Math.max(8, Math.min(y, window.innerHeight - 180)) }); }} onMove={props.onMove} />
       {folderMenu && <div className="folder-context-menu" role="menu" style={{ left: folderMenu.x, top: folderMenu.y }} onPointerDown={event => event.stopPropagation()}>
+        {folderMenu.kind !== "root" && props.onUpdateMetadata && <>
+          <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); const value = window.prompt("Tags (comma separated)", entry?.metadata?.tags?.join(", ") ?? ""); if (value !== null) updateMenuMetadata({ tags: value.split(",").map(tag => tag.trim()).filter(Boolean) }); }}>Edit tags</button>
+          <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); const value = window.prompt("Emoji icon (leave blank to clear)", entry?.metadata?.icon ?? ""); if (value !== null) updateMenuMetadata({ icon: value.trim() }); }}>Edit emoji icon</button>
+          <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); updateMenuMetadata({ favorite: !entry?.metadata?.favorite }); }}>{menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.favorite ? "Remove favorite" : "Add favorite"}</button>
+        </>}
         {folderMenu.kind !== "note" && <><button role="menuitem" onClick={() => { setSelectedFolder(folderMenu.path); setTreeFocus(folderMenu.path ? "folder" : "note"); beginCreate("note", folderMenu.path); setFolderMenu(null); }}><FilePlus size={15} />New note{folderMenu.path ? " here" : ""}</button>
         <button role="menuitem" onClick={() => { setSelectedFolder(folderMenu.path); setTreeFocus(folderMenu.path ? "folder" : "note"); beginCreate("folder", folderMenu.path); setFolderMenu(null); }}><FolderPlus size={15} />{folderMenu.path ? "New subfolder" : "New folder"}</button></>}
         {folderMenu.kind === "folder" && <button role="menuitem" onClick={() => { setSelectedFolder(folderMenu.path); setTreeFocus("folder"); beginRename(folderMenu.path, true); setFolderMenu(null); }}><Pencil size={14} />Rename or move</button>}

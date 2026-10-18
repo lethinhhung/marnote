@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useTheme } from "../shared/theme/useTheme";
 import { useWorkspace } from "../features/workspace/useWorkspace";
 import { WorkspaceSidebar } from "../features/workspace/WorkspaceSidebar";
@@ -9,6 +9,19 @@ import { NoteFooter } from "../features/editor/NoteFooter";
 import { useWideContent } from "../features/editor/useWideContent";
 import { isExternalConflict } from "./workspaceConflict";
 import { useAutosave } from "./useAutosave";
+import type { Entry, WorkspaceEntryMetadata } from "../shared/domain/workspace";
+
+function findEntryMetadata(entries: Entry[] | undefined, path: string): WorkspaceEntryMetadata | undefined {
+  if (!entries) return undefined;
+  for (const entry of entries) {
+    if (entry.path === path) return entry.metadata;
+    if (entry.children) {
+      const found = findEntryMetadata(entry.children, path);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
 
 export function App() {
   const { theme, toggleTheme } = useTheme();
@@ -38,13 +51,17 @@ export function App() {
     const target = `${path.slice(0, path.lastIndexOf("/") + 1)}${next.endsWith(".md") ? next : `${next}.md`}`;
     if (target !== path) workspace.rename(path, target);
   };
+  const noteMetadata = useMemo(
+    () => (path && workspace.tree ? findEntryMetadata(workspace.tree.entries, path) : undefined),
+    [path, workspace.tree]
+  );
   return <main className="app-shell">
     <HeaderBar tree={workspace.tree} path={path} theme={theme} toggleTheme={toggleTheme} onSelect={workspace.select} />
-    <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} recent={workspace.recent} onDefault={workspace.openDefault} selected={path} onOpen={workspace.open} onSelect={workspace.select} onCreate={workspace.create} onCreateFolder={workspace.createDirectory} onRename={workspace.rename} onDelete={workspace.remove} onMove={workspace.move} />
+    <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} recent={workspace.recent} onDefault={workspace.openDefault} selected={path} onOpen={workspace.open} onSelect={workspace.select} onCreate={workspace.create} onCreateFolder={workspace.createDirectory} onRename={workspace.rename} onDelete={workspace.remove} onMove={workspace.move} onUpdateMetadata={workspace.updateMetadata} />
       <section className="workspace" onPointerDown={() => { if (workspace.note) document.dispatchEvent(new CustomEvent("marnote-focus-note")); }}>{workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}{external !== null && <div className="status-banner conflict" role="status">This file changed outside Marnote. <button onClick={() => { workspace.acceptExternal(path, external); setDraft(external); setExternal(null); }}>Load external version</button><button onClick={() => { workspace.acceptExternal(path, external); setExternal(null); }}>Keep mine</button></div>}
-        {workspace.note ? <NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} heading={<div className="title-field"><input ref={titleInput} className="title-input" aria-label="Note file name" defaultValue={name} size={Math.max(name.length, 1)} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} /> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
+        {workspace.note ? <NoteEditor value={draft} onChange={setDraft} source={source} onToggleSource={() => setSource(!source)} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} heading={<div className="title-field"><input ref={titleInput} className="title-input" aria-label="Note file name" defaultValue={name} size={Math.max(name.length, 1)} key={path} onBlur={event => renameTitle(event.currentTarget.value)} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} /> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
       </section>
     </div>
-    <NoteFooter value={workspace.note ? draft : ""} path={workspace.note?.path || ""} saveStatus={saveStatus} />
+    <NoteFooter value={workspace.note ? draft : ""} path={workspace.note?.path || ""} saveStatus={saveStatus} metadata={noteMetadata} updateMetadata={workspace.updateMetadata} />
   </main>;
 }

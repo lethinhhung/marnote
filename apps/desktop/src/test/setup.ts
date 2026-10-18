@@ -1,3 +1,5 @@
+import "@testing-library/jest-dom";
+
 if (typeof window !== "undefined") {
   if (typeof window.matchMedia !== "function") {
     window.matchMedia = (query: string): MediaQueryList =>

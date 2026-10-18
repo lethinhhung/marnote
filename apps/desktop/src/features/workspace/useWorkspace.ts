@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, writeFile } from "../../platform/workspace";
+import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, updateEntryMetadata, writeFile } from "../../platform/workspace";
+import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspaces";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
@@ -55,5 +56,8 @@ export function useWorkspace() {
   const createDirectory = (path: string) => mutate(async () => {
     if (tree) await createFolder(tree.path, path);
   });
-  return { tree, note, error, setError, open, openDefault, recent, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move, remove };
+  const updateMetadata = (path: string, metadata: UpdateEntryMetadataInput) => mutate(async () => {
+    if (tree) await updateEntryMetadata(tree.path, path, metadata);
+  });
+  return { tree, note, error, setError, open, openDefault, recent, select, save, acceptExternal, refresh, create, createDirectory, updateMetadata, rename: renameOrMove, move, remove };
 }

@@ -115,4 +115,20 @@
 - Malformed metadata and write failures return errors without corrupting the existing metadata file.
 - Unrelated metadata records are preserved during create/edit/move/rename/delete operations.
 
-(End of file - total 82 lines)
+## Metadata application state and UI integration
+
+- Source: stage `metadata-application-ui` completion criteria and validation (attempt 2).
+- Application state reads and updates metadata through the shared workspace services (`useWorkspace` hook calling `platform/workspace.ts` Tauri commands).
+- UI controls in `WorkspaceSidebar` expose editing of tags, emoji icon, and favorite status; created/updated timestamps are displayed in the note editor footer (`NoteFooter`) via `noteStats` utility.
+- `useWorkspace.updateMetadata` implementation calls the Tauri `metadata_update` command, then refreshes the tree via `listWorkspace` to expose updated metadata in hook state without workspace reopen.
+- A focused test for `useWorkspace.updateMetadata` verifies the metadata update call, tree refresh via `listWorkspace`, and refreshed metadata in hook state.
+- All 4 validation checks pass (test, lint, typecheck, build); 1/1 task validation passes.
+
+## FileTree metadata display
+
+- Source: stage `metadata-application-ui` completion criteria and validation (attempt 3).
+- `FileTree.tsx` displays folder metadata inline: tags in `#tag` format, created/updated timestamps with Clock icons, emoji icons, and favorite stars.
+- Notes retain existing metadata display (icon and favorite only; no tags/timestamps per spec).
+- 6 focused FileTree tests cover full metadata, partial metadata, no metadata, and note rendering preservation.
+
+(End of file - total 97 lines)

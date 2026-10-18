@@ -156,23 +156,18 @@
 - Total test count now 143 (5 core + 89 desktop TS + 49 Rust).
 - No changes to `specs/`, Markdown content, or product behavior; metadata is additive and optional.
 
-## metadata-lifecycle (attempt 2)
+## metadata-application-ui (attempts 1-3)
 
-- Epic: "Implement the note and folder metadata feature"; stage `metadata-lifecycle`.
-- Attempt 1: all automated checks passed (test, lint, typecheck, build); Tester passed (69 Rust tests: 11 metadata + 60 file/folder including 21 new regression tests); Validator failed — `metadata.rs` at 360 lines exceeded 120-line guidance.
-- Attempt 2: refactored into `apps/desktop/src-tauri/src/files/` module tree (all ≤ 120 lines):
-  - `files.rs` (55 lines) — Tauri command wrappers (`file_create`, `file_read`, `file_update`, `file_move`, `file_delete`, `folder_create`)
-  - `create.rs` (37 lines) — `create_file`/`create_folder` initializing metadata with timestamps
-  - `read.rs` (30 lines) — `read_file`
-  - `update.rs` (57 lines) — `update_file` advances `updated_ms`, preserves `created_ms`
-  - `delete.rs` (28 lines) — `delete_file` removes metadata entry
-  - `move_file.rs` (27 lines) — `move_file` updates metadata paths for moved/renamed items
-  - `metadata_paths.rs` (40 lines) — metadata path helpers
-  - `metadata_paths_tests.rs` (67 lines) — tests for path helpers
-- Removed old `files/mod.rs` to resolve module conflict; Tauri macros moved to `files.rs` as thin wrappers (fixing E0433).
-- Test flakiness fixed: temp directories cleaned before each test.
-- Metadata writes use atomic temp-file + rename; malformed metadata and write failures return errors without corrupting existing file; unrelated records preserved.
-- All 43 Rust tests + 94 frontend tests pass; lint, typecheck, build, `git diff --check` pass.
-- Validator passed 2/2 task validations.
+- Epic: "Implement the note and folder metadata feature"; stage `metadata-application-ui`.
+- **Attempt 1**: all automated checks passed (`pnpm run test`, `lint`, `typecheck`, `build` exit 0). Tester failed — UI controls in `WorkspaceSidebar` not wired because `App.tsx` does not pass `onUpdateMetadata` to the sidebar; no focused hook test exists for `useWorkspace.updateMetadata` to verify tree refresh and metadata exposure. Validator failed — 5/6 task validations passed; the completion criterion for tree refresh on metadata update was unverified.
+- **Attempt 2**: all checks pass; Tester and Validator pass. Implementation:
+  - `useWorkspace.updateMetadata` calls Tauri `metadata_update` command, then refreshes tree via `listWorkspace`; updated metadata reflected in hook state without workspace reopen.
+  - `WorkspaceSidebar` wired with `onUpdateMetadata` callback from `App.tsx`; exposes controls for tags (comma-separated input), emoji icon (text input), and favorite toggle.
+  - `NoteFooter` displays created/updated timestamps via `noteStats` utility (which reads `metadata.createdMs`/`updatedMs`).
+  - Focused test `useWorkspace.test.tsx` covers `updateMetadata`: verifies Tauri call, `listWorkspace` refresh, and returned metadata in state.
+- **Attempt 3**: all checks pass; Tester and Validator pass. Implementation:
+  - `FileTree.tsx` displays folder metadata inline: tags as `#tag` chips, created/updated timestamps with Clock icons, emoji icons before folder names, favorite stars.
+  - Notes render existing metadata (icon + favorite star) without tags/timestamps (per spec).
+  - 6 focused FileTree tests pass: full metadata (tags, timestamps, icon, favorite), partial metadata (icon only), no metadata, and note rendering preservation.
 
 (End of file - total 136 lines)

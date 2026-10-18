@@ -2,7 +2,7 @@
   "id": "20261018145110-zy424h",
   "status": "running",
   "created_at": "2026-10-18T14:51:10.441Z",
-  "updated_at": "2026-10-18T16:13:01.473Z",
+  "updated_at": "2026-10-18T17:04:15.166Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "Implement the note and folder metadata feature from the core spec: optional tags, emoji icons, favorite status, and created/updated timestamps. Persist it locally in a portable, rebuildable form and expose it in app logic and UI. Defer MCP exposure.",
   "epic_file": "(inline epic)",
@@ -159,7 +159,7 @@
         "Move, rename, and delete operations keep persisted metadata aligned with the affected workspace items.",
         "Metadata writes follow the repository’s data-safety conventions and handle conflicting or failed writes without silently losing metadata."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -295,8 +295,187 @@
         "Created and updated timestamps are visible in an appropriate note or folder UI surface.",
         "Metadata changes refresh the relevant tree and editor views without requiring a workspace reopen."
       ],
-      "status": "pending",
-      "attempts": []
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "Added and registered the `update_entry_metadata` Tauri command in [lib.rs](/Users/macos/Projects/marnote/apps/desktop/src-tauri/src/lib.rs). It checks the workspace-relative target using the existing workspace helpers, updates only supplied fields, and persists through the metadata service.\n\nThe focused test passed: updating `favorite` preserved the existing tags, icon, and timestamps. `cargo fmt --check` reports formatting differences in other existing Rust files; I formatted only `lib.rs`. The pre-existing `FileTree.tsx` and Strata run record changes were left untouched.",
+            "\n\nNow I understand the backend command signature. I need to add a TypeScript wrapper that matches the existing patterns in `workspace.ts`. Let me add the `updateEntryMetadata` function.\n\n\n\nThe implementation is complete. Both `typecheck` and `lint` pass.\n\n**Summary of changes to `apps/desktop/src/platform/workspace.ts`:**\n\n1. Added import for `WorkspaceEntryMetadata` from the shared domain types\n2. Added `UpdateEntryMetadataInput` type that picks only the mutable metadata fields (`tags`, `icon`, `favorite`) from `WorkspaceEntryMetadata` — excluding `createdMs` and `updatedMs` which are managed by the backend\n3. Added `updateEntryMetadata` function that invokes the `update_entry_metadata` Tauri command with `rootPath`, `path`, and the partial metadata payload\n\nThe wrapper follows the existing platform conventions: camelCase function name, `rootPath`/`path` parameter order matching other workspace commands, spread operator for the metadata payload, and returns the `invoke<void>` promise directly.",
+            "Added `updateMetadata(path, metadata)` to the `useWorkspace` return value. It calls the platform metadata command, then refreshes the workspace tree so updated metadata is available in hook state.\n\n`npm run typecheck` passed. No focused hook test exists, and I did not add one.",
+            "Now I understand the structure. I need to update the `TreeRow` component to:\n1. Display the emoji icon from `entry.metadata?.icon` when present\n2. Show a favorite indicator when `entry.metadata?.favorite` is true\n3. Keep default Folder/FileText icons when no custom icon is set\n\n\n\n\n\n\n\nAll checks pass. Here's a summary of the changes:\n\n**Modified:** `apps/desktop/src/features/workspace/FileTree.tsx`\n\n**Changes:**\n1. Added `Star` icon import from `lucide-react`\n2. Updated `TreeRow` to conditionally render:\n   - Emoji icon from `entry.metadata?.icon` when present (replaces default folder/file icon)\n   - Default `Folder`/`FileText` icons when no custom icon is set\n   - `Star` icon indicator when `entry.metadata?.favorite` is `true`\n\nThe implementation satisfies the validation criteria: metadata icons and favorite indicators appear only when set, while entries without metadata retain their default icons.",
+            "Added context-menu controls in [WorkspaceSidebar.tsx](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/WorkspaceSidebar.tsx) to edit tags, set or clear an emoji, and toggle favorite. Each submits a partial update through the new optional `onUpdateMetadata` callback.\n\n`npm run typecheck` and `git diff --check` passed. I couldn’t complete the interaction check: `App.tsx` does not pass the callback, and it is outside the task’s allowed file scope. Until that parent wiring is added, the controls are hidden in the running app.",
+            "\n\n\n\n\n\n\n\n\n\n\n\nNow I have a clear picture. Let me implement the changes. I'll update `App.tsx` to find and pass metadata, then modify `NoteEditor.tsx` and `NoteFooter.tsx` to display and edit metadata.\n\n\n\n\n\nImplementation complete. Here's a summary of the changes:\n\n**Files modified:**\n\n1. **`apps/desktop/src/app/App.tsx`**\n   - Added `findEntryMetadata` helper to recursively search the workspace tree for the current note's metadata\n   - Added `useMemo` to compute `noteMetadata` from the tree when the path/tree changes\n   - Passed `metadata` prop to `NoteEditor` and both `metadata` + `updateMetadata` to `NoteFooter`\n   - Added `onUpdateMetadata` to `WorkspaceSidebar` (already existed in props)\n\n2. **`apps/desktop/src/features/editor/NoteEditor.tsx`**\n   - Added `metadata` prop with `WorkspaceEntryMetadata` type\n   - Added `Star` icon from lucide-react\n   - Render metadata in `.note-heading` below the title: emoji icon, favorite star, and tags as `#tag` pills\n\n3. **`apps/desktop/src/features/editor/NoteFooter.tsx`**\n   - Added `metadata` and `updateMetadata` props\n   - Display formatted created/updated timestamps (omitted when absent)\n   - Inline edit controls for tags (comma-separated input), emoji icon (single char input), and favorite (toggle button)\n   - Uses `updateMetadata` from `useWorkspace` to persist changes, which refreshes the tree automatically\n\n4. **`apps/desktop/src/shared/theme/styles.css`**\n   - Added styles for `.note-meta` (heading area), `.note-footer-meta` (footer area), timestamps, tags, icon, edit inputs, and action buttons\n\n**Verification:**\n- `npm run typecheck` ✓\n- `npm run lint` ✓\n\nThe implementation satisfies the acceptance criteria: metadata displays in the note heading (icon, favorite, tags) and footer (timestamps, edit controls), with changes persisted via `updateMetadata` and the tree refreshing automatically."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": " ... ok\ntest metadata::tests::read_metadata_missing_file_returns_empty ... ok\ntest metadata::tests::read_metadata_empty_file_returns_empty ... ok\ntest metadata::tests::read_metadata_valid_json ... ok\ntest metadata::tests::read_metadata_malformed_json_returns_error ... ok\ntest folders::tests::folder_create_returns_metadata_write_failure ... ok\ntest folders::tests::folder_create_persists_metadata_with_timestamps ... ok\ntest tree::tests::collect_empty_directory ... ok\ntest metadata::tests_mutations::mutations_reject_malformed_metadata_without_replacing_it ... ok\ntest metadata::tests_mutations::failed_atomic_write_keeps_existing_metadata ... ok\ntest folders::tests::folder_create_preserves_existing_metadata ... ok\ntest tree::tests::collect_only_non_markdown_files ... ok\ntest tree::tests::collect_skips_marnote_trash ... ok\ntest tree::tests::collect_recursive_sorting ... ok\ntest metadata::tests_mutations::mutations_preserve_unrelated_records ... ok\ntest tree::tests::collect_sorts_case_insensitively ... ok\ntest tree::tests::collect_skips_symlinks ... ok\ntest tests::metadata_update_preserves_omitted_fields_and_persists_change ... ok\ntest tree::tests::collect_includes_directories_and_markdown_files ... ok\ntest workspace::tests::root_rejects_nonexistent ... ok\ntest workspace::tests::default_workspace_attaches_metadata ... ok\ntest workspace::tests::root_valid_directory ... ok\ntest files::metadata_paths_tests::create_and_update_keep_metadata_lifecycle ... ok\ntest workspace::tests::root_rejects_non_directory ... ok\ntest workspace::tests::target_allows_symlink_when_not_exists ... ok\ntest workspace::tests::list_workspace_tree_attaches_metadata ... ok\ntest workspace::tests::open_workspace_attaches_metadata_to_matching_entries ... ok\ntest workspace::tests::target_rejects_absolute_path ... ok\ntest workspace::tests::target_rejects_dot_component ... ok\ntest workspace::tests::open_workspace_without_metadata_file_returns_tree_without_metadata ... ok\ntest files::metadata_paths_tests::moving_and_deleting_folder_metadata_rebases_then_removes_descendants ... ok\ntest workspace::tests::target_rejects_multiple_dots ... ok\ntest workspace::tests::target_rejects_empty_path ... ok\ntest workspace::tests::open_workspace_does_not_modify_markdown_files ... ok\ntest workspace::tests::target_rejects_parent_escape_via_components ... ok\ntest workspace::tests::target_rejects_traversal_components ... ok\ntest workspace::tests::target_valid_relative_path ... ok\ntest workspace::tests::target_rejects_existing_symlink_escaping_workspace ... ok\ntest workspace::tests::target_rejects_symlink_when_exists ... ok\n\ntest result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nwarning: unused import: `SystemTime`\n --> src/files/delete.rs:3:22\n  |\n3 | use std::{fs, time::{SystemTime, UNIX_EPOCH}};\n  |                      ^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused imports: `SystemTime` and `path::Path`\n --> src/files/read.rs:3:15\n  |\n3 | use std::{fs, path::Path, time::{SystemTime, UNIX_EPOCH}};\n  |               ^^^^^^^^^^         ^^^^^^^^^^\n\nwarning: unused import: `read_metadata`\n --> src/folders.rs:1:55\n  |\n1 | use crate::metadata::{EntryMetadata, update_metadata, read_metadata};\n  |                                                       ^^^^^^^^^^^^^\n\nwarning: methods `tags`, `icon`, `favorite`, `created_ms`, and `updated_ms` are never used\n  --> src/metadata/mod.rs:20:12\n   |\n19 | impl EntryMetadata {\n   | ------------------ methods in this implementation\n20 |     pub fn tags(&self) -> &[String] { self.tags.as_deref().unwrap_or_default() }\n   |            ^^^^\n21 |     pub fn icon(&self) -> Option<&str> { self.icon.as_deref() }\n   |            ^^^^\n22 |     pub fn favorite(&self) -> bool { self.favorite.unwrap_or(false) }\n   |            ^^^^^^^^\n23 |     pub fn created_ms(&self) -> Option<u128> { self.created_ms }\n   |            ^^^^^^^^^^\n24 |     pub fn updated_ms(&self) -> Option<u128> { self.updated_ms }\n   |            ^^^^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `remove_metadata` is never used\n  --> src/metadata/mod.rs:55:8\n   |\n55 | pub fn remove_metadata(root: &Path, path: &str) -> Result<(), String> {\n   |        ^^^^^^^^^^^^^^^\n\nwarning: `marnote` (lib) generated 5 warnings (run `cargo fix --lib -p marnote` to apply 3 suggestions)\nwarning: `marnote` (lib test) generated 2 warnings (2 duplicates)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s\n     Running unittests src/lib.rs (src-tauri/target/debug/deps/marnote-f39224708090ed4e)\n     Running unittests src/main.rs (src-tauri/target/debug/deps/marnote-6bfb98a69a0f0cb8)\n   Doc-tests marnote\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2082 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.32 kB\napps/desktop build: dist/assets/index-P4Yzj054.css   28.52 kB │ gzip:   6.33 kB\napps/desktop build: dist/assets/index-CJWHM2rV.js   901.16 kB │ gzip: 284.40 kB\napps/desktop build: ✓ built in 1.85s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "fail",
+            "findings": [
+              "apps/desktop/src/features/workspace/WorkspaceSidebar.tsx: The metadata controls are not wired into the running app. The supplied implementation report says App.tsx does not pass onUpdateMetadata, so the sidebar interaction criterion is unmet.",
+              "apps/desktop/src/features/workspace/useWorkspace.ts: No focused hook check was added or reported for refreshing the tree and exposing updated metadata after a successful update; the completion criterion is unverified."
+            ],
+            "summary": "The supplied full checks passed (pnpm run test, lint, typecheck, and build), but the reported unwired sidebar controls leave the UI interaction criterion unmet. No additional checks were run."
+          },
+          "validation": {
+            "status": "fail",
+            "findings": [
+              "apps/desktop/src/features/workspace/useWorkspace.ts: No focused hook test or equivalent check exists to confirm that a successful metadata update refreshes the tree and exposes the returned metadata; the completion criterion is unverified."
+            ],
+            "summary": "5/6 task validations passed."
+          },
+          "passed": false
+        },
+        {
+          "attempt": 2,
+          "implementations": [
+            "Added a focused `useWorkspace.updateMetadata` test in [useWorkspace.test.tsx](/Users/macos/Projects/marnote/apps/desktop/src/features/workspace/useWorkspace.test.tsx). It verifies the metadata update call, refreshes the open workspace via `listWorkspace`, and confirms hook state contains the refreshed entry metadata.\n\nFocused test passed: 1 test."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": " ... ok\ntest metadata::tests::read_metadata_missing_file_returns_empty ... ok\ntest metadata::tests::read_metadata_empty_file_returns_empty ... ok\ntest metadata::tests::read_metadata_malformed_json_returns_error ... ok\ntest metadata::tests::read_metadata_valid_json ... ok\ntest tree::tests::collect_empty_directory ... ok\ntest metadata::tests_mutations::mutations_reject_malformed_metadata_without_replacing_it ... ok\ntest folders::tests::folder_create_returns_metadata_write_failure ... ok\ntest metadata::tests_mutations::failed_atomic_write_keeps_existing_metadata ... ok\ntest folders::tests::folder_create_persists_metadata_with_timestamps ... ok\ntest folders::tests::folder_create_preserves_existing_metadata ... ok\ntest tree::tests::collect_only_non_markdown_files ... ok\ntest tree::tests::collect_recursive_sorting ... ok\ntest tree::tests::collect_skips_marnote_trash ... ok\ntest metadata::tests_mutations::mutations_preserve_unrelated_records ... ok\ntest tree::tests::collect_includes_directories_and_markdown_files ... ok\ntest tree::tests::collect_sorts_case_insensitively ... ok\ntest tree::tests::collect_skips_symlinks ... ok\ntest files::metadata_paths_tests::create_and_update_keep_metadata_lifecycle ... ok\ntest tests::metadata_update_preserves_omitted_fields_and_persists_change ... ok\ntest workspace::tests::default_workspace_attaches_metadata ... ok\ntest workspace::tests::root_rejects_nonexistent ... ok\ntest workspace::tests::root_valid_directory ... ok\ntest workspace::tests::target_allows_symlink_when_not_exists ... ok\ntest workspace::tests::list_workspace_tree_attaches_metadata ... ok\ntest workspace::tests::root_rejects_non_directory ... ok\ntest workspace::tests::open_workspace_attaches_metadata_to_matching_entries ... ok\ntest workspace::tests::target_rejects_absolute_path ... ok\ntest workspace::tests::target_rejects_dot_component ... ok\ntest files::metadata_paths_tests::moving_and_deleting_folder_metadata_rebases_then_removes_descendants ... ok\ntest workspace::tests::target_rejects_empty_path ... ok\ntest workspace::tests::target_rejects_parent_escape_via_components ... ok\ntest workspace::tests::open_workspace_without_metadata_file_returns_tree_without_metadata ... ok\ntest workspace::tests::target_rejects_multiple_dots ... ok\ntest workspace::tests::target_rejects_traversal_components ... ok\ntest workspace::tests::open_workspace_does_not_modify_markdown_files ... ok\ntest workspace::tests::target_valid_relative_path ... ok\ntest workspace::tests::target_rejects_symlink_when_exists ... ok\ntest workspace::tests::target_rejects_existing_symlink_escaping_workspace ... ok\n\ntest result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nwarning: unused import: `SystemTime`\n --> src/files/delete.rs:3:22\n  |\n3 | use std::{fs, time::{SystemTime, UNIX_EPOCH}};\n  |                      ^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused imports: `SystemTime` and `path::Path`\n --> src/files/read.rs:3:15\n  |\n3 | use std::{fs, path::Path, time::{SystemTime, UNIX_EPOCH}};\n  |               ^^^^^^^^^^         ^^^^^^^^^^\n\nwarning: unused import: `read_metadata`\n --> src/folders.rs:1:55\n  |\n1 | use crate::metadata::{EntryMetadata, update_metadata, read_metadata};\n  |                                                       ^^^^^^^^^^^^^\n\nwarning: methods `tags`, `icon`, `favorite`, `created_ms`, and `updated_ms` are never used\n  --> src/metadata/mod.rs:20:12\n   |\n19 | impl EntryMetadata {\n   | ------------------ methods in this implementation\n20 |     pub fn tags(&self) -> &[String] { self.tags.as_deref().unwrap_or_default() }\n   |            ^^^^\n21 |     pub fn icon(&self) -> Option<&str> { self.icon.as_deref() }\n   |            ^^^^\n22 |     pub fn favorite(&self) -> bool { self.favorite.unwrap_or(false) }\n   |            ^^^^^^^^\n23 |     pub fn created_ms(&self) -> Option<u128> { self.created_ms }\n   |            ^^^^^^^^^^\n24 |     pub fn updated_ms(&self) -> Option<u128> { self.updated_ms }\n   |            ^^^^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `remove_metadata` is never used\n  --> src/metadata/mod.rs:55:8\n   |\n55 | pub fn remove_metadata(root: &Path, path: &str) -> Result<(), String> {\n   |        ^^^^^^^^^^^^^^^\n\nwarning: `marnote` (lib) generated 5 warnings (run `cargo fix --lib -p marnote` to apply 3 suggestions)\nwarning: `marnote` (lib test) generated 2 warnings (2 duplicates)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s\n     Running unittests src/lib.rs (src-tauri/target/debug/deps/marnote-f39224708090ed4e)\n     Running unittests src/main.rs (src-tauri/target/debug/deps/marnote-6bfb98a69a0f0cb8)\n   Doc-tests marnote\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2082 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.32 kB\napps/desktop build: dist/assets/index-P4Yzj054.css   28.52 kB │ gzip:   6.33 kB\napps/desktop build: dist/assets/index-CJWHM2rV.js   901.16 kB │ gzip: 284.40 kB\napps/desktop build: ✓ built in 1.76s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "All validations passed. The focused `useWorkspace.updateMetadata` test verifies the metadata update call, tree refresh via `listWorkspace`, and refreshed metadata in hook state. Test, lint, typecheck, and build all pass."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "1/1 task validations passed."
+          },
+          "passed": true
+        },
+        {
+          "attempt": 1,
+          "implementations": [
+            "Folder tree rows now show tags, created/updated timestamps, emoji icons, and favorite markers. Added focused tests for full and partial folder metadata, folders without optional metadata, and unchanged note metadata rendering.\n\nFocused check passed: `pnpm --filter @marnote/desktop exec vitest run src/features/workspace/FileTree.test.tsx` — 6 tests passed. No other files were changed for this task."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": " ... ok\ntest metadata::tests::read_metadata_missing_file_returns_empty ... ok\ntest metadata::tests::read_metadata_empty_file_returns_empty ... ok\ntest metadata::tests::read_metadata_valid_json ... ok\ntest metadata::tests::read_metadata_malformed_json_returns_error ... ok\ntest folders::tests::folder_create_returns_metadata_write_failure ... ok\ntest folders::tests::folder_create_persists_metadata_with_timestamps ... ok\ntest tree::tests::collect_empty_directory ... ok\ntest metadata::tests_mutations::failed_atomic_write_keeps_existing_metadata ... ok\ntest metadata::tests_mutations::mutations_reject_malformed_metadata_without_replacing_it ... ok\ntest folders::tests::folder_create_preserves_existing_metadata ... ok\ntest tree::tests::collect_only_non_markdown_files ... ok\ntest tree::tests::collect_recursive_sorting ... ok\ntest tree::tests::collect_skips_marnote_trash ... ok\ntest metadata::tests_mutations::mutations_preserve_unrelated_records ... ok\ntest tree::tests::collect_includes_directories_and_markdown_files ... ok\ntest tree::tests::collect_skips_symlinks ... ok\ntest tree::tests::collect_sorts_case_insensitively ... ok\ntest tests::metadata_update_preserves_omitted_fields_and_persists_change ... ok\ntest files::metadata_paths_tests::create_and_update_keep_metadata_lifecycle ... ok\ntest workspace::tests::root_rejects_nonexistent ... ok\ntest workspace::tests::root_valid_directory ... ok\ntest workspace::tests::default_workspace_attaches_metadata ... ok\ntest files::metadata_paths_tests::moving_and_deleting_folder_metadata_rebases_then_removes_descendants ... ok\ntest workspace::tests::root_rejects_non_directory ... ok\ntest workspace::tests::list_workspace_tree_attaches_metadata ... ok\ntest workspace::tests::open_workspace_without_metadata_file_returns_tree_without_metadata ... ok\ntest workspace::tests::open_workspace_attaches_metadata_to_matching_entries ... ok\ntest workspace::tests::open_workspace_does_not_modify_markdown_files ... ok\ntest workspace::tests::target_allows_symlink_when_not_exists ... ok\ntest workspace::tests::target_rejects_empty_path ... ok\ntest workspace::tests::target_rejects_multiple_dots ... ok\ntest workspace::tests::target_rejects_absolute_path ... ok\ntest workspace::tests::target_rejects_dot_component ... ok\ntest workspace::tests::target_rejects_parent_escape_via_components ... ok\ntest workspace::tests::target_rejects_traversal_components ... ok\ntest workspace::tests::target_valid_relative_path ... ok\ntest workspace::tests::target_rejects_existing_symlink_escaping_workspace ... ok\ntest workspace::tests::target_rejects_symlink_when_exists ... ok\n\ntest result: ok. 44 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 0 tests\n\ntest result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nwarning: unused import: `SystemTime`\n --> src/files/delete.rs:3:22\n  |\n3 | use std::{fs, time::{SystemTime, UNIX_EPOCH}};\n  |                      ^^^^^^^^^^\n  |\n  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default\n\nwarning: unused imports: `SystemTime` and `path::Path`\n --> src/files/read.rs:3:15\n  |\n3 | use std::{fs, path::Path, time::{SystemTime, UNIX_EPOCH}};\n  |               ^^^^^^^^^^         ^^^^^^^^^^\n\nwarning: unused import: `read_metadata`\n --> src/folders.rs:1:55\n  |\n1 | use crate::metadata::{EntryMetadata, update_metadata, read_metadata};\n  |                                                       ^^^^^^^^^^^^^\n\nwarning: methods `tags`, `icon`, `favorite`, `created_ms`, and `updated_ms` are never used\n  --> src/metadata/mod.rs:20:12\n   |\n19 | impl EntryMetadata {\n   | ------------------ methods in this implementation\n20 |     pub fn tags(&self) -> &[String] { self.tags.as_deref().unwrap_or_default() }\n   |            ^^^^\n21 |     pub fn icon(&self) -> Option<&str> { self.icon.as_deref() }\n   |            ^^^^\n22 |     pub fn favorite(&self) -> bool { self.favorite.unwrap_or(false) }\n   |            ^^^^^^^^\n23 |     pub fn created_ms(&self) -> Option<u128> { self.created_ms }\n   |            ^^^^^^^^^^\n24 |     pub fn updated_ms(&self) -> Option<u128> { self.updated_ms }\n   |            ^^^^^^^^^^\n   |\n   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `remove_metadata` is never used\n  --> src/metadata/mod.rs:55:8\n   |\n55 | pub fn remove_metadata(root: &Path, path: &str) -> Result<(), String> {\n   |        ^^^^^^^^^^^^^^^\n\nwarning: `marnote` (lib) generated 5 warnings (run `cargo fix --lib -p marnote` to apply 3 suggestions)\nwarning: `marnote` (lib test) generated 2 warnings (2 duplicates)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.14s\n     Running unittests src/lib.rs (src-tauri/target/debug/deps/marnote-f39224708090ed4e)\n     Running unittests src/main.rs (src-tauri/target/debug/deps/marnote-6bfb98a69a0f0cb8)\n   Doc-tests marnote\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2082 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-zgUMh9XL.css   29.05 kB │ gzip:   6.39 kB\napps/desktop build: dist/assets/index-Csc6B4y8.js   902.23 kB │ gzip: 284.72 kB\napps/desktop build: ✓ built in 1.76s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Implementation meets all validation criteria. FileTree.tsx now displays folder tags (#tag format), created/updated timestamps with Clock icons, emoji icons, and favorite stars for folders. Notes retain existing metadata display (icon and favorite only, no tags/timestamps). All 6 focused FileTree tests pass, covering full metadata, partial metadata, no metadata, and note rendering preservation."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "1/1 task validations passed."
+          },
+          "passed": true
+        }
+      ]
     }
   ],
   "blockers": [],
@@ -344,6 +523,34 @@
       "type": "archive",
       "stage": "metadata-lifecycle",
       "result": "\n\n\n\n\n\n\n\nUpdated all three memory files with the `metadata-lifecycle` stage results:\n\n**decisions.md** — Added two new decisions:\n- Metadata lifecycle modular file structure (360-line `metadata.rs` split into 8 focused modules under `files/`, all ≤120 lines)\n- Data-safety: atomic temp-file + rename writes for metadata persistence\n\n**progress.md** — Added `metadata-lifecycle — passed (attempt 2)` with completion criteria, outcome (both attempts), evidence (all checks pass, 43 Rust + 94 frontend tests), and validation status (2/2 passed)\n\n**notes.md** — Added detailed implementation notes for both attempts, including the module breakdown, test fixes, and validation resolution"
+    },
+    {
+      "type": "stage_complete",
+      "stage": "metadata-lifecycle",
+      "at": "2026-10-18T16:13:03.398Z"
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "metadata-application-ui",
+      "attempt": 1,
+      "passed": false
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "metadata-application-ui",
+      "attempt": 2,
+      "passed": true
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "metadata-application-ui",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "metadata-application-ui",
+      "result": "\n\n\n\n\n\nNow I'll update the memory files with the completed stage information.\n\n\n\n\n\n\n\nDone. I've updated all three memory files with the `metadata-application-ui` stage completion:\n\n**decisions.md** — Added two new decisions:\n1. **Metadata application state and UI integration** (from attempt 2): Application state reads/updates metadata via `useWorkspace` hook; `WorkspaceSidebar` exposes tag/emoji/favorite controls; `NoteFooter` shows timestamps via `noteStats`; `updateMetadata` calls Tauri `metadata_update` then refreshes tree via `listWorkspace`; focused test verifies call, refresh, and updated hook state.\n\n2. **FileTree metadata display** (from attempt 3): `FileTree.tsx` renders folder metadata inline (tags `#tag`, timestamps with Clock icons, emoji icons, favorite stars); notes retain icon+favorite only; 6 focused tests cover full/partial/no metadata and note preservation.\n\n**notes.md** — Added detailed implementation notes covering all 3 attempts, including the initial wiring failure (Attempt 1), the successful wiring and hook test (Attempt 2), and the FileTree metadata rendering (Attempt 3).\n\n**progress.md** — Added stage progress entry documenting all 3 attempts, completion criteria, outcomes, evidence, and validation status."
     }
   ]
 }
