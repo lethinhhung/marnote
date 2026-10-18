@@ -24,6 +24,13 @@ Branch: `feat/feature-based-strata-improved`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`; independent `npm --prefix apps/desktop run typecheck`.
 - Validation: pass, 3/3 task validations. No spec or behavior changes.
 
+## platform-adapters — passed (attempt 1)
+
+- Completion criteria: Tauri frontend imports isolated behind platform adapters; workspace filesystem, dialog, and window operations work through adapter interfaces; desktop typecheck and build pass.
+- Outcome: added `apps/desktop/src/platform/{workspace,dialog,window}.ts`; deleted `shared/workspaceApi.ts`; rewired `App.tsx`, `useWorkspace.ts`, `WorkspaceSidebar.tsx`, and `HeaderBar.tsx` to the adapters. All `@tauri-apps` imports now confined to `platform/`.
+- Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+- Validation: pass, 6/6 task validations. No spec or behavior changes.
+
 ## Next
 
-- Remaining epic work: move `shared/workspaceApi.ts` to a platform-adapters seam (deferred) and feature-organize any further domains.
+- Remaining epic work: feature-organize any further domains; platform adapters are complete for this stage.

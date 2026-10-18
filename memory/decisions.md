@@ -9,7 +9,7 @@
   - `features/editor/` — editor feature: `NoteEditor.tsx`, `EditorToolbar.tsx`, `NoteFooter.tsx`, `SlashMenu.tsx`, `BlockDragHandle.tsx`, `TableEdgeControls.tsx`, `blockDnd.ts`, `initialMarkdown.ts`, `tableResize.ts`, `useWideContent.ts`.
   - `shared/ui/` — reusable chrome components (currently `HeaderBar.tsx`).
   - `shared/theme/` — stylesheets and `useTheme.ts`.
-  - `shared/` — filesystem adapter (`workspaceApi.ts`).
+  - `platform/` — Tauri adapter boundary: `workspace.ts`, `dialog.ts`, `window.ts`.
 - The former `src/ui/` directory is retired; composition is no longer mixed with reusable UI.
 
 ## Workspace feature and adapter seam
@@ -17,8 +17,18 @@
 - Source: `specs/core.md` — organize desktop UI by feature, keeping platform adapters separate.
 - Workspace domain types (`Entry`, `WorkspaceTree`, and the unused `NoteData`) live in `features/workspace/workspaceTypes.ts`.
 - Workspace UI, state, and types are grouped under `features/workspace/`; `App.tsx` imports `useWorkspace` and `WorkspaceSidebar` from `../features/workspace`.
-- Filesystem access stays behind the adapter seam: `shared/workspaceApi.ts` is the only Tauri `invoke` surface for workspace I/O and imports its `WorkspaceTree` type from the workspace feature. `useWorkspace` still calls `shared/workspaceApi` rather than `invoke` directly.
-- `shared/ui/HeaderBar` (shared UI) imports workspace feature types, so the feature is a type source for shared chrome. The physical relocation of `workspaceApi.ts` to a dedicated platform-adapters location remains deferred; the current `shared/` seam is accepted for this epic.
+- Filesystem access stays behind the adapter seam: `platform/workspace.ts` is the only Tauri `invoke` surface for workspace I/O and imports its `WorkspaceTree` type from the workspace feature. `useWorkspace` calls `platform/workspace` rather than `invoke` directly.
+- `shared/ui/HeaderBar` (shared UI) imports workspace feature types, so the feature is a type source for shared chrome.
+
+## Platform adapters
+
+- Source: `specs/core.md` — keep platform adapters separate and domain logic platform-independent.
+- `apps/desktop/src/platform/` is the single location permitted to import `@tauri-apps/*`. Modules:
+  - `workspace.ts` — workspace filesystem I/O: `openWorkspace`, `openDefaultWorkspace`, `listWorkspace`, `readFile`, `writeFile`, `createFile`, `moveFile`, `deleteFile`, `createFolder`, plus `ReadResult`.
+  - `dialog.ts` — desktop detection and folder picker: `isDesktop`, `openWorkspaceFolder`, `WorkspaceFolderPickerOptions`.
+  - `window.ts` — window controls: `windowDragAvailable`, `startWindowDrag`.
+- Feature/shared/app callers import these adapters: `app/App.tsx` and `features/workspace/useWorkspace.ts` use `platform/workspace`; `features/workspace/WorkspaceSidebar.tsx` uses `platform/dialog`; `shared/ui/HeaderBar.tsx` uses `platform/window`.
+- The adapter depends on the workspace feature only for the `WorkspaceTree` type (accepted); platform behavior is otherwise unchanged.
 
 ## Editor feature
 

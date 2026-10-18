@@ -2,7 +2,7 @@
   "id": "20261018031021-tl9be7",
   "status": "running",
   "created_at": "2026-10-18T03:10:21.685Z",
-  "updated_at": "2026-10-18T03:33:42.189Z",
+  "updated_at": "2026-10-18T03:38:13.917Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "refactor desktop app follow feature-based mentioned in specs",
   "epic_file": "(inline epic)",
@@ -165,7 +165,7 @@
         "Editor interactions and Markdown serialization retain their existing behavior.",
         "Desktop typecheck and build pass."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -240,8 +240,70 @@
         "Workspace filesystem, dialog, and window operations continue to work through their adapter interfaces.",
         "Desktop typecheck and build pass."
       ],
-      "status": "pending",
-      "attempts": []
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "Created `apps/desktop/src/platform/workspace.ts:1` as the platform adapter, moving the nine Tauri `invoke` calls verbatim from `shared/workspaceApi.ts`:\n\n- All nine command names and argument casing preserved (`open_workspace`, `default_workspace`, `list_workspace_tree`, `file_read_markdown`, `file_update_markdown`, `file_create_markdown`, `file_move`, `file_delete`, `folder_create`).\n- `ReadResult` type and `WorkspaceTree` import retained (`../features/workspace/workspaceTypes`), signatures unchanged, no error handling added.\n- Left `shared/workspaceApi.ts` in place per the task (\"remove after callers are rewired in the integration task\"); no callers changed.\n\nVerification: `pnpm --filter @marnote/desktop typecheck` and `lint` both pass.\n\nFollow-up for Tester/Validator: confirm command name/argument byte-for-byte parity with the old module, and that the integration task subsequently rewires `app/App.tsx:6` and `features/workspace/useWorkspace.ts:2` before removing `shared/workspaceApi.ts`.",
+            "Created `apps/desktop/src/platform/dialog.ts`:\n\n- `isDesktop()` reports platform availability via the preserved `isTauri()` guard.\n- `openWorkspaceFolder(options)` invokes the Tauri dialog with `directory: true`, `multiple: false`, `defaultPath`, and `title` (defaulting to `\"Open workspace folder\"`), returning `string | null` (preserving the string-result check) and letting errors throw unchanged.\n- Independent of `WorkspaceSidebar`; no other files touched.\n\nChecks: `tsc --noEmit` and `eslint` pass.",
+            "I'll inspect the current worktree, focusing on the task scope and related files.\nNo `platform/` directory exists yet. I'll create the adapter module.\nBoth checks pass. Let me verify the build as stage-level evidence.\nAdded `apps/desktop/src/platform/window.ts` (new adapter boundary):\n\n- `windowDragAvailable()` wraps `isTauri()`, safely reporting Tauri availability.\n- `startWindowDrag()` preserves the original guard and swallow-catch (`if (!isTauri()) return; void getCurrentWindow().startDragging().catch(() => undefined)`), matching HeaderBar's existing `dragWindow` behavior.\n\n`HeaderBar.tsx` was not touched, so Mac titlebar styling/guard logic is unchanged (its migration to call this adapter is a follow-up step outside this task's `files` scope).\n\nVerification (focused, all pass):\n- `tsc --noEmit` — exit 0\n- `eslint src/platform/window.ts` — exit 0\n- `tsc -b && vite build` — built successfully\n\nNote: the adapter is currently unused by callers (scope-limited to `window.ts`); no requirements were redefined.",
+            "Done.\n\n- `features/workspace/useWorkspace.ts:2` and `app/App.tsx:6` now import workspace operations from `../../platform/workspace` / `../platform/workspace`.\n- Deleted `apps/desktop/src/shared/workspaceApi.ts`; no remaining references in `apps/desktop` (grep clean).\n- `typecheck`, `lint`, and `build` all pass.\n\nNote for Validator: Tauri `invoke` calls are byte-for-byte identical to the pre-existing module (command names, arg casing, signatures unchanged); the adapter still imports `WorkspaceTree` from `../features/workspace/workspaceTypes`, so the platform module retains a dependency on feature types.",
+            "Both checks pass. Updated `WorkspaceSidebar.tsx` to use the dialog adapter:\n\n- Import replaced with `isDesktop, openWorkspaceFolder` from `../../platform/dialog`.\n- `isTauri()` → `isDesktop()`; `openDialog({ directory, multiple, ... })` → `openWorkspaceFolder({ defaultPath, title })`.\n- Preserved: non-desktop message, `title: \"Open workspace folder\"`, the `typeof path === \"string\"` check, and the `Could not open folder picker:` error text.\n\n`tsc --noEmit` and `eslint` on the file pass.",
+            "Done. `HeaderBar` now delegates dragging to the window platform adapter.\n\nChanged `apps/desktop/src/shared/ui/HeaderBar.tsx`:\n- Replaced direct `@tauri-apps/api/core` (`isTauri`) and `@tauri-apps/api/window` (`getCurrentWindow`) imports with `startWindowDrag` from `../../platform/window`.\n- `dragWindow` still checks `event.button !== 0` and the `.global-search, button` closest guard, then calls `startWindowDrag()` (adapter preserves the Tauri availability guard).\n- `navigator.platform.includes(\"Mac\")` titlebar class logic unchanged.\n\nVerified: `tsc --noEmit` and `eslint src/shared/ui/HeaderBar.tsx` both pass."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 9ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  10:36:22\npackages/core test:    Duration  218ms (transform 31ms, setup 0ms, collect 31ms, tests 9ms, environment 0ms, prepare 41ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2074 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-DuKaMOR3.js   894.03 kB │ gzip: 281.62 kB\napps/desktop build: ✓ built in 1.62s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Platform adapters are correctly extracted and wired. New modules apps/desktop/src/platform/workspace.ts, dialog.ts, and window.ts exist; platform/workspace.ts is byte-for-byte identical to the deleted shared/workspaceApi.ts (all nine Tauri command names, argument casing, return types, and signatures preserved), and the old module is deleted with zero remaining references. All @tauri-apps imports (invoke, isTauri, getCurrentWindow, plugin-dialog) are now confined to apps/desktop/src/platform/; grep across apps/desktop/src confirms no direct Tauri imports elsewhere. Callers rewired: app/App.tsx and features/workspace/useWorkspace.ts import from ../platform/workspace; WorkspaceSidebar uses isDesktop/openWorkspaceFolder preserving the non-desktop fallback message, title, string-only path check, and picker error text; HeaderBar delegates to startWindowDrag while the guard, .global-search/button exclusions, and navigator.platform Mac-titlebar logic are unchanged. Supplied checks (test, lint, typecheck, build) all pass, satisfying all three completion criteria. Non-blocking note: the platform/workspace.ts adapter still imports WorkspaceTree from ../features/workspace/workspaceTypes (explicitly allowed by the task) and memory/decisions.md still describes the adapter as living under shared/ (memory, not specs; no stage criterion covers it). No files under specs/ were modified."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "6/6 task validations passed."
+          },
+          "passed": true
+        }
+      ]
     },
     {
       "id": "desktop-integration",
@@ -310,6 +372,22 @@
       "type": "archive",
       "stage": "editor-feature",
       "result": "Now I'll update the memory files to record the completed `editor-feature` stage.\nMemory updated. No product specs or implementation files changed.\n\nUpdated entries:\n- `memory/decisions.md` — refreshed the feature layout (added `features/editor/`, corrected `shared/`) and added an \"Editor feature\" decision recording the 10-module grouping, rename-only nature, and preserved serialization/interaction behavior.\n- `memory/notes.md` — added an `editor-feature` entry with rename evidence (R097–R100), import-specifier-only diffs, the preserved `marnote-horizontal-scroll` key, and remaining shared surface; updated follow-ups.\n- `memory/progress.md` — added `editor-feature — passed (attempt 1)` with criteria, outcome, checks, and validation; kept deferred `workspaceApi.ts` work in Next.\n\nKnowledge captured: the editor feature is purely organizational; Markdown serialization and editor interactions are unchanged; no open findings."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "editor-feature",
+      "at": "2026-10-18T03:33:43.969Z"
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "platform-adapters",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "platform-adapters",
+      "result": "Updated three memory files:\n\n- `memory/decisions.md` — revised the code-layout entry (`shared/` no longer holds the adapter; added `platform/`), and added a **Platform adapters** decision section documenting the boundary modules, the caller wiring, and the accepted adapter→feature `WorkspaceTree` type dependency.\n- `memory/notes.md` — added a **platform-adapters (attempt 1)** note (byte-for-byte `workspaceApi.ts` → `platform/workspace.ts`, preserved command names/signatures, callers rewired, Tauri imports confined to `platform/`, behavior preserved, all four checks passing) and refreshed unresolved items.\n- `memory/progress.md` — recorded **platform-adapters — passed (attempt 1)** with criteria, outcome, checks, validation, and updated **Next**.\n\nNo spec or implementation files were changed."
     }
   ]
 }

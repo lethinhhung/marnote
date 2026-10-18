@@ -34,8 +34,19 @@
 - Repo-wide grep for former shared paths returned no matches; `TableEdgeControls.tsx` is 119 lines.
 - After this stage the only remaining `shared/ui` file is `HeaderBar.tsx` and `shared/workspaceApi.ts` remains the filesystem adapter.
 
+## platform-adapters (attempt 1)
+
+- Change isolated Tauri imports behind `apps/desktop/src/platform/`; no product, spec, or behavior changes.
+- New modules: `platform/workspace.ts`, `platform/dialog.ts`, `platform/window.ts`.
+- `platform/workspace.ts` replaces the deleted `shared/workspaceApi.ts` byte-for-byte: all nine Tauri command names (`open_workspace`, `default_workspace`, `list_workspace_tree`, `file_read_markdown`, `file_update_markdown`, `file_create_markdown`, `file_move`, `file_delete`, `folder_create`), argument casing, return types, and signatures preserved; zero remaining references to the old module.
+- `platform/dialog.ts` wraps `isTauri` and `plugin-dialog` `open`; `platform/window.ts` wraps `isTauri` and `getCurrentWindow` (guard preserved, `startDragging` catches errors).
+- Callers rewired: `app/App.tsx` and `features/workspace/useWorkspace.ts` → `../platform/workspace` / `../../platform/workspace`; `features/workspace/WorkspaceSidebar.tsx` → `../../platform/dialog`; `shared/ui/HeaderBar.tsx` → `../../platform/window`.
+- Grep confirms all `@tauri-apps` imports (invoke, isTauri, getCurrentWindow, plugin-dialog) are confined to `apps/desktop/src/platform/`; no direct Tauri imports elsewhere.
+- Behavior preserved in callers: non-desktop fallback message, picker title/defaultPath, string-only path check, and picker error text in `WorkspaceSidebar`; drag guard, `.global-search`/`button` exclusions, and Mac-titlebar detection in `HeaderBar`.
+- Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+
 ## Unresolved / follow-ups
 
-- `shared/workspaceApi.ts` relocation to a platform-adapters location is deferred (planned for a later stage); currently consistent with the plan.
+- `platform/workspace.ts` imports the `WorkspaceTree` type from `../features/workspace/workspaceTypes` (adapter→feature type dependency, explicitly allowed by the task).
 - `workspaceTypes.ts` is a feature module consumed by `shared/ui/HeaderBar`, a shared→feature type dependency to watch if features multiply.
 - No open findings from any stage.

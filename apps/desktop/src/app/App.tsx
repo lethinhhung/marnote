@@ -3,7 +3,7 @@ import { useTheme } from "../shared/theme/useTheme";
 import { useWorkspace } from "../features/workspace/useWorkspace";
 import { WorkspaceSidebar } from "../features/workspace/WorkspaceSidebar";
 import { NoteEditor } from "../features/editor/NoteEditor";
-import { readFile } from "../shared/workspaceApi";
+import { readFile } from "../platform/workspace";
 import { HeaderBar } from "../shared/ui/HeaderBar";
 import { NoteFooter } from "../features/editor/NoteFooter";
 import { useWideContent } from "../features/editor/useWideContent";
