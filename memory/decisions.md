@@ -15,10 +15,10 @@
 ## Workspace feature and adapter seam
 
 - Source: `specs/core.md` — organize desktop UI by feature, keeping platform adapters separate.
-- Workspace domain types (`Entry`, `WorkspaceTree`, and the unused `NoteData`) live in `features/workspace/workspaceTypes.ts`.
+- Workspace domain types `Entry` and `WorkspaceTree` are canonical in `shared/domain/workspace.ts` (see "Shared domain types"); `features/workspace/workspaceTypes.ts` now re-exports them and keeps the unused `NoteData`.
 - Workspace UI, state, and types are grouped under `features/workspace/`; `App.tsx` imports `useWorkspace` and `WorkspaceSidebar` from `../features/workspace`.
-- Filesystem access stays behind the adapter seam: `platform/workspace.ts` is the only Tauri `invoke` surface for workspace I/O and imports its `WorkspaceTree` type from the workspace feature. `useWorkspace` calls `platform/workspace` rather than `invoke` directly.
-- `shared/ui/HeaderBar` (shared UI) imports workspace feature types, so the feature is a type source for shared chrome.
+- Filesystem access stays behind the adapter seam: `platform/workspace.ts` is the only Tauri `invoke` surface for workspace I/O and imports its `WorkspaceTree` type from `shared/domain/workspace`. `useWorkspace` calls `platform/workspace` rather than `invoke` directly.
+- `shared/ui/HeaderBar` (shared UI) imports `Entry`/`WorkspaceTree` from `shared/domain/workspace`, so shared chrome no longer depends on the workspace feature.
 
 ## Platform adapters
 
@@ -28,7 +28,7 @@
   - `dialog.ts` — desktop detection and folder picker: `isDesktop`, `openWorkspaceFolder`, `WorkspaceFolderPickerOptions`.
   - `window.ts` — window controls: `windowDragAvailable`, `startWindowDrag`.
 - Feature/shared/app callers import these adapters: `app/App.tsx` and `features/workspace/useWorkspace.ts` use `platform/workspace`; `features/workspace/WorkspaceSidebar.tsx` uses `platform/dialog`; `shared/ui/HeaderBar.tsx` uses `platform/window`.
-- The adapter depends on the workspace feature only for the `WorkspaceTree` type (accepted); platform behavior is otherwise unchanged.
+- The adapter depends on `shared/domain/workspace` for the `WorkspaceTree` type; platform behavior is otherwise unchanged.
 
 ## Editor feature
 
@@ -43,3 +43,11 @@
 
 - `apps/desktop/index.html` references `/src/app/main.tsx`.
 - `main.tsx` keeps both stylesheet imports (`shared/theme/styles.css`, `shared/theme/theme-dark.css`) and the `React.StrictMode` root render.
+
+## Shared domain types
+
+- Source: `specs/core.md` — organize desktop UI by feature, keeping app composition, shared UI, and platform adapters separate; keep domain logic platform-independent.
+- Canonical workspace domain types `Entry` and `WorkspaceTree` moved to `apps/desktop/src/shared/domain/workspace.ts` (declarations unchanged: `Entry = { name; path; kind: "directory" | "file"; children? }`, `WorkspaceTree = { name; path; entries }`).
+- `features/workspace/workspaceTypes.ts` now re-exports `Entry`/`WorkspaceTree` from `shared/domain/workspace` and retains the local (still unused) `NoteData`.
+- `platform/workspace.ts:2` and `shared/ui/HeaderBar.tsx:4` import the types from `shared/domain/workspace`, removing the previous `platform → features` and `shared → features` type dependencies.
+- The dependency direction is now: features/platform/shared → `shared/domain`; no `features/` imports remain in `platform/` or `shared/`.

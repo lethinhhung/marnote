@@ -45,8 +45,18 @@
 - Behavior preserved in callers: non-desktop fallback message, picker title/defaultPath, string-only path check, and picker error text in `WorkspaceSidebar`; drag guard, `.global-search`/`button` exclusions, and Mac-titlebar detection in `HeaderBar`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 
+## desktop-integration (attempt 1)
+
+- Change was type-relocation/import-path only; no product, spec, or behavior changes.
+- New canonical module `apps/desktop/src/shared/domain/workspace.ts` declares `Entry` and `WorkspaceTree` with the exact same shapes previously in `features/workspace/workspaceTypes.ts`.
+- `features/workspace/workspaceTypes.ts` reduced to re-exports plus unchanged `NoteData` (2 lines).
+- Boundary imports rewired: `platform/workspace.ts:2` → `../shared/domain/workspace`; `shared/ui/HeaderBar.tsx:4` → `../domain/workspace`.
+- Grep confirms no `features/` imports remain under `platform/` or `shared/`; `features/workspace` callers (`useWorkspace`, `WorkspaceSidebar`, `FileTree`) still import through `./workspaceTypes`.
+- Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`; focused `pnpm --filter @marnote/desktop typecheck`.
+- `docs/temps/20261018031021-tl9be7.json` (modified in worktree) is coordinator run metadata, unrelated to the implementation.
+
 ## Unresolved / follow-ups
 
-- `platform/workspace.ts` imports the `WorkspaceTree` type from `../features/workspace/workspaceTypes` (adapter→feature type dependency, explicitly allowed by the task).
-- `workspaceTypes.ts` is a feature module consumed by `shared/ui/HeaderBar`, a shared→feature type dependency to watch if features multiply.
+- Resolved in desktop-integration: `platform/workspace.ts` no longer imports workspace-feature types, and `shared/ui/HeaderBar` no longer imports from `features/` (both now use `shared/domain/workspace`).
+- Watch item: `features/workspace/workspaceTypes.ts` still re-exports the shared domain types and keeps the unused `NoteData`; harmless but could be removed if no future consumer needs `NoteData`.
 - No open findings from any stage.

@@ -2,7 +2,7 @@
   "id": "20261018031021-tl9be7",
   "status": "running",
   "created_at": "2026-10-18T03:10:21.685Z",
-  "updated_at": "2026-10-18T03:38:13.917Z",
+  "updated_at": "2026-10-18T03:42:13.631Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "refactor desktop app follow feature-based mentioned in specs",
   "epic_file": "(inline epic)",
@@ -240,7 +240,7 @@
         "Workspace filesystem, dialog, and window operations continue to work through their adapter interfaces.",
         "Desktop typecheck and build pass."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -319,8 +319,67 @@
         "All desktop source imports and entry references resolve, and desktop lint, typecheck, and build pass.",
         "The refactor preserves current desktop behavior and does not alter product specifications."
       ],
-      "status": "pending",
-      "attempts": []
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "​\nImplemented.\n\n- Added `apps/desktop/src/shared/domain/workspace.ts` with unchanged `Entry` and `WorkspaceTree` shapes.\n- Converted `apps/desktop/src/features/workspace/workspaceTypes.ts` to a compatibility re-export; kept unused `NoteData` in place.\n- `pnpm --filter @marnote/desktop typecheck` passes.\n\nNote: `docs/temps/20261018031021-tl9be7.json` shows as modified in the worktree but was not touched by this task.",
+            "Done.\n\n- Changed `apps/desktop/src/platform/workspace.ts:2` to import `WorkspaceTree` from `../shared/domain/workspace`.\n- Exported function signatures and `invoke` command names unchanged.\n- No imports from `features/` remain in the adapter.\n- `pnpm --filter @marnote/desktop typecheck` passes.\n\nNo blockers.",
+            "Done.\n\n- `apps/desktop/src/shared/ui/HeaderBar.tsx:4` now imports `Entry`/`WorkspaceTree` from `../domain/workspace` instead of `../../features/workspace/workspaceTypes`.\n- No remaining `features/` imports; props and search behavior untouched.\n- `pnpm --filter @marnote/desktop typecheck` passes."
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 10ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  10:40:50\npackages/core test:    Duration  230ms (transform 31ms, setup 0ms, collect 31ms, tests 10ms, environment 0ms, prepare 36ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2074 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-DuKaMOR3.js   894.03 kB │ gzip: 281.62 kB\napps/desktop build: ✓ built in 1.66s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "All three plan tasks are implemented as specified. Verified `apps/desktop/src/shared/domain/workspace.ts` defines unchanged `Entry`/`WorkspaceTree`; `features/workspace/workspaceTypes.ts` re-exports them plus `NoteData`; `platform/workspace.ts:2` and `shared/ui/HeaderBar.tsx:4` now import from `../shared/domain/workspace` with preserved signatures/commands/props. No `features/` imports remain in `platform/` or `shared/`. Focused `pnpm --filter @marnote/desktop typecheck` passes; provided checks (test, lint, typecheck, build) all pass. The `docs/temps/20261018031021-tl9be7.json` worktree change is coordinator run metadata, unrelated to the implementation."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "3/3 task validations passed."
+          },
+          "passed": true
+        }
+      ]
     }
   ],
   "blockers": [],
@@ -388,6 +447,22 @@
       "type": "archive",
       "stage": "platform-adapters",
       "result": "Updated three memory files:\n\n- `memory/decisions.md` — revised the code-layout entry (`shared/` no longer holds the adapter; added `platform/`), and added a **Platform adapters** decision section documenting the boundary modules, the caller wiring, and the accepted adapter→feature `WorkspaceTree` type dependency.\n- `memory/notes.md` — added a **platform-adapters (attempt 1)** note (byte-for-byte `workspaceApi.ts` → `platform/workspace.ts`, preserved command names/signatures, callers rewired, Tauri imports confined to `platform/`, behavior preserved, all four checks passing) and refreshed unresolved items.\n- `memory/progress.md` — recorded **platform-adapters — passed (attempt 1)** with criteria, outcome, checks, validation, and updated **Next**.\n\nNo spec or implementation files were changed."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "platform-adapters",
+      "at": "2026-10-18T03:38:15.809Z"
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "desktop-integration",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "desktop-integration",
+      "result": "Memory updated for the `desktop-integration` stage. No product specs or implementation files touched.\n\n**Entries updated**\n- `memory/progress.md` — added `desktop-integration — passed (attempt 1)` (criteria, outcome, checks `test`/`lint`/`typecheck`/`build`, 3/3 validation); rewrote `Next`.\n- `memory/notes.md` — added a `desktop-integration (attempt 1)` section (type-relocation only, exact file/line rewires) and replaced the stale unresolved items with their resolution.\n- `memory/decisions.md` — corrected the earlier workspace/adapter/shared-chrome statements and added a `Shared domain types` decision recording `shared/domain/workspace.ts` as canonical.\n\n**Knowledge captured**\n- `Entry`/`WorkspaceTree` are now canonical in `apps/desktop/src/shared/domain/workspace.ts`; `features/workspace/workspaceTypes.ts` re-exports them and keeps unused `NoteData`.\n- `platform/workspace.ts:2` and `shared/ui/HeaderBar.tsx:4` import from `shared/domain/workspace`; no `features/` imports remain under `platform/` or `shared/`. Dependency direction is features/platform/shared → `shared/domain`.\n- Behavior and specs preserved; only import paths/locations changed. `docs/temps/*.json` change is coordinator metadata.\n- Open follow-up (non-blocking): remove the `workspaceTypes.ts` re-export shim and unused `NoteData` if no future consumer needs them."
     }
   ]
 }

@@ -31,6 +31,14 @@ Branch: `feat/feature-based-strata-improved`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 - Validation: pass, 6/6 task validations. No spec or behavior changes.
 
+## desktop-integration — passed (attempt 1)
+
+- Completion criteria: desktop source separates app composition, features, shared UI, and platform adapters per `specs/core.md`; all imports/entry references resolve and desktop lint, typecheck, build pass; behavior and specs preserved.
+- Outcome: canonical `Entry`/`WorkspaceTree` moved to `apps/desktop/src/shared/domain/workspace.ts`; `features/workspace/workspaceTypes.ts` re-exports them (plus `NoteData`); `platform/workspace.ts` and `shared/ui/HeaderBar.tsx` import from `shared/domain`. No `features/` imports remain under `platform/` or `shared/`.
+- Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
+- Validation: pass, 3/3 task validations. Type-relocation/import-path only; no spec or behavior changes.
+
 ## Next
 
-- Remaining epic work: feature-organize any further domains; platform adapters are complete for this stage.
+- Remaining epic work: none outstanding for the active stages; feature organization (app, features, shared, platform) is complete and boundaries are clean.
+- Follow-up candidate: remove `features/workspace/workspaceTypes.ts` re-export shim and unused `NoteData` if no future consumer needs them.
