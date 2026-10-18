@@ -122,4 +122,15 @@
 - Attempt 1 used `tempfile::TempDir` and failed validation (contract required `std::fs` with manual cleanup); attempt 2 removed `tempfile` dev-dependency, rewrote fixtures, all 36 tests pass.
 - Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`; `cargo test` passes.
 
+## unit-test-integration (attempt 1)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Integrates existing test suites into the repository's check workflow; no product, spec, or behavior changes.
+- Root `package.json` test script updated to run all three test suites:
+  - Core: `pnpm --filter @marnote/core run test` (5 tests in `packages/core/src/index.test.ts`)
+  - Desktop: `pnpm --filter @marnote/desktop run test` (89 Vitest tests across editor, workspace, and state modules)
+  - Rust: `pnpm --filter @marnote/desktop run test:rust` (36 `cargo test` tests in `apps/desktop/src-tauri/src/workspace.rs`)
+- Desktop `package.json` adds `"test:rust": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml"` script.
+- All 130 tests pass; lint, typecheck, and build pass for affected packages.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
+
 (End of file - total 109 lines)

@@ -51,9 +51,16 @@ Branch: `test/add-unit-tests`.
 - Evidence: `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml` → 36 tests pass; full check suite (`pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`) passes.
 - Validation: pass, 1/1 task validations. Attempt 1 failed validation for using `tempfile` crate; attempt 2 removed dev-dependency and rewrote fixtures to use `std::fs` with manual cleanup.
 
+## unit-test-integration — passed (attempt 1)
+
+- Completion criteria: the repository test workflow runs all core, desktop, and Rust unit tests; the full test suite passes, including existing core tests; lint, typecheck, and build checks pass for the changed packages.
+- Outcome: root `package.json` test script now orchestrates core Vitest (5 tests), desktop Vitest (89 tests), and Rust unit tests (36 tests) via the new `test:rust` script in the desktop package. The desktop `test:rust` script runs `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml`. Total test count: 130 tests across all suites.
+- Evidence: `pnpm run test` → core 5/5, desktop 89/89, Rust 36/36; `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass.
+- Validation: pass, 2/2 task validations. No spec or behavior changes.
+
 ## Next
 
-- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered; Rust filesystem behavior (workspace paths, tree, file CRUD, moves, deletion) is now covered.
+- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered; Rust filesystem behavior (workspace paths, tree, file CRUD, moves, deletion) is now covered. The test runner now discovers and executes all three test suites via the root `test` command.
 
 # Prior epic: refactor desktop app to feature-based structure
 

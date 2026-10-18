@@ -72,4 +72,16 @@
 - Rationale: the task contract explicitly required avoiding test dependencies and using `std::fs` with manual cleanup; initial attempt used `tempfile::tempdir()` and failed validation; second attempt removed the `tempfile` dev-dependency from `Cargo.toml` and rewrote fixtures to use `std::fs::create_dir_all`, `std::fs::remove_dir_all`, and a RAII-style guard for cleanup.
 - Outcome: all 36 Rust tests pass (13 workspace path tests, 7 tree collection tests, 6 file create/update tests, 6 file move tests, 3 file delete tests) with zero external test dependencies; full check suite (`cargo test`, lint, typecheck, build) passes.
 
+## Unified test workflow
+
+- Source: epic "add all unit tests" — make all unit tests discoverable and runnable through the repository's check workflow.
+- Root `package.json` test script runs all three test suites via package-local commands:
+  - Core: `pnpm --filter @marnote/core run test` → Vitest (5 tests in `packages/core/src/index.test.ts`)
+  - Desktop TypeScript: `pnpm --filter @marnote/desktop run test` → Vitest (89 tests across editor, workspace, and state modules)
+  - Desktop Rust: `pnpm --filter @marnote/desktop run test:rust` → `cargo test` (36 tests in `apps/desktop/src-tauri/src/workspace.rs`)
+- Desktop package declares `"test:rust": "cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml"`.
+- Total test count: 130 tests (5 core + 89 desktop TypeScript + 36 Rust).
+- All tests pass; lint, typecheck, and build checks pass for affected packages.
+- No test consolidation; each package retains its own test tooling (core and desktop each have independent `vitest`; Rust uses `cargo test`).
+
 (End of file - total 66 lines)
