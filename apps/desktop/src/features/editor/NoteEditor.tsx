@@ -11,11 +11,11 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { TableKit } from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
 import { EditorToolbar } from "./EditorToolbar";
-import { initialMarkdown } from "../initialMarkdown";
+import { initialMarkdown } from "./initialMarkdown";
 import { matchingSlashIds, SlashMenu } from "./SlashMenu";
 import { BlockDragHandle } from "./BlockDragHandle";
 import { TableEdgeControls } from "./TableEdgeControls";
-import { clearColumnWidths } from "../tableResize";
+import { clearColumnWidths } from "./tableResize";
 
 type SlashState = { query: string; from: number; to: number; top: number; left: number; maxHeight: number };
 function slashPosition(editor: Editor, position: number) {

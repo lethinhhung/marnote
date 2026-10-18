@@ -2,7 +2,7 @@
   "id": "20261018031021-tl9be7",
   "status": "running",
   "created_at": "2026-10-18T03:10:21.685Z",
-  "updated_at": "2026-10-18T03:23:43.093Z",
+  "updated_at": "2026-10-18T03:33:42.189Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "refactor desktop app follow feature-based mentioned in specs",
   "epic_file": "(inline epic)",
@@ -89,7 +89,7 @@
         "Workspace selection, tree navigation, and file operations retain their existing behavior.",
         "Desktop typecheck and build pass."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -165,8 +165,67 @@
         "Editor interactions and Markdown serialization retain their existing behavior.",
         "Desktop typecheck and build pass."
       ],
-      "status": "pending",
-      "attempts": []
+      "status": "checkpoint_pending",
+      "attempts": [
+        {
+          "attempt": 1,
+          "implementations": [
+            "Moved all four helpers into the editor feature as pure renames (no content changes, no internal cross-imports to adjust):\n\n- `shared/blockDnd.ts` → `features/editor/blockDnd.ts`\n- `shared/initialMarkdown.ts` → `features/editor/initialMarkdown.ts`\n- `shared/tableResize.ts` → `features/editor/tableResize.ts`\n- `shared/useWideContent.ts` → `features/editor/useWideContent.ts`\n\nEvidence:\n- `git diff --cached -M --stat` shows `R100` renames with 0 insertions/deletions for all four.\n- Old shared paths no longer exist; new feature paths exist.\n- Storage key preserved: `marnote-horizontal-scroll` at `features/editor/useWideContent.ts:3`.\n- No moved file imports another moved file, so no internal import edits were required.\n\nPer the task boundary I did not touch component files or app composition. As a result, the consumers still reference the former shared paths and typecheck currently reports the expected 5 sites that the component-move/app work must repoint:\n\n- `apps/desktop/src/shared/ui/BlockDragHandle.tsx:5` → `../blockDnd`\n- `apps/desktop/src/shared/ui/NoteEditor.tsx:14` → `../initialMarkdown`\n- `apps/desktop/src/shared/ui/NoteEditor.tsx:18` → `../tableResize`\n- `apps/desktop/src/shared/ui/TableEdgeControls.tsx:3` → `../tableResize`\n- `apps/desktop/src/app/App.tsx:9` → `../shared/useWideContent`\n\nUnresolved follow-up: these five imports must be repointed to `features/editor/...` for desktop typecheck/build to pass. This task's contract explicitly excluded component/app edits, so I left them for the corresponding tasks; flagging in case no sibling task owns the `App.tsx` `useWideContent` import.",
+            "​\n​\nI've inspected the worktree. The four helpers were already moved (staged renames); the five consumer imports they flagged are still broken. I'll move the four components and repoint imports so typecheck/build can pass.\n​\nNow repoint the sole consumer's imports (import specifiers only). Without this the stage's typecheck/build cannot pass.\nDone. Moved the four editor support components into `apps/desktop/src/features/editor/` and repointed imports so the stage's typecheck/build pass.\n\nChanged paths\n- Renamed (`git mv`, history preserved), content unchanged except helper imports:\n  - `shared/ui/EditorToolbar.tsx` → `features/editor/EditorToolbar.tsx` (no import change)\n  - `shared/ui/SlashMenu.tsx` → `features/editor/SlashMenu.tsx` (no import change)\n  - `shared/ui/BlockDragHandle.tsx` → `features/editor/BlockDragHandle.tsx` (`../blockDnd` → `./blockDnd`)\n  - `shared/ui/TableEdgeControls.tsx` → `features/editor/TableEdgeControls.tsx` (`../tableResize` → `./tableResize`)\n- Import-only repoints required for resolution:\n  - `shared/ui/NoteEditor.tsx:13-18` → `../../features/editor/*` (sole consumer of the moved components)\n  - `app/App.tsx:9` → `../features/editor/useWideContent` (fixes the import the prior `move-editor-logic` task left broken)\n\nDecisions\n- No behavior/interaction code touched; diffs are pure path specifiers. `TableEdgeControls.tsx` remains 119 lines (under the 120 limit).\n- `NoteEditor` and `App` were left in place (not relocated/restructured); only import specifiers changed. This was necessary because the stage criterion is \"desktop typecheck and build pass\" and these are the only resolution sites; it matches the accepted precedent from the workspace stage, which edited its sole out-of-scope consumer for the same reason.\n- No files under `specs/` changed.\n\nVerification (all pass)\n- `pnpm --filter @marnote/desktop typecheck`\n- `pnpm --filter @marnote/desktop build`\n- `pnpm --filter @marnote/desktop lint`\n- `pnpm --filter @marnote/desktop test`\n- No references remain to the former `shared/ui/*` or `shared/{blockDnd,tableResize,initialMarkdown,useWideContent}` paths; those files no longer exist.\n\nUnresolved / follow-up: none. Note `docs/temps/….json` is modified in the worktree but was not touched by me.",
+            "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nDone. Moved the editor composition into the feature and repointed imports.\n\nChanged paths\n- Renamed (`git mv`, history preserved):\n  - `apps/desktop/src/shared/ui/NoteEditor.tsx` → `apps/desktop/src/features/editor/NoteEditor.tsx`, feature imports repointed to `./` (`initialMarkdown`, `tableResize`, plus toolbar/slash/drag/table already sibling)\n  - `apps/desktop/src/shared/ui/NoteFooter.tsx` → `apps/desktop/src/features/editor/NoteFooter.tsx` (content unchanged)\n- `apps/desktop/src/app/App.tsx:5,8` — `NoteEditor`/`NoteFooter` now imported from `../features/editor/…`; `useWideContent` already resolved from the feature.\n\nBehavior: diff vs `HEAD` for `NoteEditor.tsx` is only the two path-only import lines (`../initialMarkdown`→`./initialMarkdown`, `../tableResize`→`./tableResize`); all serialization/editor wiring unchanged. No stale references to `shared/ui/NoteEditor`, `shared/ui/NoteFooter`, or the former shared helpers remain (repo-wide grep clean).\n\nChecks\n- `npm --prefix apps/desktop run typecheck` — pass\n- `npm --prefix apps/desktop run build` — pass\n- `npm --prefix apps/desktop run lint` — pass\n\nUnresolved: none. (`docs/temps/…json` is modified in the worktree but was not touched by me.)"
+          ],
+          "implementation_failures": [],
+          "checks": [
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "test"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ test /Users/macos/Projects/marnote\n> pnpm -r test\n\nScope: 2 of 3 workspace projects\npackages/core test$ vitest run --passWithNoTests\npackages/core test:  RUN  v2.1.9 /Users/macos/Projects/marnote/packages/core\npackages/core test:  ✓ src/index.test.ts (5 tests) 9ms\npackages/core test:  Test Files  1 passed (1)\npackages/core test:       Tests  5 passed (5)\npackages/core test:    Start at  10:30:24\npackages/core test:    Duration  220ms (transform 29ms, setup 0ms, collect 29ms, tests 9ms, environment 0ms, prepare 34ms)\npackages/core test: Done\napps/desktop test$ vitest run --passWithNoTests\napps/desktop test:  RUN  v2.1.9 /Users/macos/Projects/marnote/apps/desktop\napps/desktop test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)\napps/desktop test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*\napps/desktop test: No test files found, exiting with code 0\napps/desktop test: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "lint"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ lint /Users/macos/Projects/marnote\n> pnpm -r lint\n\nScope: 2 of 3 workspace projects\npackages/core lint$ eslint src\npackages/core lint: Done\napps/desktop lint$ eslint src vite.config.ts\napps/desktop lint: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "typecheck"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ typecheck /Users/macos/Projects/marnote\n> pnpm -r typecheck\n\nScope: 2 of 3 workspace projects\npackages/core typecheck$ tsc --noEmit\npackages/core typecheck: Done\napps/desktop typecheck$ tsc --noEmit\napps/desktop typecheck: Done\n\n"
+            },
+            {
+              "command": [
+                "pnpm",
+                "run",
+                "build"
+              ],
+              "code": 0,
+              "output": "\n> marnote@ build /Users/macos/Projects/marnote\n> pnpm -r build\n\nScope: 2 of 3 workspace projects\npackages/core build$ tsc --noEmit\npackages/core build: Done\napps/desktop build$ tsc -b && vite build\napps/desktop build: vite v6.4.4 building for production...\napps/desktop build: transforming...\napps/desktop build: ✓ 2072 modules transformed.\napps/desktop build: rendering chunks...\napps/desktop build: computing gzip size...\napps/desktop build: dist/index.html                   0.51 kB │ gzip:   0.31 kB\napps/desktop build: dist/assets/index-D8aPPR2K.css   26.80 kB │ gzip:   6.07 kB\napps/desktop build: dist/assets/index-Cq5Y-iiy.js   893.85 kB │ gzip: 281.57 kB\napps/desktop build: ✓ built in 1.62s\napps/desktop build: (!) Some chunks are larger than 500 kB after minification. Consider:\napps/desktop build: - Using dynamic import() to code-split the application\napps/desktop build: - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks\napps/desktop build: - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\napps/desktop build: Done\n\n"
+            }
+          ],
+          "tester": {
+            "status": "pass",
+            "findings": [],
+            "summary": "Stage verified against current repository contents. All 10 editor modules (BlockDragHandle, EditorToolbar, NoteEditor, NoteFooter, SlashMenu, TableEdgeControls, blockDnd, initialMarkdown, tableResize, useWideContent) now live under apps/desktop/src/features/editor/ and no longer exist at their former shared paths. git diff --cached -M reports pure renames (R097-R100); content diffs are limited to import specifiers (BlockDragHandle ./blockDnd; TableEdgeControls ./tableResize; NoteEditor ./EditorToolbar,./initialMarkdown,./SlashMenu,./BlockDragHandle,./TableEdgeControls,./tableResize; App.tsx ./features/editor/*), so Markdown serialization (contentType 'markdown', getMarkdown/onUpdate wiring) and interaction logic are unchanged. Repo-wide grep for former shared paths returns no matches (exit 1); App.tsx imports NoteEditor, NoteFooter, and useWideContent from features/editor. TableEdgeControls.tsx is 119 lines (under the 120-line limit). The marnote-horizontal-scroll storage key is preserved in useWideContent.ts:3. Supplied checks all pass (pnpm run test/lint/typecheck/build true); independent narrow confirmation `npm --prefix apps/desktop run typecheck` passed. The modified docs/temps/20261018031021-tl9be7.json in the worktree is unrelated to this stage and does not affect completion criteria. No failures or regressions found."
+          },
+          "validation": {
+            "status": "pass",
+            "findings": [],
+            "summary": "3/3 task validations passed."
+          },
+          "passed": true
+        }
+      ]
     },
     {
       "id": "platform-adapters",
@@ -235,6 +294,22 @@
       "type": "archive",
       "stage": "workspace-feature",
       "result": "I'll explore the repository structure, especially the `memory/` directory and what changed in this stage.\nNow let me examine the actual changes to record accurate facts.\nLet me verify the checks and inspect the current shared API seam.\nChecks pass. Now updating memory files.\n​\n​Archived `workspace-feature` (attempt 1, passed) into `memory/`:\n\n- **decisions.md** — updated the desktop layout to include `features/workspace/`; added a \"Workspace feature and adapter seam\" section recording that workspace UI/state/types are grouped as a feature while `shared/workspaceApi.ts` remains the sole Tauri `invoke` adapter (importing feature types), with the physical adapter relocation still deferred.\n- **progress.md** — added the passed `workspace-feature` entry (criteria, outcome, checks, validation) and a `Next` note on remaining epic work.\n- **notes.md** — recorded relocation specifics, updated internal/cross-boundary imports, behavior-preservation rationale, stale-reference check, and the two follow-ups (`workspaceApi` relocation; `shared/ui/HeaderBar` → feature type dependency).\n\nNo product specifications or implementation files were changed; product knowledge remains subordinate to `specs/`."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "workspace-feature",
+      "at": "2026-10-18T03:23:45.279Z"
+    },
+    {
+      "type": "stage_attempt",
+      "stage": "editor-feature",
+      "attempt": 1,
+      "passed": true
+    },
+    {
+      "type": "archive",
+      "stage": "editor-feature",
+      "result": "Now I'll update the memory files to record the completed `editor-feature` stage.\nMemory updated. No product specs or implementation files changed.\n\nUpdated entries:\n- `memory/decisions.md` — refreshed the feature layout (added `features/editor/`, corrected `shared/`) and added an \"Editor feature\" decision recording the 10-module grouping, rename-only nature, and preserved serialization/interaction behavior.\n- `memory/notes.md` — added an `editor-feature` entry with rename evidence (R097–R100), import-specifier-only diffs, the preserved `marnote-horizontal-scroll` key, and remaining shared surface; updated follow-ups.\n- `memory/progress.md` — added `editor-feature — passed (attempt 1)` with criteria, outcome, checks, and validation; kept deferred `workspaceApi.ts` work in Next.\n\nKnowledge captured: the editor feature is purely organizational; Markdown serialization and editor interactions are unchanged; no open findings."
     }
   ]
 }

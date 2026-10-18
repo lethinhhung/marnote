@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent, type ReactNode } from "react";
 import type { Editor } from "@tiptap/react";
-import { applyColumnWidth, resizeTarget, type ResizeGesture } from "../tableResize";
+import { applyColumnWidth, resizeTarget, type ResizeGesture } from "./tableResize";
 
 type Target = { wrapper: HTMLElement; table: HTMLTableElement };
 type Position = { right: { top: number; left: number }; bottom: { top: number; left: number } };

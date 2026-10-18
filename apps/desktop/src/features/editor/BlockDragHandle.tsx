@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { GripVertical } from "lucide-react";
 import { DragHandle } from "@tiptap/extension-drag-handle-react";
 import type { Editor } from "@tiptap/react";
-import { getBlockDropTarget, moveTopLevelBlock } from "../blockDnd";
+import { getBlockDropTarget, moveTopLevelBlock } from "./blockDnd";
 
 type DragState = { pointerId: number; source: number; startX: number; startY: number; active: boolean };
 

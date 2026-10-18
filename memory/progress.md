@@ -17,6 +17,13 @@ Branch: `feat/feature-based-strata-improved`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build` (re-verified `typecheck` and `lint` clean).
 - Validation: pass, 5/5 task validations. Import-path/relocation only; no spec or behavior changes.
 
+## editor-feature — passed (attempt 1)
+
+- Completion criteria: editor components and supporting Markdown, drag-and-drop, table, and preference logic organized together as a feature; editor interactions and Markdown serialization retain behavior; desktop typecheck and build pass.
+- Outcome: 10 modules (`NoteEditor`, `EditorToolbar`, `NoteFooter`, `SlashMenu`, `BlockDragHandle`, `TableEdgeControls`, `blockDnd`, `initialMarkdown`, `tableResize`, `useWideContent`) grouped under `apps/desktop/src/features/editor`; pure renames with import-only content diffs.
+- Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`; independent `npm --prefix apps/desktop run typecheck`.
+- Validation: pass, 3/3 task validations. No spec or behavior changes.
+
 ## Next
 
 - Remaining epic work: move `shared/workspaceApi.ts` to a platform-adapters seam (deferred) and feature-organize any further domains.
