@@ -1,8 +1,8 @@
 {
   "id": "20261018031021-tl9be7",
-  "status": "running",
+  "status": "complete",
   "created_at": "2026-10-18T03:10:21.685Z",
-  "updated_at": "2026-10-18T03:42:13.631Z",
+  "updated_at": "2026-10-18T03:42:15.512Z",
   "repo": "/Users/macos/Projects/marnote",
   "epic": "refactor desktop app follow feature-based mentioned in specs",
   "epic_file": "(inline epic)",
@@ -319,7 +319,7 @@
         "All desktop source imports and entry references resolve, and desktop lint, typecheck, and build pass.",
         "The refactor preserves current desktop behavior and does not alter product specifications."
       ],
-      "status": "checkpoint_pending",
+      "status": "complete",
       "attempts": [
         {
           "attempt": 1,
@@ -463,6 +463,15 @@
       "type": "archive",
       "stage": "desktop-integration",
       "result": "Memory updated for the `desktop-integration` stage. No product specs or implementation files touched.\n\n**Entries updated**\n- `memory/progress.md` — added `desktop-integration — passed (attempt 1)` (criteria, outcome, checks `test`/`lint`/`typecheck`/`build`, 3/3 validation); rewrote `Next`.\n- `memory/notes.md` — added a `desktop-integration (attempt 1)` section (type-relocation only, exact file/line rewires) and replaced the stale unresolved items with their resolution.\n- `memory/decisions.md` — corrected the earlier workspace/adapter/shared-chrome statements and added a `Shared domain types` decision recording `shared/domain/workspace.ts` as canonical.\n\n**Knowledge captured**\n- `Entry`/`WorkspaceTree` are now canonical in `apps/desktop/src/shared/domain/workspace.ts`; `features/workspace/workspaceTypes.ts` re-exports them and keeps unused `NoteData`.\n- `platform/workspace.ts:2` and `shared/ui/HeaderBar.tsx:4` import from `shared/domain/workspace`; no `features/` imports remain under `platform/` or `shared/`. Dependency direction is features/platform/shared → `shared/domain`.\n- Behavior and specs preserved; only import paths/locations changed. `docs/temps/*.json` change is coordinator metadata.\n- Open follow-up (non-blocking): remove the `workspaceTypes.ts` re-export shim and unused `NoteData` if no future consumer needs them."
+    },
+    {
+      "type": "stage_complete",
+      "stage": "desktop-integration",
+      "at": "2026-10-18T03:42:15.511Z"
+    },
+    {
+      "type": "complete",
+      "at": "2026-10-18T03:42:15.512Z"
     }
   ]
 }
