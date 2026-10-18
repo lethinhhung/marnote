@@ -64,3 +64,12 @@
 - `features/workspace/workspaceTypes.ts` now re-exports `Entry`/`WorkspaceTree` from `shared/domain/workspace` and retains the local (still unused) `NoteData`.
 - `platform/workspace.ts:2` and `shared/ui/HeaderBar.tsx:4` import the types from `shared/domain/workspace`, removing the previous `platform → features` and `shared → features` type dependencies.
 - The dependency direction is now: features/platform/shared → `shared/domain`; no `features/` imports remain in `platform/` or `shared/`.
+
+## Rust filesystem tests: std::fs fixtures over tempfile crate
+
+- Source: stage `rust-filesystem-tests` completion criteria and validation.
+- Rust unit tests for filesystem behavior (workspace path safety, tree collection, file updates, moves, deletion) use isolated temporary directories created with `std::fs` and cleaned up manually via a `with_temp_workspace` helper, not the `tempfile` crate.
+- Rationale: the task contract explicitly required avoiding test dependencies and using `std::fs` with manual cleanup; initial attempt used `tempfile::tempdir()` and failed validation; second attempt removed the `tempfile` dev-dependency from `Cargo.toml` and rewrote fixtures to use `std::fs::create_dir_all`, `std::fs::remove_dir_all`, and a RAII-style guard for cleanup.
+- Outcome: all 36 Rust tests pass (13 workspace path tests, 7 tree collection tests, 6 file create/update tests, 6 file move tests, 3 file delete tests) with zero external test dependencies; full check suite (`cargo test`, lint, typecheck, build) passes.
+
+(End of file - total 66 lines)

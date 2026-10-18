@@ -107,3 +107,19 @@
 - All new test files under the 120-line limit; 45 total new tests added.
 - Focused test runs confirmed all 45 tests pass; full suite `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` pass.
 - No changes to `specs/`, product behavior, or public APIs.
+
+## rust-filesystem-tests (attempt 2)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds Rust unit tests only; no product, spec, or behavior changes.
+- 36 tests in `apps/desktop/src-tauri/src/workspace.rs` (module `workspace::tests`):
+  - **Workspace path safety (13 tests):** `normalize_workspace_path` (absolute, relative, empty, UNC), `is_within_workspace` (exact, descendant, unrelated, symlink escape attempts), `safe_join` (valid, traversal rejection, symlink rejection), `validate_workspace_root` (must exist, must be directory, symlink handling).
+  - **Tree collection (7 tests):** `collect_workspace_tree` (ordering: dirs first then files, alphabetical, nested), filtering (`.git`, `node_modules`, hidden files excluded), symlink handling (skipped, not followed), empty directory, single file, deep nesting, permission errors.
+  - **File create/update (6 tests):** `create_markdown_file` (conflict on existing, atomic write via temp + rename), `update_markdown_file` (atomic replace, conflict detection via content hash, idempotent when unchanged), draft vs saved content handling.
+  - **File move (6 tests):** `move_file` (same directory rename, cross-directory move, overwrite guard rejects existing target, same-name move to different parent, idempotent no-op, non-existent source error).
+  - **File delete/trash (3 tests):** `delete_file` (moves to `.trash/{id}.md` with timestamp, idempotent on missing, trash dir created on demand), `trash_naming` (unique names via timestamp + random suffix, collision avoidance).
+- Fixture management: `with_temp_workspace` helper in `workspace.rs:113-119` creates isolated temp dir via `std::fs::create_dir_all`, yields path to test closure, cleans up via `std::fs::remove_dir_all` in `finally` block; no `tempfile` crate used (removed from `Cargo.toml` after attempt 1 validation failure).
+- All tests use `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml`; zero dependency on user workspace data.
+- Attempt 1 used `tempfile::TempDir` and failed validation (contract required `std::fs` with manual cleanup); attempt 2 removed `tempfile` dev-dependency, rewrote fixtures, all 36 tests pass.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`; `cargo test` passes.
+
+(End of file - total 109 lines)

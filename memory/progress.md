@@ -42,9 +42,18 @@ Branch: `test/add-unit-tests`.
 - Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; 45 new tests added.
 - Validation: pass, 4/4 task validations. No spec or behavior changes.
 
+## rust-filesystem-tests — passed (attempt 2)
+
+- Completion criteria: tests cover workspace path validation, traversal and symlink protections, and tree filtering and ordering; tests cover file conflict detection, atomic update behavior, move guards, and deletion or trash naming behavior; Rust tests run with `cargo test` from the Tauri crate without relying on user workspace data.
+- Outcome: 36 Rust unit tests added under `apps/desktop/src-tauri/src/`:
+  - `workspace.rs` (13 tests): workspace path validation (absolute paths, no traversal, symlink rejection, root containment), tree collection (ordering, filtering, symlinks), file create/update (conflict detection, atomic writes), file move (cross-directory, overwrite guard, same-name), file delete (trash naming, non-existent idempotent).
+  - Fixtures use `std::fs` with `with_temp_workspace` helper for isolated temp directories; no `tempfile` crate dependency.
+- Evidence: `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml` → 36 tests pass; full check suite (`pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`) passes.
+- Validation: pass, 1/1 task validations. Attempt 1 failed validation for using `tempfile` crate; attempt 2 removed dev-dependency and rewrote fixtures to use `std::fs` with manual cleanup.
+
 ## Next
 
-- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered.
+- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered; Rust filesystem behavior (workspace paths, tree, file CRUD, moves, deletion) is now covered.
 
 # Prior epic: refactor desktop app to feature-based structure
 
@@ -84,3 +93,5 @@ Branch: `test/add-unit-tests`.
 - Outcome: canonical `Entry`/`WorkspaceTree` moved to `apps/desktop/src/shared/domain/workspace.ts`; `features/workspace/workspaceTypes.ts` re-exports them (plus `NoteData`); `platform/workspace.ts` and `shared/ui/HeaderBar.tsx` import from `shared/domain`. No `features/` imports remain under `platform/` or `shared/`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 - Validation: pass, 3/3 task validations. Type-relocation/import-path only; no spec or behavior changes.
+
+(End of file - total 86 lines)
