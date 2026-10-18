@@ -11,9 +11,17 @@ Branch: `test/add-unit-tests`.
 - Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`.
 - Validation: pass, 2/2 task validations. No spec or behavior changes.
 
+## editor-logic-tests — passed (attempt 1)
+
+- Completion criteria: tests cover slash-choice matching, block drop target and move behavior, and table width calculations plus cleanup; tests use focused fixtures/mocks without full editor UI rendering; added test files stay within the 120-line code-file limit.
+- Outcome: three colocated test files added under `apps/desktop/src/features/editor/` — `SlashMenu.test.ts` (30 lines), `blockDnd.test.ts` (118 lines), `tableResize.test.ts` (79 lines), 16 tests total.
+- Evidence: `pnpm vitest run SlashMenu.test.ts blockDnd.test.ts tableResize.test.ts` → 3 files, 16/16 passed.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`.
+- Validation: pass, 3/3 task validations. No spec or product changes.
+
 ## Next
 
-- Remaining epic work: add the actual desktop unit tests that use this foundation (colocated under `apps/desktop/src`).
+- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, and tableResize are now covered.
 
 # Prior epic: refactor desktop app to feature-based structure
 

@@ -52,6 +52,10 @@
 - `packages/core` keeps its own independent `vitest ^2.1.8` devDependency and `test` script; the two packages are not consolidated.
 - `apps/desktop/vite.config.ts` imports `defineConfig` from `vitest/config` (not `vite`) and configures `test.environment: "jsdom"` with `test.setupFiles: ["./src/test/setup.ts"]`; default colocated test discovery is retained, so `--passWithNoTests` keeps the command usable with no matches.
 - `apps/desktop/src/test/setup.ts` is the shared setup file; it stubs `window.matchMedia` and `window.ResizeObserver` only when the DOM environment lacks them, leaving jsdom's native implementations untouched when present.
+- Test files are colocated with the module under test (e.g. `features/editor/SlashMenu.test.ts`) and default Vitest discovery is used; no separate test directory or custom glob.
+- Editor-logic tests avoid rendering the full editor: ProseMirror helpers are exercised with raw `Schema`/`EditorState` fixtures plus minimal hand-rolled `EditorView`/dispatch stubs, and pure helpers are tested directly. This keeps tests deterministic and free of heavy UI setup.
+- Raw ProseMirror schemas are declared locally in the test fixture (not imported from the app) so table/DnD tests control exactly the nodes and attributes they assert on; `TableMap` is used to read back cell widths.
+- Per `AGENTS.md`, every code file — including test files — must stay under 120 lines; editor test files are split by module (`SlashMenu.test.ts`, `blockDnd.test.ts`, `tableResize.test.ts`) to respect this.
 
 ## Shared domain types
 

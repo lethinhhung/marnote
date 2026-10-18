@@ -66,9 +66,20 @@
 - Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
 - `docs/temps/20261018041057-4agtds.json` (untracked) is coordinator run metadata, unrelated to the implementation.
 
+## editor-logic-tests (attempt 1)
+
+- Epic "add all unit tests"; branch `test/add-unit-tests`. Adds test files only; no product, spec, or behavior changes.
+- Three colocated tests in `apps/desktop/src/features/editor/`, all under the 120-line limit:
+  - `SlashMenu.test.ts` (30 lines, 5 tests): imports `matchingSlashIds`; covers label substring (`heading` → `heading1/2/3`, `quote`), detail substring (`unordered` → `bullet`, `markdown` → `table`, `fixed-width` → `code`), case-insensitivity across label+detail (`HEADING`, `To-Do`, `CHECKBOXES`), declared ordering (`list` → `bullet`, `number`, `task`), and unmatched/empty query (empty string returns all 11 ids).
+  - `blockDnd.test.ts` (118 lines, 6 tests): real `Schema`/`EditorState` with a minimal nodeDOM/dispatch stub `EditorView`; `getBlockDropTarget` covers before midpoint, after a middle block's midpoint, and below the last block (document end); `moveTopLevelBlock` covers move later, move earlier, and no-op when the destination is inside the source block (no dispatch).
+  - `tableResize.test.ts` (79 lines, 5 tests): raw ProseMirror schema fixture with `table`/`tableRow`/`tableCell`/`tableHeader` (`colwidth` attr); `applyColumnWidth` covers per-cell rounding (`150.6` → `151`), 120px minimum, and non-table early return; `clearColumnWidths` covers resetting every cell to `null` and no-dispatch when no cell has a width. Column widths read back via `TableMap`.
+- No full editor UI rendering required: block DnD and table tests build state from plain ProseMirror fixtures and hand-rolled view/dispatch stubs; slash menu uses a pure helper.
+- Focused run: `pnpm vitest run SlashMenu.test.ts blockDnd.test.ts tableResize.test.ts` → 3 files, 16/16 passed.
+- Checks passed: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. Tester and Validator both pass with no findings.
+
 ## Unresolved / follow-ups
 
 - Resolved in desktop-integration: `platform/workspace.ts` no longer imports workspace-feature types, and `shared/ui/HeaderBar` no longer imports from `features/` (both now use `shared/domain/workspace`).
 - Watch item: `features/workspace/workspaceTypes.ts` still re-exports the shared domain types and keeps the unused `NoteData`; harmless but could be removed if no future consumer needs `NoteData`.
 - No open findings from any stage.
-- Active epic "add all unit tests": only the desktop testing foundation is in place; no desktop test files exist yet, so later stages still need to add colocated tests that exercise the jsdom environment and setup stubs.
+- Active epic "add all unit tests": editor helpers `SlashMenu`, `blockDnd`, and `tableResize` are now covered. Remaining coverage is not yet planned/recorded; other desktop modules and `packages/core` links/workspace logic still lack dedicated tests beyond `packages/core/src/index.test.ts`.
