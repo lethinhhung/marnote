@@ -48,6 +48,7 @@ fn rebase_changes_only_matching_path_prefixes() {
     let store = metadata::WorkspaceMetadata {
         entries: [("old/a.md".into(), metadata::EntryMetadata::default()),
             ("older/a.md".into(), metadata::EntryMetadata::default())].into(),
+        ..Default::default()
     };
     let result = super::metadata_paths::rebase_metadata_paths(&store, "old", "new");
     assert!(result.contains_key("new/a.md"));
@@ -60,6 +61,7 @@ fn delete_filter_removes_exact_path_and_descendants() {
         entries: [("folder".into(), metadata::EntryMetadata::default()),
             ("folder/note.md".into(), metadata::EntryMetadata::default()),
             ("folderish/note.md".into(), metadata::EntryMetadata::default())].into(),
+        ..Default::default()
     };
     let result = super::metadata_paths::filter_metadata_for_delete(&store, "folder");
     assert_eq!(result.len(), 1);

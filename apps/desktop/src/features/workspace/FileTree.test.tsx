@@ -128,7 +128,7 @@ describe("FileTree folder metadata display", () => {
     expect(within(noteButton).getByText("✨")).toBeInTheDocument();
     expect(within(noteButton).getByTestId("tree-favorite")).toBeInTheDocument();
 
-    expect(within(noteButton).queryByText("#note-tag")).not.toBeInTheDocument();
+    expect(within(noteButton).getByText("#note-tag")).toBeInTheDocument();
     expect(within(noteButton).queryByText(/Jan/)).not.toBeInTheDocument();
   });
 

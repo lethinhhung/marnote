@@ -6,12 +6,14 @@ const workspaceOps = vi.hoisted(() => ({
   openWorkspace: vi.fn(),
   listWorkspace: vi.fn(),
   updateEntryMetadata: vi.fn(),
+  saveWorkspaceTags: vi.fn(),
 }));
 
 vi.mock("../../platform/workspace", () => ({
   openWorkspace: workspaceOps.openWorkspace,
   listWorkspace: workspaceOps.listWorkspace,
   updateEntryMetadata: workspaceOps.updateEntryMetadata,
+  saveWorkspaceTags: workspaceOps.saveWorkspaceTags,
 }));
 
 describe("useWorkspace metadata updates", () => {
@@ -29,6 +31,7 @@ describe("useWorkspace metadata updates", () => {
     ] };
     workspaceOps.openWorkspace.mockResolvedValue(initialTree);
     workspaceOps.updateEntryMetadata.mockResolvedValue(undefined);
+    workspaceOps.saveWorkspaceTags.mockResolvedValue(undefined);
     workspaceOps.listWorkspace.mockResolvedValue(refreshedTree);
 
     const { result } = renderHook(() => useWorkspace());

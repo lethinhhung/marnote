@@ -36,6 +36,7 @@ pub fn folder_create(root_path: String, path: String) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::metadata::read_metadata;
     use std::fs;
     use std::path::PathBuf;
     use std::sync::atomic::{AtomicU64, Ordering};

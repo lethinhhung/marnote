@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Star, Edit2, FileText, Folder } from "lucide-react";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import { TagPicker } from "./TagPicker";
