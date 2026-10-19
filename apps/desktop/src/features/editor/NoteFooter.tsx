@@ -2,7 +2,7 @@ import { Star, Edit2, Clock3, Folder } from "lucide-react";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import { TagPicker } from "./TagPicker";
 import { calculateNoteStats } from "./noteStats";
-import { tagTextColor } from "../../shared/ui/tagStyle";
+import { tagStyle } from "../../shared/ui/tagStyle";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import type { WorkspaceEntryMetadata } from "../../shared/domain/workspace";
@@ -33,7 +33,7 @@ export function NoteFooter({ value, path, kind, saveStatus, metadata, updateMeta
       {hasUpdated && <span className="note-footer-timestamp" title="Updated"><Clock3 size={12} />{formatTimestamp(metadata?.updatedMs)}</span>}
       {hasUpdated && (hasTagGroup || hasIconGroup) && <span className="note-footer-divider">|</span>}
       {hasTagGroup && <span className="note-footer-tag-group">{updateMetadata && path && <TagPicker selected={selectedTags} tags={tags} onChange={value => updateMetadata(path, { tags: value })} onColor={(name, color) => updateTagColor?.(name, color)} onEdit={editTag ?? (() => {})} />}
-        {selectedTags.length > 0 && <span className="note-footer-tags">{selectedTags.map(tag => { const color = tags[tag] ?? "#eff1eb"; return <span key={tag} className="note-footer-tag-wrap" style={{ backgroundColor: color, color: tagTextColor(color) }}><button type="button" className="note-footer-tag" onClick={() => requestTagEdit(tag)} title={`Edit ${tag}`}>#{tag}</button><button type="button" className="note-footer-tag-remove" aria-label={`Remove ${tag}`} onClick={() => updateMetadata?.(path, { tags: selectedTags.filter(value => value !== tag) })}>×</button></span>; })}</span>}
+        {selectedTags.length > 0 && <span className="note-footer-tags">{selectedTags.map(tag => { const color = tags[tag] ?? "#526b58"; return <span key={tag} className="note-footer-tag-wrap" style={tagStyle(color)}><button type="button" className="note-footer-tag" onClick={() => requestTagEdit(tag)} title={`Edit ${tag}`}>#{tag}</button><button type="button" className="note-footer-tag-remove" aria-label={`Remove ${tag}`} onClick={() => updateMetadata?.(path, { tags: selectedTags.filter(value => value !== tag) })}>×</button></span>; })}</span>}
       </span>}
       {hasIconGroup && <span className="note-footer-icon-group"><EmojiPicker value={metadata?.icon} label={`Choose ${kind} emoji`} fallback={kind === "folder" ? <Folder size={12} /> : "👨‍🌾"} onChange={icon => updateMetadata?.(path, { icon })} /><button className={`note-footer-action ${metadata?.favorite ? "active" : ""}`} onClick={handleToggleFavorite} aria-label={metadata?.favorite ? "Remove favorite" : "Add favorite"} title={metadata?.favorite ? "Remove favorite" : "Add favorite"}><Star size={12} fill={metadata?.favorite ? "currentColor" : "none"} /></button></span>}
       {kind === "note" && hasIconGroup && <span className="note-footer-divider">|</span>}

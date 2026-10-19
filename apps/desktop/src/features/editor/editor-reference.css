@@ -1,7 +1,7 @@
 .editor-frame, .editor-frame .editor-canvas { background: #fffdf9; }
-.editor-frame .toolbar { min-height: 40px; flex-basis: 40px; gap: 8px; padding: 4px 18px; background: #fffdf9; border-color: #e5e2dc; }
+.editor-frame .toolbar { min-height: 40px; flex-basis: 40px; gap: 8px; padding: 4px 24px; background: #fffdf9; border-color: #e5e2dc; }
 .editor-frame .toolbar-actions { flex: 1 1 auto; }
-.editor-frame .tool-group { gap: 0; }
+.editor-frame .tool-group { gap: 4px; }
 .editor-frame .tool-item { display: inline-flex; align-items: center; }
 .editor-frame .tool { width: 24px; height: 24px; border-radius: 4px; color: #92948c; }
 .editor-frame .tool:hover:not(:disabled), .editor-frame .tool.active { background: #f8f7f4; color: #292c27; }
@@ -15,7 +15,7 @@
 .editor-frame .tool-glyph-7, .editor-frame .tool-glyph-8 { font-family: ui-monospace, monospace; }
 .editor-frame .tool-item:nth-child(n+10):nth-child(-n+12) .tool-glyph { display: none; }
 .editor-frame .tool-item:nth-child(n+10):nth-child(-n+12) .tool-icon { display: block; }
-.editor-frame .toolbar-group-divider { height: 12px; margin: 0 3px; border-left: 1px solid #e5e2dc; }
+.editor-frame .toolbar-group-divider { height: 12px; margin: 0 2px; border-left: 1px solid #e5e2dc; }
 .editor-frame .toolbar-save { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: #92948c; font-size: 11px; }
 .editor-frame .toolbar-save i { width: 6px; height: 6px; border-radius: 50%; background: #526b58; }
 .editor-frame .toolbar-save.saving i { background: #e5a93c; }
