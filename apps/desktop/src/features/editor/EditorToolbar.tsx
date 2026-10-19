@@ -1,6 +1,7 @@
 import { useEditorState, type Editor } from "@tiptap/react";
 import { useRef, useState, type FormEvent, type MouseEvent } from "react";
 import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal } from "lucide-react";
+import { normalizeLinkUrl } from "./linkUrl";
 
 type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; saveStatus?: "saved" | "saving" | "error" };
 type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
@@ -30,7 +31,7 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
   const selection = useRef({ from: 0, to: 0 });
   const addLink = (event: FormEvent) => {
     event.preventDefault();
-    const url = href.trim();
+    const url = normalizeLinkUrl(href);
     if (!editor || !url) return;
     const range = selection.current;
     const chain = editor.chain().focus().setTextSelection(range);

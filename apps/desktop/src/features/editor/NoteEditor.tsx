@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import type { KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import type { FormEvent, KeyboardEvent, MouseEvent as ReactMouseEvent } from "react";
 import type { ReactNode } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { Editor } from "@tiptap/react";
@@ -20,23 +21,33 @@ import type { WorkspaceEntryMetadata } from "../../shared/domain/workspace";
 import { tagStyle } from "../../shared/ui/tagStyle";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
+import { useEditorLinkPreview } from "./useEditorLinkPreview";
+import { normalizeLinkUrl, openExternalLink } from "./linkUrl";
 import "./editor-reference.css";
 
 type SlashState = { query: string; from: number; to: number; top: number; left: number; maxHeight: number };
-function slashPosition(editor: Editor, position: number) {
+type SlashLinkState = { from: number; to: number; top: number; bottom: number; left: number };
+function slashPosition(editor: Editor, position: number, query: string) {
   const cursor = editor.view.coordsAtPos(position);
   const below = window.innerHeight - cursor.bottom - 12;
   const above = cursor.top - 12;
   const opensAbove = above > below;
   const maxHeight = Math.max(60, Math.min(340, (opensAbove ? above : below) - 12));
+  const itemCount = matchingSlashIds(query).length;
+  const menuHeight = Math.min(maxHeight, 40 + itemCount * 45);
   return {
-    top: Math.max(12, opensAbove ? cursor.top - maxHeight - 6 : cursor.bottom + 6),
+    top: Math.max(12, opensAbove ? cursor.top - menuHeight - 6 : cursor.bottom + 6),
     left: Math.max(12, Math.min(cursor.left, window.innerWidth - 282)),
     maxHeight,
   };
 }
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, heading, metadata, updateMetadata, path, tagColors = {}, saveStatus }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; tagColors?: Record<string, string>; saveStatus?: "saved" | "saving" | "error" }) {
   const [slash, setSlash] = useState<SlashState | null>(null);
+  const [slashLink, setSlashLink] = useState<SlashLinkState | null>(null);
+  const [linkPosition, setLinkPosition] = useState({ top: 12, left: 12 });
+  const linkForm = useRef<HTMLFormElement>(null);
+  const [linkText, setLinkText] = useState("");
+  const [linkHref, setLinkHref] = useState("");
   const [selected, setSelected] = useState(0);
   const editor = useEditor({ extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
     onChange(current.getMarkdown());
@@ -44,13 +55,14 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     const match = $from.parent.type.name === "paragraph" && $from.parent.textContent.match(/(?:^|\s)\/([\w-]*)$/);
     if (!match) { setSlash(null); return; }
     const from = $from.pos - match[1].length - 1;
-    setSlash({ query: match[1], from, to: $from.pos, ...slashPosition(current, $from.pos) });
+    setSlash({ query: match[1], from, to: $from.pos, ...slashPosition(current, $from.pos, match[1]) });
     setSelected(0);
   } });
+  const linkHover = useEditorLinkPreview(editor);
   useEffect(() => { if (editor && !horizontalScroll) clearColumnWidths(editor); }, [editor, horizontalScroll]);
   useEffect(() => {
     if (!editor || !slash) return;
-    const update = () => setSlash(current => current ? { ...current, ...slashPosition(editor, current.to) } : current);
+    const update = () => setSlash(current => current ? { ...current, ...slashPosition(editor, current.to, current.query) } : current);
     const canvas = editor.view.dom.closest(".editor-canvas");
     canvas?.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
@@ -59,7 +71,7 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
       canvas?.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [editor, slash?.to]);
+  }, [editor, slash?.to, slash?.query]);
   useEffect(() => {
     if (!slash) return;
     const dismissOnPointerDown = (event: Event) => {
@@ -80,8 +92,25 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     };
   }, [slash !== null]);
   useEffect(() => { if (editor && editor.getMarkdown() !== value) editor.commands.setContent(value || "", { contentType: "markdown", emitUpdate: false }); }, [editor, value]);
+  useLayoutEffect(() => {
+    if (!slashLink || !linkForm.current) return;
+    const place = () => {
+      const height = linkForm.current?.getBoundingClientRect().height ?? 190;
+      const width = linkForm.current?.getBoundingClientRect().width ?? 300;
+      const below = window.innerHeight - slashLink.bottom - 12;
+      const above = slashLink.top - 12;
+      const top = below >= height || below >= above ? slashLink.bottom + 6 : Math.max(12, slashLink.top - height - 6);
+      const maxTop = Math.max(12, window.innerHeight - height - 12);
+      setLinkPosition({ top: Math.max(12, Math.min(top, maxTop)), left: Math.max(12, Math.min(slashLink.left, window.innerWidth - width - 12)) });
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [slashLink]);
   const markdown = editor?.getMarkdown() ?? value;
-  const insert = (id: string) => { if (!editor || !slash) return; const chain = editor.chain().focus().deleteRange({ from: slash.from, to: slash.to }); if (id === "paragraph") chain.setParagraph().run(); else if (id.startsWith("heading")) chain.setHeading({ level: Number(id.slice(-1)) as 1 | 2 | 3 }).run(); else if (id === "bullet") chain.toggleBulletList().run(); else if (id === "number") chain.toggleOrderedList().run(); else if (id === "task") chain.toggleTaskList().run(); else if (id === "quote") chain.toggleBlockquote().run(); else if (id === "code") chain.toggleCodeBlock().run(); else if (id === "table") chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); else chain.setHorizontalRule().run(); setSlash(null); };
+  const insert = (id: string) => { if (!editor || !slash) return; if (id === "link") { const cursor = editor.view.coordsAtPos(slash.to); setSlashLink({ from: slash.from, to: slash.to, top: cursor.top, bottom: cursor.bottom, left: cursor.left }); setLinkText(""); setLinkHref(""); setSlash(null); return; } const chain = editor.chain().focus().deleteRange({ from: slash.from, to: slash.to }); if (id === "paragraph") chain.setParagraph().run(); else if (id.startsWith("heading")) chain.setHeading({ level: Number(id.slice(-1)) as 1 | 2 | 3 }).run(); else if (id === "bullet") chain.toggleBulletList().run(); else if (id === "number") chain.toggleOrderedList().run(); else if (id === "task") chain.toggleTaskList().run(); else if (id === "quote") chain.toggleBlockquote().run(); else if (id === "code") chain.toggleCodeBlock().run(); else if (id === "table") chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); else chain.setHorizontalRule().run(); setSlash(null); };
+  const applySlashLink = (event: FormEvent) => { event.preventDefault(); const href = normalizeLinkUrl(linkHref); const text = linkText.trim(); if (!editor || !slashLink || !href || !text) return; editor.chain().focus().deleteRange({ from: slashLink.from, to: slashLink.to }).insertContent({ type: "text", text, marks: [{ type: "link", attrs: { href } }] }).run(); setSlashLink(null); };
+  const openLink = (event: ReactMouseEvent<HTMLDivElement>) => { const target = event.target; if (!(target instanceof Element)) return; const anchor = target.closest("a[href]"); if (!anchor || !event.currentTarget.contains(anchor)) return; event.preventDefault(); void openExternalLink((anchor as HTMLAnchorElement).getAttribute("href") ?? (anchor as HTMLAnchorElement).href); };
   const keys = (event: KeyboardEvent) => { if (!slash || !editor || !(event.target as HTMLElement).closest(".ProseMirror")) return; const ids = matchingSlashIds(slash.query); if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setSelected(v => Math.max(0, Math.min(ids.length - 1, v + (event.key === "ArrowDown" ? 1 : -1)))); } if (event.key === "Escape") { event.preventDefault(); setSlash(null); } if (event.key === "Enter") { event.preventDefault(); if (ids[selected]) insert(ids[selected]); } };
-  return <div className={`editor-frame ${horizontalScroll ? "wide-content-scroll" : "wide-content-wrap"}`} onKeyDownCapture={keys}><EditorToolbar editor={editor} source={source} horizontalScroll={horizontalScroll} onToggleHorizontalScroll={onToggleHorizontalScroll} saveStatus={saveStatus} /><div className="editor-canvas"><div className="note-heading"><EmojiPicker value={metadata?.icon} label="Change note icon" fallback="👨‍🌾" onChange={icon => updateMetadata(path, { icon })} />{heading}{metadata?.tags && metadata.tags.length > 0 && <div className="note-meta"><span className="note-meta-tags">{metadata.tags.map(tag => { const color = tagColors[tag] ?? "#526b58"; return <button type="button" key={tag} className="note-meta-tag" style={tagStyle(color, "#f8f7f4")} onClick={() => requestTagEdit(tag)} title={`Edit ${tag}`}>#{tag}</button>; })}</span></div>}</div>{source ? <pre className="markdown-source">{markdown}</pre> : editor ? <TableEdgeControls editor={editor} resizeEnabled={horizontalScroll}><EditorContent editor={editor} /><BlockDragHandle editor={editor} /></TableEdgeControls> : <EditorContent editor={editor} />}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left, maxHeight: slash.maxHeight }} onSelect={insert} />}</div></div>;
+  return <div className={`editor-frame ${horizontalScroll ? "wide-content-scroll" : "wide-content-wrap"}`} onKeyDownCapture={keys} onMouseOverCapture={linkHover.onMouseOverCapture} onMouseOutCapture={linkHover.onMouseOutCapture} onClickCapture={openLink}><EditorToolbar editor={editor} source={source} horizontalScroll={horizontalScroll} onToggleHorizontalScroll={onToggleHorizontalScroll} saveStatus={saveStatus} /><div className="editor-canvas"><div className="note-heading"><EmojiPicker value={metadata?.icon} label="Change note icon" fallback="👨‍🌾" onChange={icon => updateMetadata(path, { icon })} />{heading}{metadata?.tags && metadata.tags.length > 0 && <div className="note-meta"><span className="note-meta-tags">{metadata.tags.map(tag => { const color = tagColors[tag] ?? "#526b58"; return <button type="button" key={tag} className="note-meta-tag" style={tagStyle(color, "#f8f7f4")} onClick={() => requestTagEdit(tag)} title={`Edit ${tag}`}>#{tag}</button>; })}</span></div>}</div>{source ? <pre className="markdown-source">{markdown}</pre> : editor ? <TableEdgeControls editor={editor} resizeEnabled={horizontalScroll}><EditorContent editor={editor} /><BlockDragHandle editor={editor} /></TableEdgeControls> : <EditorContent editor={editor} />}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left, maxHeight: slash.maxHeight }} onSelect={insert} />}{slashLink && createPortal(<form ref={linkForm} className="link-popover slash-link-popover" style={linkPosition} onSubmit={applySlashLink}><label htmlFor="slash-link-text">Text</label><input id="slash-link-text" autoFocus placeholder="Link text" value={linkText} onChange={event => setLinkText(event.target.value)} onKeyDown={event => event.key === "Escape" && setSlashLink(null)} /><label htmlFor="slash-link-url">URL</label><input id="slash-link-url" placeholder="https://example.com" value={linkHref} onChange={event => setLinkHref(event.target.value)} onKeyDown={event => event.key === "Escape" && setSlashLink(null)} /><div><button type="button" onClick={() => setSlashLink(null)}>Cancel</button><button type="submit" disabled={!linkText.trim() || !linkHref.trim()}>Insert link</button></div></form>, document.body)}{linkHover.overlay}</div></div>;
 }

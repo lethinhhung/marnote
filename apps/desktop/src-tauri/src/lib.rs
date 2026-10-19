@@ -44,6 +44,7 @@ fn save_workspace_tags(root_path: String, tags: std::collections::HashMap<String
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             workspace::open_workspace,
             workspace::default_workspace,

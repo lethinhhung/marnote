@@ -70,6 +70,9 @@
 :root[data-theme="dark"] .link-popover label { color: #8d948b; }
 :root[data-theme="dark"] .link-popover input, :root[data-theme="dark"] .link-popover button { border-color: #292d29; background: #161816; color: #e2e5de; }
 :root[data-theme="dark"] .link-popover button[type="submit"] { border-color: #294334; background: #294334; color: #fff; }
+:root[data-theme="dark"] .editor-link-preview { border-color: #292d29; background: #1c1e1c; color: #e2e5de; box-shadow: 0 5px 16px rgba(0,0,0,.4); }
+:root[data-theme="dark"] .editor-link-preview button, :root[data-theme="dark"] .editor-link-preview a { border-color: #292d29; background: #161816; color: #a2ada0; }
+:root[data-theme="dark"] .editor-link-preview button:hover, :root[data-theme="dark"] .editor-link-preview a:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .editor-prose { color: #e2e5de; }
 :root[data-theme="dark"] .editor-prose h1, :root[data-theme="dark"] .editor-prose h2, :root[data-theme="dark"] .editor-prose h3 { color: #f0f3ec; }
 :root[data-theme="dark"] .editor-prose strong { color: #f0f3ec; }
