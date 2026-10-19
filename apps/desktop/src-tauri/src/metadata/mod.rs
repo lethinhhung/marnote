@@ -29,6 +29,8 @@ impl EntryMetadata {
 pub struct WorkspaceMetadata {
     #[serde(default)]
     pub entries: HashMap<String, EntryMetadata>,
+    #[serde(default)]
+    pub tags: HashMap<String, String>,
 }
 
 pub fn read_metadata(root: &Path) -> Result<WorkspaceMetadata, String> {

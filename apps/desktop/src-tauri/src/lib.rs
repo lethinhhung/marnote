@@ -1,6 +1,7 @@
 mod files;
 mod folders;
 mod metadata;
+mod tags;
 mod tree;
 mod workspace;
 
@@ -31,6 +32,14 @@ fn update_entry_metadata(
     metadata::update_metadata(&root, &path, metadata)
 }
 
+#[tauri::command]
+fn save_workspace_tags(root_path: String, tags: std::collections::HashMap<String, String>) -> Result<(), String> {
+    let root = workspace::root(&root_path)?;
+    let mut store = metadata::read_metadata(&root)?;
+    store.tags = tags.into_iter().filter(|(name, color)| !name.trim().is_empty() && color.starts_with('#')).collect();
+    metadata::write_metadata(&root, &store)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -45,7 +54,9 @@ pub fn run() {
             files::file_move,
             files::file_delete,
             folders::folder_create,
-            update_entry_metadata
+            update_entry_metadata,
+            save_workspace_tags,
+            tags::rename_workspace_tag
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Marnote");

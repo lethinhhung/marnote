@@ -22,6 +22,7 @@ pub struct Workspace {
     name: String,
     path: String,
     entries: Vec<Entry>,
+    tags: std::collections::HashMap<String, String>,
 }
 
 pub fn root(path: &str) -> Result<PathBuf, String> {
@@ -76,6 +77,7 @@ pub fn open_workspace(path: String) -> Result<Workspace, String> {
         name,
         path: r.to_string_lossy().into_owned(),
         entries: merge_metadata(collect(&r, &r)?, &metadata),
+        tags: metadata.tags,
     })
 }
 
@@ -93,6 +95,7 @@ pub fn default_workspace(app: tauri::AppHandle) -> Result<Workspace, String> {
         name: "My Notes".into(),
         path: root.to_string_lossy().into_owned(),
         entries: merge_metadata(collect(&root, &root)?, &metadata),
+        tags: metadata.tags,
     })
 }
 #[tauri::command]
@@ -108,6 +111,7 @@ pub fn list_workspace_tree(root_path: String) -> Result<Workspace, String> {
         name,
         path: r.to_string_lossy().into_owned(),
         entries: merge_metadata(collect(&r, &r)?, &metadata),
+        tags: metadata.tags,
     })
 }
 

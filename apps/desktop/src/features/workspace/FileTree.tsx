@@ -3,6 +3,8 @@ import { ChevronDown, ChevronRight, FileText, Folder, Star, Clock } from "lucide
 import type { Entry } from "./workspaceTypes";
 import { TreeEditor } from "./TreeEditor";
 import { visibleEntries } from "./treeVisibility";
+import { tagTextColor } from "../../shared/ui/tagStyle";
+import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 
 function formatTimestamp(ms?: number): string | null {
   if (!ms) return null;
@@ -11,7 +13,7 @@ function formatTimestamp(ms?: number): string | null {
 }
 
 export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };
-type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; hideFoldersWithoutNotes: boolean; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; onMove: (source: string, destination: string) => Promise<boolean> };
+type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder"; hideFoldersWithoutNotes: boolean; edit: TreeEdit | null; tagColors?: Record<string, string>; onEditSubmit: (name: string) => void; onEditCancel: () => void; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; onMove: (source: string, destination: string) => Promise<boolean> };
 type Drag = { path: string; x: number; y: number; moved: boolean };
 
 export function FileTree(props: Props) {
@@ -73,10 +75,10 @@ export function FileTree(props: Props) {
   };
   const entries = visibleEntries(props.entries, props.hideFoldersWithoutNotes);
   const editor = props.edit;
-  return <ul className="file-tree" onContextMenu={event => { if ((event.target as HTMLElement).closest(".tree-item")) return; event.preventDefault(); props.onEntryContext("", "root", event.clientX, event.clientY); }}>{editor && (editor.kind === "note" || editor.kind === "folder") && !editor.path && <li><TreeEditor kind={editor.kind} value={editor.value} depth={0} onSubmit={props.onEditSubmit} onCancel={props.onEditCancel} /></li>}{entries.map(entry => <TreeRow key={entry.path} entry={entry} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} onEntryContext={props.onEntryContext} edit={editor} onEditSubmit={props.onEditSubmit} onEditCancel={props.onEditCancel} />)}</ul>;
+  return <ul className="file-tree" onContextMenu={event => { if ((event.target as HTMLElement).closest(".tree-item")) return; event.preventDefault(); props.onEntryContext("", "root", event.clientX, event.clientY); }}>{editor && (editor.kind === "note" || editor.kind === "folder") && !editor.path && <li><TreeEditor kind={editor.kind} value={editor.value} depth={0} onSubmit={props.onEditSubmit} onCancel={props.onEditCancel} /></li>}{entries.map(entry => <TreeRow key={entry.path} entry={entry} tagColors={props.tagColors ?? {}} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} onEntryContext={props.onEntryContext} edit={editor} onEditSubmit={props.onEditSubmit} onEditCancel={props.onEditCancel} />)}</ul>;
 }
 
-function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, onExpanded, depth, onStart, onClick, onEntryContext, edit, onEditSubmit, onEditCancel }: { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder"; dragging: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void; onEntryContext: Props["onEntryContext"]; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void }) {
+function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, onExpanded, depth, onStart, onClick, onEntryContext, edit, onEditSubmit, onEditCancel, tagColors }: { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder"; dragging: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void; onEntryContext: Props["onEntryContext"]; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void; tagColors: Record<string, string> }) {
   const folder = entry.kind === "directory";
   const isExpanded = expanded.has(entry.path);
   const selectedClass = folder ? focus === "folder" && selectedFolder === entry.path ? "selected-folder" : "" : focus === "note" && selected === entry.path ? "selected" : "";
@@ -89,10 +91,10 @@ function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, o
       {folder ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : <span className="tree-indent" />}
       {entry.metadata?.icon ? <span className="tree-icon-emoji" style={{ fontSize: 15 }}>{entry.metadata.icon}</span> : folder ? <Folder size={15} /> : <FileText size={15} />}
       <span className="tree-item-name">{entry.name}</span>
-      {tags && <span className="tree-folder-tags">{tags.map(tag => <span key={tag} className="tree-folder-tag">#{tag}</span>)}</span>}
+      {tags && <span className="tree-folder-tags">{tags.map(tag => { const color = tagColors[tag] ?? "#eff1eb"; return <span key={tag} role="button" tabIndex={0} className="tree-folder-tag" style={{ backgroundColor: color, color: tagTextColor(color) }} onClick={event => { event.stopPropagation(); requestTagEdit(tag); }} onKeyDown={event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); event.stopPropagation(); requestTagEdit(tag); } }} title={`Edit ${tag}`}>#{tag}</span>; })}</span>}
       {(folderCreated || folderUpdated) && <span className="tree-folder-timestamps">{folderCreated && <span className="tree-folder-timestamp" title="Created"><Clock size={9} /> {folderCreated}</span>}{folderUpdated && <span className="tree-folder-timestamp" title="Updated"><Clock size={9} /> {folderUpdated}</span>}</span>}
       {entry.metadata?.favorite && <Star size={12} fill="currentColor" className="tree-favorite" data-testid="tree-favorite" />}
     </button>}
-    {folder && isExpanded && (!!entry.children?.length || edit?.path === `${entry.path}/`) && <ul>{entry.children?.map(child => <TreeRow key={child.path} entry={child} selected={selected} selectedFolder={selectedFolder} focus={focus} dragging={dragging} expanded={expanded} onExpanded={onExpanded} depth={depth + 1} onStart={onStart} onClick={onClick} onEntryContext={onEntryContext} edit={edit} onEditSubmit={onEditSubmit} onEditCancel={onEditCancel} />)}{edit?.path === `${entry.path}/` && <li><TreeEditor kind={edit.kind === "note" ? "note" : "folder"} value={edit.value} depth={depth + 1} onSubmit={onEditSubmit} onCancel={onEditCancel} /></li>}</ul>}
+    {folder && isExpanded && (!!entry.children?.length || edit?.path === `${entry.path}/`) && <ul>{entry.children?.map(child => <TreeRow key={child.path} entry={child} tagColors={tagColors} selected={selected} selectedFolder={selectedFolder} focus={focus} dragging={dragging} expanded={expanded} onExpanded={onExpanded} depth={depth + 1} onStart={onStart} onClick={onClick} onEntryContext={onEntryContext} edit={edit} onEditSubmit={onEditSubmit} onEditCancel={onEditCancel} />)}{edit?.path === `${entry.path}/` && <li><TreeEditor kind={edit.kind === "note" ? "note" : "folder"} value={edit.value} depth={depth + 1} onSubmit={onEditSubmit} onCancel={onEditCancel} /></li>}</ul>}
   </li>;
 }

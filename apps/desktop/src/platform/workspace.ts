@@ -16,3 +16,7 @@ export const createFolder = (rootPath: string, path: string) => invoke<void>("fo
 export type UpdateEntryMetadataInput = Pick<WorkspaceEntryMetadata, "tags" | "icon" | "favorite">;
 export const updateEntryMetadata = (rootPath: string, path: string, metadata: UpdateEntryMetadataInput) =>
   invoke<void>("update_entry_metadata", { rootPath, path, ...metadata });
+export const saveWorkspaceTags = (rootPath: string, tags: Record<string, string>) =>
+  invoke<void>("save_workspace_tags", { rootPath, tags });
+export const renameWorkspaceTag = (rootPath: string, oldName: string, newName: string, color: string) =>
+  invoke<void>("rename_workspace_tag", { rootPath, oldName, newName, color });
