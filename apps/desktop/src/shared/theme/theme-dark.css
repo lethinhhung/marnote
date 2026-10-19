@@ -14,6 +14,8 @@
 :root[data-theme="dark"] .folder-context-menu button:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .folder-context-menu button:hover svg { color: #d1e0ce; }
 :root[data-theme="dark"] .folder-context-menu button.danger { color: #ef9b8c; }
+:root[data-theme="dark"] .folder-emoji-action { color: #c2c9bd; }
+:root[data-theme="dark"] .folder-emoji-action:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .emoji-picker-popover { border-color: #414a41; background: #252a26; }
 :root[data-theme="dark"] .emoji-picker-toolbar { background: #252a26; }
 :root[data-theme="dark"] .emoji-picker-remove { color: #c2c9bd; }
