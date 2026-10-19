@@ -8,6 +8,7 @@ fn merge_metadata_applies_to_entries() {
             name: "note.md".into(),
             path: "note.md".into(),
             kind: "file".into(),
+            is_empty: false,
             children: vec![],
             metadata: None,
         },
@@ -15,10 +16,12 @@ fn merge_metadata_applies_to_entries() {
             name: "folder".into(),
             path: "folder".into(),
             kind: "directory".into(),
+            is_empty: false,
             children: vec![Entry {
                 name: "inner.md".into(),
                 path: "folder/inner.md".into(),
                 kind: "file".into(),
+                is_empty: false,
                 children: vec![],
                 metadata: None,
             }],
@@ -75,6 +78,7 @@ fn merge_metadata_handles_missing_entries() {
         name: "note.md".into(),
         path: "note.md".into(),
         kind: "file".into(),
+        is_empty: false,
         children: vec![],
         metadata: None,
     }];

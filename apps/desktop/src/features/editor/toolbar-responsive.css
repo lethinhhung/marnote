@@ -12,12 +12,12 @@
 .editor-frame .toolbar-action-menu-panel .tool-icon { display: block; }
 .editor-frame .toolbar-action-menu-panel .compact-tool-action-12,
 .editor-frame .toolbar-action-menu-panel .compact-tool-action-13 { display: none; }
-@container editor-frame (max-width: 1535px) {
+@container editor-frame (max-width: 1400px) {
   .table-actions-menu { display: block; }
   .table-actions-expanded { display: none; }
 }
 @container editor-frame (max-width: 1100px) {
-  .toolbar-more-controls { display: flex; }
+  .editor-frame .toolbar-more-controls { display: flex; }
   .editor-frame .toolbar .action-item-13 { display: none; }
   .editor-frame .toolbar-action-menu-panel .compact-tool-action-13 { display: flex; }
   .editor-frame .toolbar-action-menu-panel .compact-tool-action-8,
@@ -95,7 +95,7 @@
   .editor-frame .toolbar-expanded-controls > .toolbar-block-desktop .tool-item { display: none; }
   .editor-frame .table-actions-menu-panel { left: 8px; right: 8px; width: auto; }
 }
-@container editor-frame (max-width: 1535px) {
+@container editor-frame (max-width: 1400px) {
   .editor-frame .table-actions-menu { display: block; }
   .editor-frame .table-actions-expanded { display: none !important; }
 }

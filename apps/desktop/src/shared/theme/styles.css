@@ -74,6 +74,7 @@ button, input { font: inherit; }
 .slash-link-popover { position: fixed; z-index: 60; max-height: calc(100vh - 24px); overflow-y: auto; }
 .link-popover label { color: #858a80; font-size: 11px; font-weight: 600; }
 .link-popover input { min-width: 0; padding: 8px; border: 1px solid #e8e8e1; border-radius: 5px; outline-color: #8a9c85; color: #454b43; font-size: 12px; }
+.link-popover select { min-width: 0; max-width: 100%; padding: 8px; border: 1px solid #e8e8e1; border-radius: 5px; background: #fff; color: #454b43; font-size: 12px; }
 .link-popover div { display: flex; justify-content: flex-end; gap: 6px; }
 .link-popover button { padding: 6px 8px; border: 1px solid #e8e8e1; border-radius: 5px; background: #fff; color: #596858; font-size: 11px; cursor: pointer; }
 .link-popover button[type="submit"] { border-color: #526b58; background: #526b58; color: #fff; }

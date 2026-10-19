@@ -21,6 +21,7 @@ export function WorkspaceSidebar(props: Props) {
   useEffect(() => { const restoreNote = () => { setTreeFocus("note"); props.onTargetChange?.(props.selected, "note"); }; document.addEventListener("marnote-focus-note", restoreNote); return () => document.removeEventListener("marnote-focus-note", restoreNote); }, [props.selected]);
   useEffect(() => { if (!folderMenu) return; const close = (event: PointerEvent) => { if ((event.target as HTMLElement).closest?.(".emoji-picker-popover")) return; setFolderMenu(null); }; const key = (event: KeyboardEvent) => { if (event.key === "Escape") setFolderMenu(null); }; document.addEventListener("pointerdown", close); document.addEventListener("keydown", key); return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", key); }; }, [folderMenu]);
   const selectFolder = (path: string) => { setSelectedFolder(path); setTreeFocus("folder"); props.onTargetChange?.(path, "folder"); };
+  useEffect(() => { const navigate = (event: Event) => { const path = (event as CustomEvent<string>).detail; if (typeof path === "string") selectFolder(path); }; document.addEventListener("marnote-navigate-folder", navigate); return () => document.removeEventListener("marnote-navigate-folder", navigate); }, []);
   const selectNote = (entry: Entry) => { setTreeFocus("note"); props.onTargetChange?.(entry.path, "note"); props.onSelect(entry); };
   const menuEntry = (entries: Entry[], path: string): Entry | undefined => {
     for (const entry of entries) {

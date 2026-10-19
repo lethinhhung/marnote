@@ -13,6 +13,7 @@ pub struct Entry {
     pub(crate) name: String,
     pub(crate) path: String,
     pub(crate) kind: String,
+    pub(crate) is_empty: bool,
     pub(crate) children: Vec<Entry>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) metadata: Option<crate::metadata::EntryMetadata>,

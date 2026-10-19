@@ -6,6 +6,10 @@ import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspace
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
 
+function updateEntryEmptiness(entries: Entry[], path: string, isEmpty: boolean): Entry[] {
+  return entries.map(entry => entry.path === path ? { ...entry, isEmpty } : { ...entry, children: entry.children ? updateEntryEmptiness(entry.children, path, isEmpty) : undefined });
+}
+
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
   const [note, setNote] = useState<{ path: string; content: string } | null>(null);
@@ -42,11 +46,15 @@ export function useWorkspace() {
       setError("");
       const result = await saveWorkspace(writeFile, tree.path, path, content, expected);
       if (!result.ok) { setError(String(result.error)); return false; }
+      setTree(current => current ? { ...current, entries: updateEntryEmptiness(current.entries, path, content.length === 0) } : current);
       setNote(current => current?.path === path ? { path, content } : current);
       return true;
     } catch (e) { setError(String(e)); return false; }
   };
-  const acceptExternal = (path: string, content: string) => setNote(current => current?.path === path ? { path, content } : current);
+  const acceptExternal = (path: string, content: string) => {
+    setTree(current => current ? { ...current, entries: updateEntryEmptiness(current.entries, path, content.length === 0) } : current);
+    setNote(current => current?.path === path ? { path, content } : current);
+  };
   const rebaseNote = (source: string, destination: string) => setNote(current => {
     if (!current) return current;
     const path = rebasePath(current.path, source, destination);
