@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff, Tag, Star } from "lucide-react";
+import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff, Tag, Star, ChevronsUpDown } from "lucide-react";
 import { isDesktop, openWorkspaceFolder } from "../../platform/dialog";
 import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import { FileTree, type TreeEdit } from "./FileTree";
@@ -37,6 +37,7 @@ export function WorkspaceSidebar(props: Props) {
   const folderFocused = treeFocus === "folder" && !!selectedFolder;
   const actionPath = folderFocused ? selectedFolder : props.selected;
   const actionLabel = folderFocused ? "folder" : "note";
+  const noteParent = folderFocused ? selectedFolder : props.selected.split("/").slice(0, -1).join("/");
   const browse = async () => {
     setBrowseError("");
     if (!isDesktop()) {
@@ -51,11 +52,12 @@ export function WorkspaceSidebar(props: Props) {
     }
   };
   const beginCreate = (kind: "note" | "folder", parent = selectedFolder) => setEdit({ kind, path: parent ? `${parent}/` : "", value: kind === "note" ? "Untitled.md" : "New folder" });
+  const beginCreateNote = () => beginCreate("note", noteParent);
   useEffect(() => {
-    const createNote = () => beginCreate("note");
+    const createNote = () => setEdit({ kind: "note", path: noteParent ? `${noteParent}/` : "", value: "Untitled.md" });
     document.addEventListener("marnote-create-note", createNote);
     return () => document.removeEventListener("marnote-create-note", createNote);
-  }, [selectedFolder]);
+  }, [noteParent]);
   const beginRename = (path = actionPath, folder = folderFocused) => {
     if (!path) return;
     const name = path.split("/").pop() || path;
@@ -77,12 +79,12 @@ export function WorkspaceSidebar(props: Props) {
   return <aside className="sidebar">
     <div className="sidebar-content">
     <button className="default-workspace" type="button" onClick={props.onDefault}><Home size={16} /> <span>My Notes</span></button>
-    <div className="sidebar-workspaces">{props.recent.length > 0 && <label className="recent-workspaces"><span>Recent Workspaces</span><select aria-label="Switch workspace" value={tree?.path || ""} onChange={event => event.target.value && props.onOpen(event.target.value)}>{tree && <option value={tree.path}>{tree.name}</option>}{props.recent.filter(path => path !== tree?.path).map(path => <option key={path} value={path}>{path.split(/[\\/]/).filter(Boolean).pop()}</option>)}</select></label>}
+    <div className="sidebar-workspaces">{props.recent.length > 0 && <label className="recent-workspaces"><span>Recent Workspaces</span><span className="recent-workspace-select"><select aria-label="Switch workspace" value={tree?.path || ""} onChange={event => event.target.value && props.onOpen(event.target.value)}>{tree && <option value={tree.path}>{tree.name}</option>}{props.recent.filter(path => path !== tree?.path).map(path => <option key={path} value={path}>{path.split(/[\\/]/).filter(Boolean).pop()}</option>)}</select><ChevronsUpDown size={14} aria-hidden="true" /></span></label>}
     <div className="workspace-open">
       <button className="open-workspace" type="button" onClick={() => void browse()}><FolderOpen size={14} /> Open workspace...</button>
       {browseError && <p className="sidebar-error" role="alert">{browseError}</p>}
     </div></div>
-    {tree && <section className="sidebar-tree-section"><div className="sidebar-heading"><span>{tree.name}</span><div><button type="button" title={hideFoldersWithoutNotes ? "Show folders without notes" : "Hide folders without notes"} aria-label={hideFoldersWithoutNotes ? "Show folders without notes" : "Hide folders without notes"} aria-pressed={hideFoldersWithoutNotes} onClick={() => setHideFoldersWithoutNotes(value => !value)}>{hideFoldersWithoutNotes ? <EyeOff size={15} /> : <Eye size={15} />}</button><button title="New Markdown note" aria-label="New Markdown note" onClick={() => beginCreate("note")}><FilePlus size={15} /></button><button title="New folder" aria-label="New folder" onClick={() => beginCreate("folder")}><FolderPlus size={15} /></button><button title={`Rename / move selected ${actionLabel}`} aria-label={`Rename / move selected ${actionLabel}`} onClick={() => beginRename()} disabled={!actionPath}><Pencil size={14} /></button><button title={`Move selected ${actionLabel} to trash`} aria-label={`Move selected ${actionLabel} to trash`} onClick={() => { if (!actionPath) return; const item = folderFocused ? "folder and all its contents" : "note"; if (window.confirm(`Move this ${item} to the workspace trash?`)) { props.onDelete(actionPath); if (folderFocused) { setSelectedFolder(""); setTreeFocus("note"); } }} } disabled={!actionPath}><Trash2 size={14} /></button></div></div>
+    {tree && <section className="sidebar-tree-section"><div className="sidebar-heading"><span>{tree.name}</span><div><button type="button" title={hideFoldersWithoutNotes ? "Show folders without notes" : "Hide folders without notes"} aria-label={hideFoldersWithoutNotes ? "Show folders without notes" : "Hide folders without notes"} aria-pressed={hideFoldersWithoutNotes} onClick={() => setHideFoldersWithoutNotes(value => !value)}>{hideFoldersWithoutNotes ? <EyeOff size={15} /> : <Eye size={15} />}</button><button title="New Markdown note" aria-label="New Markdown note" onClick={beginCreateNote}><FilePlus size={15} /></button><button title="New folder" aria-label="New folder" onClick={() => beginCreate("folder")}><FolderPlus size={15} /></button><button title={`Rename / move selected ${actionLabel}`} aria-label={`Rename / move selected ${actionLabel}`} onClick={() => beginRename()} disabled={!actionPath}><Pencil size={14} /></button><button title={`Move selected ${actionLabel} to trash`} aria-label={`Move selected ${actionLabel} to trash`} onClick={() => { if (!actionPath) return; const item = folderFocused ? "folder and all its contents" : "note"; if (window.confirm(`Move this ${item} to the workspace trash?`)) { props.onDelete(actionPath); if (folderFocused) { setSelectedFolder(""); setTreeFocus("note"); } }} } disabled={!actionPath}><Trash2 size={14} /></button></div></div>
       <FileTree entries={tree.entries} tagColors={tree.tags} selected={props.selected} selectedFolder={selectedFolder} focus={treeFocus} hideFoldersWithoutNotes={hideFoldersWithoutNotes} edit={edit} onEditSubmit={saveEdit} onEditCancel={() => setEdit(null)} onOpen={selectNote} onFolderSelect={selectFolder} onEntryContext={(path, kind, x, y) => { if (kind === "folder") selectFolder(path); if (kind === "note") { setTreeFocus("note"); props.onTargetChange?.(path, "note"); } setFolderMenu({ path, kind, x: Math.max(8, Math.min(x, window.innerWidth - 200)), y: Math.max(8, Math.min(y, window.innerHeight - 180)) }); }} onMove={props.onMove} />
       {folderMenu && <div className="folder-context-menu" role="menu" style={{ left: folderMenu.x, top: folderMenu.y }} onPointerDown={event => event.stopPropagation()}>
         {folderMenu.kind !== "root" && props.onUpdateMetadata && <>

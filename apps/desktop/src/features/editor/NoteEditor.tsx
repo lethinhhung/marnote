@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { ReactNode } from "react";
-import { Star } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -20,6 +19,7 @@ import { clearColumnWidths } from "./tableResize";
 import type { WorkspaceEntryMetadata } from "../../shared/domain/workspace";
 import { tagStyle } from "../../shared/ui/tagStyle";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
+import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import "./editor-reference.css";
 
 type SlashState = { query: string; from: number; to: number; top: number; left: number; maxHeight: number };
@@ -35,7 +35,7 @@ function slashPosition(editor: Editor, position: number) {
     maxHeight,
   };
 }
-export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, heading, metadata, tagColors = {}, saveStatus }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; heading: ReactNode; metadata?: WorkspaceEntryMetadata; tagColors?: Record<string, string>; saveStatus?: "saved" | "saving" | "error" }) {
+export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, heading, metadata, updateMetadata, path, tagColors = {}, saveStatus }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; tagColors?: Record<string, string>; saveStatus?: "saved" | "saving" | "error" }) {
   const [slash, setSlash] = useState<SlashState | null>(null);
   const [selected, setSelected] = useState(0);
   const editor = useEditor({ extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
@@ -60,9 +60,28 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
       window.removeEventListener("resize", update);
     };
   }, [editor, slash?.to]);
+  useEffect(() => {
+    if (!slash) return;
+    const dismissOnPointerDown = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".slash-menu")) return;
+      setSlash(null);
+    };
+    const dismissOnFocus = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest(".ProseMirror, .slash-menu")) return;
+      setSlash(null);
+    };
+    document.addEventListener("pointerdown", dismissOnPointerDown);
+    document.addEventListener("focusin", dismissOnFocus);
+    return () => {
+      document.removeEventListener("pointerdown", dismissOnPointerDown);
+      document.removeEventListener("focusin", dismissOnFocus);
+    };
+  }, [slash !== null]);
   useEffect(() => { if (editor && editor.getMarkdown() !== value) editor.commands.setContent(value || "", { contentType: "markdown", emitUpdate: false }); }, [editor, value]);
   const markdown = editor?.getMarkdown() ?? value;
   const insert = (id: string) => { if (!editor || !slash) return; const chain = editor.chain().focus().deleteRange({ from: slash.from, to: slash.to }); if (id === "paragraph") chain.setParagraph().run(); else if (id.startsWith("heading")) chain.setHeading({ level: Number(id.slice(-1)) as 1 | 2 | 3 }).run(); else if (id === "bullet") chain.toggleBulletList().run(); else if (id === "number") chain.toggleOrderedList().run(); else if (id === "task") chain.toggleTaskList().run(); else if (id === "quote") chain.toggleBlockquote().run(); else if (id === "code") chain.toggleCodeBlock().run(); else if (id === "table") chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(); else chain.setHorizontalRule().run(); setSlash(null); };
   const keys = (event: KeyboardEvent) => { if (!slash || !editor || !(event.target as HTMLElement).closest(".ProseMirror")) return; const ids = matchingSlashIds(slash.query); if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setSelected(v => Math.max(0, Math.min(ids.length - 1, v + (event.key === "ArrowDown" ? 1 : -1)))); } if (event.key === "Escape") { event.preventDefault(); setSlash(null); } if (event.key === "Enter") { event.preventDefault(); if (ids[selected]) insert(ids[selected]); } };
-  return <div className={`editor-frame ${horizontalScroll ? "wide-content-scroll" : "wide-content-wrap"}`} onKeyDownCapture={keys}><EditorToolbar editor={editor} source={source} horizontalScroll={horizontalScroll} onToggleHorizontalScroll={onToggleHorizontalScroll} saveStatus={saveStatus} /><div className="editor-canvas"><div className="note-heading">{heading}{metadata && <div className="note-meta"><span className="note-meta-icon">{metadata.icon || "👨‍🌾"}</span>{metadata.favorite && <Star size={14} className="note-meta-favorite" aria-label="Favorite" />}{metadata.tags && metadata.tags.length > 0 && <span className="note-meta-tags">{metadata.tags.map(tag => { const color = tagColors[tag] ?? "#526b58"; return <button type="button" key={tag} className="note-meta-tag" style={tagStyle(color, "#f8f7f4")} onClick={() => requestTagEdit(tag)} title={`Edit ${tag}`}>#{tag}</button>; })}</span>}</div>}</div>{source ? <pre className="markdown-source">{markdown}</pre> : editor ? <TableEdgeControls editor={editor} resizeEnabled={horizontalScroll}><EditorContent editor={editor} /><BlockDragHandle editor={editor} /></TableEdgeControls> : <EditorContent editor={editor} />}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left, maxHeight: slash.maxHeight }} onSelect={insert} />}</div></div>;
+  return <div className={`editor-frame ${horizontalScroll ? "wide-content-scroll" : "wide-content-wrap"}`} onKeyDownCapture={keys}><EditorToolbar editor={editor} source={source} horizontalScroll={horizontalScroll} onToggleHorizontalScroll={onToggleHorizontalScroll} saveStatus={saveStatus} /><div className="editor-canvas"><div className="note-heading"><EmojiPicker value={metadata?.icon} label="Change note icon" fallback="👨‍🌾" onChange={icon => updateMetadata(path, { icon })} />{heading}{metadata?.tags && metadata.tags.length > 0 && <div className="note-meta"><span className="note-meta-tags">{metadata.tags.map(tag => { const color = tagColors[tag] ?? "#526b58"; return <button type="button" key={tag} className="note-meta-tag" style={tagStyle(color, "#f8f7f4")} onClick={() => requestTagEdit(tag)} title={`Edit ${tag}`}>#{tag}</button>; })}</span></div>}</div>{source ? <pre className="markdown-source">{markdown}</pre> : editor ? <TableEdgeControls editor={editor} resizeEnabled={horizontalScroll}><EditorContent editor={editor} /><BlockDragHandle editor={editor} /></TableEdgeControls> : <EditorContent editor={editor} />}{slash && <SlashMenu query={slash.query} selected={selected} position={{ top: slash.top, left: slash.left, maxHeight: slash.maxHeight }} onSelect={insert} />}</div></div>;
 }

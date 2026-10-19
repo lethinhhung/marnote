@@ -39,7 +39,9 @@
 :root[data-theme="dark"] .tree-edit-row button { color: #8d948b; }
 :root[data-theme="dark"] .tree-edit-row button:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .welcome h1 { color: #f0f3ec; }
-:root[data-theme="dark"] .topbar { border-color: #292d29; background: #161816; color: #8d948b; }
+:root[data-theme="dark"] .app-shell .topbar { border-color: #292d29; background: #161816; color: #8d948b; }
+:root[data-theme="dark"] .app-shell .address-brand { border-color: #292d29; }
+:root[data-theme="dark"] .app-shell .address-separator { color: rgba(141,148,139,.6); }
 :root[data-theme="dark"] .brand-name { color: #f0f3ec; }
 :root[data-theme="dark"] .topbar-divider { border-color: #292d29; }
 :root[data-theme="dark"] .crumb { color: #a2ada0; }
@@ -50,6 +52,7 @@
 :root[data-theme="dark"] .title-extension { color: #5e655c; }
 :root[data-theme="dark"] .title-input::placeholder { color: #5e655c; }
 :root[data-theme="dark"] .note-heading { border-color: #292d29; }
+:root[data-theme="dark"] .editor-frame .note-heading > .emoji-picker > button:hover { background: #202320; }
 :root[data-theme="dark"] .editor-frame { background: #1a1c1a; }
 :root[data-theme="dark"] .editor-frame .editor-canvas { background: #1c1e1c; }
 :root[data-theme="dark"] .table-edge-add { border-color: #3c4a42; background: #294334; color: #fff; }

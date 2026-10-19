@@ -14,7 +14,27 @@ export function useWorkspace() {
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
   const remember = (path: string) => setRecent(current => rememberRecentWorkspace(current, path));
   const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); remember(path); });
-  const openDefault = () => run(async () => { setTree(await openDefaultWorkspace()); setNote(null); });
+  const openDefault = () => run(async () => {
+    const workspace = await openDefaultWorkspace();
+    setTree(workspace);
+    setNote(null);
+    remember(workspace.path);
+  });
+  const openLastOrDefault = () => run(async () => {
+    const latest = loadRecentWorkspaces()[0];
+    if (latest) {
+      try {
+        setTree(await openWorkspace(latest));
+        setNote(null);
+        remember(latest);
+        return;
+      } catch { /* A missing or inaccessible recent workspace falls back to default. */ }
+    }
+    const fallback = await openDefaultWorkspace();
+    setTree(fallback);
+    setNote(null);
+    remember(fallback.path);
+  });
   const select = (entry: Entry) => run(async () => { if (!tree) return; const result = await readFile(tree.path, entry.path); setNote({ path: result.path, content: result.content }); });
   const save = async (path: string, content: string, expected: string): Promise<boolean> => {
     if (!tree) return false;
@@ -73,5 +93,5 @@ export function useWorkspace() {
     if (tree) await renameWorkspaceTag(tree.path, oldName, newName, color);
   });
   const clearNote = () => setNote(null);
-  return { tree, note, error, setError, open, openDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, remove };
+  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, remove };
 }
