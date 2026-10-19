@@ -238,7 +238,7 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .emoji-picker-remove:hover { background: #eff1eb; color: #435c48; }
 .folder-emoji-action { display: flex; align-items: center; gap: 9px; width: 100%; box-sizing: border-box; padding: 8px 9px; border-radius: 5px; color: #555b52; font-size: 12px; cursor: pointer; }
 .folder-emoji-action:hover { background: #eff1eb; color: #435c48; }
-.folder-emoji-action .emoji-picker > button { flex: 0 0 15px; width: 15px; min-width: 15px; height: 16px; padding: 0; font-size: 13px; }
+.folder-emoji-action .emoji-picker > button { flex: 0 0 15px; width: 15px; min-width: 15px; height: 16px; padding: 0; font-size: 12px; }
 .note-footer-edit { display: inline-flex; align-items: center; gap: 6px; }
 .note-footer-edit input { height: 20px; padding: 0 6px; border: 1px solid #dce4d9; border-radius: 4px; background: #fff; color: #3f493e; font-size: 10px; outline: none; width: 160px; }
 .note-footer-edit input:focus { border-color: #82947c; outline: 2px solid #dce7d7; }

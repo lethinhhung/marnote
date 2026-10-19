@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FolderOpen, Home, FilePlus, FolderPlus, Pencil, Trash2, Eye, EyeOff, Tag, Star, ChevronsUpDown } from "lucide-react";
+import { File, FilePlus, FileText, Folder, FolderOpen, FolderPlus, Home, Pencil, Trash2, Eye, EyeOff, Tag, Star, ChevronsUpDown } from "lucide-react";
 import { isDesktop, openWorkspaceFolder } from "../../platform/dialog";
 import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import { FileTree, type TreeEdit } from "./FileTree";
@@ -91,7 +91,7 @@ export function WorkspaceSidebar(props: Props) {
         {folderMenu.kind !== "root" && props.onUpdateMetadata && <>
           <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); const value = window.prompt("Tags (comma separated)", entry?.metadata?.tags?.join(", ") ?? ""); if (value !== null) updateMenuMetadata({ tags: value.split(",").map(tag => tag.trim()).filter(Boolean) }); }}><Tag size={14} />Assign tags</button>
           {(menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.tags ?? []).map(tag => <button key={tag} role="menuitem" onClick={() => { setFolderMenu(null); requestTagEdit(tag); }}><Pencil size={14} />Edit #{tag}</button>)}
-          <span className="folder-emoji-action" onClick={event => { if ((event.target as HTMLElement).closest(".emoji-picker")) return; (event.currentTarget.querySelector(".emoji-picker > button") as HTMLButtonElement | null)?.click(); }}><EmojiPicker value={menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.icon} label={`Choose ${folderMenu.kind} emoji`} onChange={icon => updateMenuMetadata({ icon })} />Choose emoji icon</span>
+          <span className="folder-emoji-action" onClick={event => { if ((event.target as HTMLElement).closest(".emoji-picker")) return; (event.currentTarget.querySelector(".emoji-picker > button") as HTMLButtonElement | null)?.click(); }}><EmojiPicker value={menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.icon} label={`Choose ${folderMenu.kind} emoji`} fallback={folderMenu.kind === "folder" ? <Folder size={14} /> : menuEntry(tree?.entries ?? [], folderMenu.path)?.isEmpty ? <File size={14} /> : <FileText size={14} />} onChange={icon => updateMenuMetadata({ icon })} />Choose emoji icon</span>
           <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); updateMenuMetadata({ favorite: !entry?.metadata?.favorite }); }}><Star size={14} />{menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.favorite ? "Remove favorite" : "Add favorite"}</button>
         </>}
         {folderMenu.kind !== "note" && <><button role="menuitem" onClick={() => { setSelectedFolder(folderMenu.path); setTreeFocus(folderMenu.path ? "folder" : "note"); beginCreate("note", folderMenu.path); setFolderMenu(null); }}><FilePlus size={15} />New note{folderMenu.path ? " here" : ""}</button>
