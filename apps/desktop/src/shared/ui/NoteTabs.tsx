@@ -1,8 +1,9 @@
-import { Plus, X } from "lucide-react";
+import { File, Plus, X } from "lucide-react";
+import type { ReactNode } from "react";
 
 type Props = {
   paths: string[];
-  icons?: Record<string, string>;
+  icons?: Record<string, ReactNode>;
   dirtyPath?: string;
   activePath: string;
   onSelect: (path: string) => void;
@@ -19,7 +20,7 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
         const active = path === activePath;
         return <div className={`note-tab ${active ? "active" : ""}`} key={path}>
           <button type="button" role="tab" aria-selected={active} onClick={() => onSelect(path)}>
-            <span className="note-tab-icon" aria-hidden="true">{icons[path] || (active ? "👨‍🌾" : "📄")}</span><span>{title}</span>
+            <span className="note-tab-icon" aria-hidden="true">{icons[path] || <File size={14} />}</span><span>{title}</span>
           </button>
           {dirtyPath === path && <span className="note-tab-dirty" role="img" aria-label="Unsaved changes" title="Unsaved changes" />}
           <button className="note-tab-close" type="button" aria-label={`Close ${title}`} onClick={() => onClose(path)}><X size={12} /></button>

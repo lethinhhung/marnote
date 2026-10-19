@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
+import { File, FileText } from "lucide-react";
 import { useTheme } from "../shared/theme/useTheme";
 import { useWorkspace } from "../features/workspace/useWorkspace";
 import { WorkspaceSidebar } from "../features/workspace/WorkspaceSidebar";
@@ -13,16 +14,20 @@ import type { Entry, WorkspaceEntryMetadata } from "../shared/domain/workspace";
 import { NoteTabs } from "../shared/ui/NoteTabs";
 import { useNoteTabs } from "./useNoteTabs";
 
-function findEntryMetadata(entries: Entry[] | undefined, path: string): WorkspaceEntryMetadata | undefined {
+function findEntry(entries: Entry[] | undefined, path: string): Entry | undefined {
   if (!entries) return undefined;
   for (const entry of entries) {
-    if (entry.path === path) return entry.metadata;
+    if (entry.path === path) return entry;
     if (entry.children) {
-      const found = findEntryMetadata(entry.children, path);
+      const found = findEntry(entry.children, path);
       if (found) return found;
     }
   }
   return undefined;
+}
+
+function findEntryMetadata(entries: Entry[] | undefined, path: string): WorkspaceEntryMetadata | undefined {
+  return findEntry(entries, path)?.metadata;
 }
 
 function countTagUsage(entries: Entry[] = []): Record<string, number> {
@@ -70,8 +75,8 @@ export function App() {
     [path, workspace.tree]
   );
   const tabIcons = useMemo(() => Object.fromEntries(noteTabs.tabs.map(tabPath => {
-    const metadata = workspace.tree && findEntryMetadata(workspace.tree.entries, tabPath);
-    return [tabPath, metadata?.icon || (tabPath === path ? "👨‍🌾" : "📄")];
+    const entry = workspace.tree && findEntry(workspace.tree.entries, tabPath);
+    return [tabPath, entry?.metadata?.icon || (entry?.isEmpty ? <File size={14} /> : <FileText size={14} />)];
   })), [noteTabs.tabs, workspace.tree]);
   const targetPath = footerTarget.kind === "note" ? path : footerTarget.path;
   const targetMetadata = useMemo(
