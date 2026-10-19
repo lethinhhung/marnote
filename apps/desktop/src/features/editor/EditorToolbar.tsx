@@ -1,8 +1,8 @@
 import { useEditorState, type Editor } from "@tiptap/react";
 import { useRef, useState, type FormEvent, type MouseEvent } from "react";
-import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Eye, Pilcrow, Table2, MoveHorizontal } from "lucide-react";
+import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal } from "lucide-react";
 
-type Props = { editor: Editor | null; source: boolean; onToggleSource: () => void; horizontalScroll: boolean; onToggleHorizontalScroll: () => void };
+type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; saveStatus?: "saved" | "saving" | "error" };
 type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
 
 const actions: Action[] = [
@@ -22,7 +22,7 @@ const actions: Action[] = [
   { label: "Divider", icon: Minus, run: e => e.chain().focus().setHorizontalRule().run() },
 ];
 
-export function EditorToolbar({ editor, source, onToggleSource, horizontalScroll, onToggleHorizontalScroll }: Props) {
+export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, saveStatus = "saved" }: Props) {
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
   const [linkOpen, setLinkOpen] = useState(false);
@@ -41,7 +41,7 @@ export function EditorToolbar({ editor, source, onToggleSource, horizontalScroll
   };
   return <div className="toolbar" role="toolbar" aria-label="Formatting">
     <div className="toolbar-actions">
-      <div className="tool-group">{actions.map(({ label, icon: Icon, run, active }) => { const selected = !!editor && !!active?.(editor); return <button key={label} type="button" title={label} aria-label={label} aria-pressed={selected} disabled={!editor} className={selected ? "tool active" : "tool"} onClick={() => editor && run(editor)}><Icon size={16} strokeWidth={1.8} /></button>; })}
+      <div className="tool-group">{actions.map(({ label, icon: Icon, run, active }, index) => { const selected = !!editor && !!active?.(editor); return <span className="tool-item" key={label}>{[1, 4, 9].includes(index) && <i className="toolbar-group-divider" />}<button type="button" title={label} aria-label={label} aria-pressed={selected} disabled={!editor} className={selected ? "tool active" : "tool"} onClick={() => editor && run(editor)}><span className={`tool-glyph tool-glyph-${index}`}>{toolbarGlyph(index)}</span><Icon className="tool-icon" size={14} strokeWidth={1.8} /></button></span>; })}
         <button type="button" className="tool" title="Insert table" aria-label="Insert table" disabled={!editor} onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={16} strokeWidth={1.8} /></button>
         <button type="button" className={linkOpen ? "tool active" : "tool"} title="Add link" aria-label="Add link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) selection.current = editor.state.selection; }} onClick={() => setLinkOpen(open => !open)}><Link2 size={16} /></button>
       </div>
@@ -58,8 +58,12 @@ export function EditorToolbar({ editor, source, onToggleSource, horizontalScroll
     <span className="toolbar-spacer" />
     <span className="tool-separator" />
     {!source && supportsWideContent && <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>}
-    <button type="button" className={source ? "tool active source-toggle" : "tool source-toggle"} title="View Markdown" aria-label="View Markdown" aria-pressed={source} onClick={onToggleSource}><Eye size={16} /><span>Markdown</span></button>
+    <span className={`toolbar-save ${saveStatus}`} role="status"><i />{saveStatus === "saving" ? "Saving…" : saveStatus === "error" ? "Save failed" : "Saved"}</span>
   </div>;
 }
 
 function keepEditorSelection(event: MouseEvent<HTMLButtonElement>) { event.preventDefault(); }
+
+function toolbarGlyph(index: number) {
+  return ["¶", "H1", "H2", "H3", "B", "I", "S", "<>", "{}", "", "", "", "”", "—"][index];
+}

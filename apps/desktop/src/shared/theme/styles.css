@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&display=swap');
 :root { font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif; color: #292c27; background: #f6f5f2; font-synthesis: none; text-rendering: optimizeLegibility; --muted: #92948c; --line: #e9e8e3; --green: #526b58; }
 * { box-sizing: border-box; }
 body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; }
@@ -251,7 +251,6 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 }
 @media (max-width: 640px) { .note-heading, .editor-prose, .markdown-source { width: calc(100% - 44px); } .note-heading { padding: 28px 12px 14px; } .editor-prose, .markdown-source { min-height: 55vh; padding: 8px 12px 30px; } .source-toggle { flex: 0 0 auto; } .note-footer { gap: 10px; padding: 0 11px; font-size: 9px; } .note-footer-stats { gap: 4px; } }
 .topbar { min-width: 0; }
-.topbar.mac-titlebar { padding-left: 88px; }
 .address { flex: 0 1 auto; }
 .address-brand { color: #353b35; font-size: 12px; font-weight: 700; }
 .address-part { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
@@ -270,4 +269,4 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .search-results button:hover { background: #f1f3ed; }
 .search-results button small { grid-column: 2; overflow: hidden; color: #92968d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .search-results p { margin: 0; padding: 10px; color: #92968d; font-size: 12px; }
-@media (max-width: 760px) { .topbar { gap: 9px; padding: 0 10px; } .topbar.mac-titlebar { padding-left: 84px; } .address { min-width: 0; gap: 5px; } .address-part { gap: 5px; } .global-search { height: 24px; min-width: 0; flex-basis: 120px; } }
+@media (max-width: 760px) { .topbar { gap: 9px; padding: 0 10px; } .address { min-width: 0; gap: 5px; } .address-part { gap: 5px; } .global-search { height: 24px; min-width: 0; flex-basis: 120px; } }

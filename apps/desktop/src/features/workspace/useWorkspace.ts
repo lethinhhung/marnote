@@ -72,5 +72,6 @@ export function useWorkspace() {
   const editTag = (oldName: string, newName: string, color: string) => mutate(async () => {
     if (tree) await renameWorkspaceTag(tree.path, oldName, newName, color);
   });
-  return { tree, note, error, setError, open, openDefault, recent, select, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, remove };
+  const clearNote = () => setNote(null);
+  return { tree, note, error, setError, open, openDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, remove };
 }

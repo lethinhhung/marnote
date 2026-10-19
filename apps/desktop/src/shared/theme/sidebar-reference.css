@@ -1,0 +1,46 @@
+.app-shell .sidebar.sidebar { width: 256px; flex: 0 0 256px; padding: 0; border-color: #e5e2dc; background: #f8f7f4; color: #292c27; }
+.app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 0; overflow: auto; padding: 12px; }
+.app-shell .sidebar .default-workspace { width: 100%; min-height: 36px; justify-content: flex-start; gap: 8px; margin: 0; padding: 8px 12px; border-color: #e2dfd8; border-radius: 8px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 600; letter-spacing: -.02em; box-shadow: 0 1px 2px #292c2708; }
+.app-shell .sidebar .default-workspace svg { color: #526b58; }
+.app-shell .sidebar-workspaces { display: grid; gap: 6px; }
+.app-shell .sidebar .recent-workspaces { display: grid; gap: 6px; margin: 0; padding: 0 4px; color: #92948c; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.app-shell .sidebar .recent-workspaces select { width: 100%; min-height: 30px; padding: 5px 28px 5px 10px; border: 1px solid #e5e2dc; border-radius: 6px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 500; box-shadow: 0 1px 2px #292c2708; }
+.app-shell .sidebar .workspace-open { display: grid; gap: 6px; padding: 0; border: 0; }
+.app-shell .sidebar .open-workspace { min-height: 30px; justify-content: center; gap: 6px; padding: 5px 10px; border: 1px dashed #e5e2dc; border-radius: 6px; background: transparent; color: #454a43; font-size: 12px; font-weight: 500; }
+.app-shell .sidebar .open-workspace svg { color: #92948c; }
+.app-shell .sidebar .open-workspace:hover { border-color: #92948c; background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .sidebar-tree-section { min-height: 0; padding-top: 8px; }
+.app-shell .sidebar .sidebar-heading { min-height: 20px; justify-content: space-between; margin: 0 4px 8px; color: #92948c; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
+.app-shell .sidebar .sidebar-heading div { gap: 2px; color: #92948c; }
+.app-shell .sidebar .sidebar-heading button { width: 20px; height: 20px; color: #92948c; }
+.app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .file-tree, .app-shell .sidebar .file-tree ul { margin: 0; padding: 0; list-style: none; }
+.app-shell .sidebar .file-tree { min-height: 0; overflow: visible; color: #292c27; font-size: 12px; }
+.app-shell .sidebar .file-tree .tree-children { margin: 2px 0 2px 16px; padding-left: 8px; border-left: 1px solid #eae7e1; }
+.app-shell .sidebar .tree-item { width: 100%; height: 28px; gap: 6px; padding-right: 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #454a43; font-size: 12px; font-weight: 400; line-height: 16px; }
+.app-shell .sidebar .tree-item[data-kind="directory"] { height: 24px; font-weight: 500; }
+.app-shell .sidebar .tree-item:hover { background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .tree-item.selected { border-color: #526b5833; background: #eef3f0; color: #526b58; box-shadow: 0 1px 2px #292c2708; }
+.app-shell .sidebar .tree-item.selected .tree-item-name { color: #292c27; font-weight: 600; }
+.app-shell .sidebar .tree-item.selected-folder { border-color: #e5e2dc; background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .tree-indent { width: 10px; flex-basis: 10px; }
+.app-shell .sidebar .tree-item > svg { flex: 0 0 14px; color: #92948c; }
+.app-shell .sidebar .tree-icon-emoji { flex: 0 0 16px; font-size: 14px; text-align: center; line-height: 1; }
+.app-shell .sidebar .tree-folder-tags { flex: 0 1 auto; gap: 3px; margin-left: auto; }
+.app-shell .sidebar .tree-folder-timestamps { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; }
+.app-shell .sidebar .tree-folder-tag { max-width: 58px; overflow: hidden; padding: 2px 5px; border: 1px solid #526b582e; border-radius: 4px; background: #fffdf9; color: #526b58; font-size: 10px; font-weight: 500; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.app-shell .sidebar .tree-item.selected .tree-folder-tag { border-color: #526b5840; background: #fffdf9; }
+.app-shell .sidebar .tree-favorite { flex: 0 0 12px; color: #de9e26; }
+.app-shell .sidebar .sidebar-empty { padding: 8px 4px; color: #92948c; font-size: 12px; }
+.app-shell .sidebar .tree-edit-row { height: 28px; }
+.app-shell .sidebar .tree-edit-row input { height: 24px; font-size: 12px; }
+.app-shell .sidebar .folder-context-menu { border-color: #e5e2dc; background: #fffdf9; }
+.app-shell .sidebar .folder-context-menu button:hover { background: #eef3f0; color: #526b58; }
+:root[data-theme="dark"] .app-shell .sidebar.sidebar { border-color: #39413a; background: #232925; color: #d1d8ce; }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace, :root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #424a43; background: #292f2a; color: #d1d8ce; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: #424a43; color: #c0c9bd; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-children { border-color: #424a43; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item { color: #c0c9bd; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item:hover, :root[data-theme="dark"] .app-shell .sidebar .tree-item.selected { background: #343d35; color: #d1e0ce; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected .tree-item-name { color: #e3e2e6; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-folder-tag { border-color: #424a43; background: #292f2a; color: #c0c9bd; }
