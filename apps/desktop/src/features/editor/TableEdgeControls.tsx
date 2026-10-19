@@ -36,9 +36,18 @@ export function TableEdgeControls({ editor, children, resizeEnabled }: { editor:
       const bounds = target.wrapper.getBoundingClientRect();
       const tableBounds = target.table.getBoundingClientRect();
       const origin = container.getBoundingClientRect();
+      const visibleLeft = bounds.left + target.wrapper.clientLeft;
+      const visibleRight = visibleLeft + target.wrapper.clientWidth;
+      const buttonLeft = Math.max(visibleLeft + 13, Math.min(tableBounds.right, visibleRight - 8));
+      const visibleTableLeft = Math.max(tableBounds.left, visibleLeft);
+      const visibleTableRight = Math.min(tableBounds.right, visibleRight);
+      const rightLeft = resizeEnabled ? buttonLeft - origin.left - 13 : tableBounds.right - origin.left - 14;
+      const bottomLeft = resizeEnabled
+        ? (visibleTableLeft + visibleTableRight) / 2 - origin.left - 13
+        : bounds.left - origin.left + bounds.width / 2 - 25;
       setPosition({
-        right: { top: tableBounds.top - origin.top + tableBounds.height / 2 - 13, left: tableBounds.right - origin.left - 14 },
-        bottom: { top: bounds.bottom - origin.top - 14, left: bounds.left - origin.left + bounds.width / 2 - 25 },
+        right: { top: tableBounds.top - origin.top + tableBounds.height / 2 - 13, left: rightLeft },
+        bottom: { top: bounds.bottom - origin.top - 14, left: bottomLeft },
       });
     };
     update();

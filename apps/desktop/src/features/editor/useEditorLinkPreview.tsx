@@ -15,10 +15,10 @@ export function useEditorLinkPreview(editor: Editor | null) {
   const closeSoon = () => { keepOpen(); closeTimer.current = window.setTimeout(() => setPreview(null), 500); };
   useEffect(() => () => keepOpen(), []);
   const onMouseOverCapture = (event: MouseEvent<HTMLDivElement>) => {
-    keepOpen();
     if (!(event.target instanceof Element)) return;
     const anchor = event.target.closest("a[href]") as HTMLAnchorElement | null;
     if (!anchor || !event.currentTarget.contains(anchor)) return;
+    keepOpen();
     const rect = anchor.getBoundingClientRect();
     const href = normalizeLinkUrl(anchor.getAttribute("href") ?? anchor.href);
     let from = 0, to = 0;

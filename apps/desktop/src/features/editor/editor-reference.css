@@ -4,6 +4,7 @@
 .editor-frame .tool-group { gap: 10px; }
 .editor-frame .tool-item { display: inline-flex; align-items: center; }
 .editor-frame .tool { width: 28px; height: 26px; border-radius: 4px; color: #92948c; }
+.editor-frame .wide-content-toggle { width: auto; min-width: 88px; flex: 0 0 auto; padding: 0 8px; }
 .editor-frame .tool:hover:not(:disabled), .editor-frame .tool.active { background: #f8f7f4; color: #292c27; }
 .editor-frame .tool-icon { display: none; }
 .editor-frame .tool-group > button svg { width: 14px; height: 14px; }
@@ -76,3 +77,8 @@
 .note-tab-dirty { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: #e5a93c; }
 .note-tab-close { width: 16px; height: 16px; flex-basis: 16px; margin-right: 6px; }
 @media (max-width: 760px) { .editor-frame .note-heading, .editor-frame .editor-prose, .editor-frame .markdown-source { width: calc(100% - 40px); } .editor-frame .note-heading { padding-top: 28px; } .editor-frame .editor-prose, .editor-frame .markdown-source { padding-top: 22px; } }
+@media (max-width: 1400px) {
+  .editor-frame .toolbar { min-height: 40px; height: auto; flex: 0 0 auto; flex-wrap: wrap; gap: 4px; padding: 6px 12px; }
+  .editor-frame .toolbar-actions { order: 1; flex: 1 1 100%; flex-wrap: wrap; }
+  .editor-frame .tool-group { min-width: 0; flex: 1 1 100%; flex-wrap: wrap; gap: 0; }
+}

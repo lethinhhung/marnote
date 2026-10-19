@@ -1,7 +1,8 @@
 import { useEditorState, type Editor } from "@tiptap/react";
 import { useRef, useState, type FormEvent, type MouseEvent } from "react";
-import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal } from "lucide-react";
+import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import { normalizeLinkUrl } from "./linkUrl";
+import { setColumnAlignment } from "./tableAlignment";
 
 type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; saveStatus?: "saved" | "saving" | "error" };
 type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
@@ -25,7 +26,6 @@ const actions: Action[] = [
 
 export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, saveStatus = "saved" }: Props) {
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
-  const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
   const [linkOpen, setLinkOpen] = useState(false);
   const [href, setHref] = useState("");
   const selection = useRef({ from: 0, to: 0 });
@@ -47,6 +47,7 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
         <button type="button" className={linkOpen ? "tool active" : "tool"} title="Add link" aria-label="Add link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) selection.current = editor.state.selection; }} onClick={() => setLinkOpen(open => !open)}><Link2 size={16} /></button>
       </div>
       {inTable && <div className="table-actions" role="group" aria-label="Table controls">
+      {([ ["left", AlignLeft], ["center", AlignCenter], ["right", AlignRight] ] as const).map(([align, Icon]) => <button type="button" className="table-align-button" key={align} title={`Align current column ${align}`} aria-label={`Align current column ${align}`} onMouseDown={keepEditorSelection} onClick={() => editor && setColumnAlignment(editor, align)}><Icon size={11} /><span>{align[0].toUpperCase() + align.slice(1)}</span></button>)}
       <button type="button" title="Add row below" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().addRowAfter().run()}>+ Row</button>
       <button type="button" title="Add column to the right" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().addColumnAfter().run()}>+ Column</button>
       <button type="button" title="Delete current row" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteRow().run()}>− Row</button>
@@ -57,9 +58,10 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     </div>
     {linkOpen && <form className="link-popover" onSubmit={addLink}><label htmlFor="link-url">Link URL</label><input id="link-url" autoFocus placeholder="https://example.com or note.md" value={href} onChange={event => setHref(event.target.value)} onKeyDown={event => event.key === "Escape" && setLinkOpen(false)} /><div><button type="button" onClick={() => setLinkOpen(false)}>Cancel</button><button type="submit" disabled={!href.trim()}>Apply link</button></div></form>}
     <span className="toolbar-spacer" />
-    <span className="tool-separator" />
-    {!source && supportsWideContent && <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>}
-    <span className={`toolbar-save ${saveStatus}`} role="status"><i />{saveStatus === "saving" ? "Saving…" : saveStatus === "error" ? "Save failed" : "Saved"}</span>
+    <div className="toolbar-utility">
+      <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>
+      <span className={`toolbar-save ${saveStatus}`} role="status"><i />{saveStatus === "saving" ? "Saving…" : saveStatus === "error" ? "Save failed" : "Saved"}</span>
+    </div>
   </div>;
 }
 
