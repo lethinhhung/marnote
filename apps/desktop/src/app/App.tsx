@@ -25,6 +25,16 @@ function findEntryMetadata(entries: Entry[] | undefined, path: string): Workspac
   return undefined;
 }
 
+function countTagUsage(entries: Entry[] = []): Record<string, number> {
+  const counts: Record<string, number> = {};
+  const visit = (items: Entry[]) => items.forEach(entry => {
+    for (const tag of new Set(entry.metadata?.tags ?? [])) counts[tag] = (counts[tag] ?? 0) + 1;
+    visit(entry.children ?? []);
+  });
+  visit(entries);
+  return counts;
+}
+
 export function App() {
   const { theme, toggleTheme } = useTheme();
   const workspace = useWorkspace();
@@ -68,6 +78,7 @@ export function App() {
     () => (targetPath && workspace.tree ? findEntryMetadata(workspace.tree.entries, targetPath) : undefined),
     [targetPath, workspace.tree]
   );
+  const tagUsageCounts = useMemo(() => countTagUsage(workspace.tree?.entries), [workspace.tree]);
   return <main className="app-shell">
     <HeaderBar tree={workspace.tree} path={path} theme={theme} source={source} toggleTheme={toggleTheme} onToggleSource={() => setSource(value => !value)} onSelect={entry => { void noteTabs.selectTab(entry.path); }} />
     <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} recent={workspace.recent} onDefault={async () => { if (await noteTabs.saveCurrent()) workspace.openDefault(); }} selected={path} onOpen={async target => { if (await noteTabs.saveCurrent()) workspace.open(target); }} onSelect={entry => { void noteTabs.selectTab(entry.path); }} onTargetChange={(target, kind) => setFooterTarget({ path: target, kind })} onCreate={async target => { if (await noteTabs.saveCurrent()) workspace.create(target); }} onCreateFolder={workspace.createDirectory} onRename={workspace.rename} onDelete={workspace.remove} onMove={workspace.move} onUpdateMetadata={workspace.updateMetadata} />
@@ -77,6 +88,6 @@ export function App() {
         {workspace.note ? <NoteEditor value={draft} onChange={noteTabs.updateDraft} source={source} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} saveStatus={saveStatus} heading={<div className="title-field"><input ref={titleInput} className="title-input" aria-label="Note file name" defaultValue={name} size={Math.max(name.length, 1)} key={path} onBlur={event => { void renameTitle(event.currentTarget.value); }} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} tagColors={workspace.tree?.tags} /> : <div className="welcome"><div className="doc-icon">✎</div><h1>{workspace.tree ? "Choose a note" : "Open a workspace"}</h1><p>{workspace.tree ? "Select a Markdown file from the sidebar, or create a new note." : "Open a local folder to browse and edit its Markdown files."}</p></div>}
       </section>
     </div>
-    <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
+    <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
   </main>;
 }

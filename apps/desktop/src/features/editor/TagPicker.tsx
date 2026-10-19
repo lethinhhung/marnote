@@ -3,14 +3,12 @@ import { createPortal } from "react-dom";
 import { Plus, Settings, Tag, X } from "lucide-react";
 import { tagEditEventName } from "../../shared/ui/tagEditRequest";
 
-type Props = { selected: string[]; tags: Record<string, string>; onChange: (tags: string[]) => void; onColor: (name: string, color: string) => void; onEdit: (oldName: string, newName: string, color: string) => void };
-export function TagPicker({ selected, tags, onChange, onColor, onEdit }: Props) {
+type Props = { selected: string[]; tags: Record<string, string>; usageCounts: Record<string, number>; onChange: (tags: string[]) => void; onColor: (name: string, color: string) => void; onEdit: (oldName: string, newName: string, color: string) => void };
+export function TagPicker({ selected, tags, usageCounts, onChange, onColor, onEdit }: Props) {
   const [open, setOpen] = useState(false);
   const [manage, setManage] = useState(false);
   const [name, setName] = useState("");
   const [focusedTag, setFocusedTag] = useState("");
-  const [editedName, setEditedName] = useState("");
-  const [editedColor, setEditedColor] = useState("");
   const root = useRef<HTMLDivElement>(null);
   const layer = useRef<HTMLDivElement>(null);
   const popover = useRef<HTMLDivElement>(null);
@@ -55,8 +53,6 @@ export function TagPicker({ selected, tags, onChange, onColor, onEdit }: Props) 
       const tag = (event as CustomEvent<string>).detail;
       if (!tag) return;
       setFocusedTag(tag);
-      setEditedName(tag);
-      setEditedColor(tags[tag] ?? "#74856b");
       setOpen(true);
       setManage(true);
     };
@@ -65,7 +61,10 @@ export function TagPicker({ selected, tags, onChange, onColor, onEdit }: Props) 
   }, [tags]);
   useEffect(() => {
     if (!manage || !focusedTag) return;
-    document.querySelector(`[data-managed-tag="${CSS.escape(focusedTag)}"]`)?.scrollIntoView({ block: "center" });
+    const input = document.querySelector<HTMLInputElement>(`[data-managed-tag="${CSS.escape(focusedTag)}"] .tag-manager-name`);
+    input?.scrollIntoView({ block: "center" });
+    input?.focus();
+    input?.select();
   }, [manage, focusedTag]);
   const toggle = (tag: string) => onChange(selected.includes(tag) ? selected.filter(value => value !== tag) : [...selected, tag]);
   const valueToCreate = () => name.trim().replace(/^#/, "");
@@ -75,13 +74,13 @@ export function TagPicker({ selected, tags, onChange, onColor, onEdit }: Props) 
     <button className={`note-footer-action tag-picker-trigger ${open ? "active" : ""}`} onClick={() => open ? setOpen(false) : show()} aria-label={selected.length ? `Edit tags, ${selected.length} selected` : "Add tag"} aria-expanded={open}><Tag size={12} /><span>Add tag</span></button>
     {(open || manage) && createPortal(<div className="tag-picker-layer" ref={layer} style={{ top: position.top, left: position.left }}>
     {open && !manage && <div className="tag-picker-popover" ref={popover}><div className="tag-picker-heading"><b>Tags</b><button aria-label="Manage tags" onClick={() => { setFocusedTag(""); setManage(true); }}><Settings size={14} /> Advanced</button></div>
-      {Object.keys(tags).length ? Object.keys(tags).sort().map(tag => <div className="tag-picker-option" key={tag}><label className="tag-picker-option-select"><input type="checkbox" checked={selected.includes(tag)} onChange={() => toggle(tag)} /><i style={{ background: tags[tag] }} />{tag}</label><input className="tag-picker-color" type="color" aria-label={`Change ${tag} color`} value={tags[tag] || "#74856b"} onChange={event => onColor(tag, event.target.value)} /></div>) : <p className="tag-picker-empty">Create a tag to reuse it on notes and folders.</p>}
+      {Object.keys(tags).length ? Object.keys(tags).sort().map(tag => <div className="tag-picker-option" key={tag}><label className="tag-picker-option-select"><input type="checkbox" checked={selected.includes(tag)} onChange={() => toggle(tag)} />{tag}</label><input className="tag-picker-color" type="color" aria-label={`Change ${tag} color`} value={tags[tag] || "#74856b"} onChange={event => onColor(tag, event.target.value)} /></div>) : <p className="tag-picker-empty">Create a tag to reuse it on notes and folders.</p>}
       <div className="tag-picker-create"><input value={name} onChange={event => setName(event.target.value)} onKeyDown={event => event.key === "Enter" && createSelected()} placeholder="Create a tag" /><button onClick={createSelected} aria-label="Add tag"><Plus size={13} /></button></div>
     </div>}
-    {manage && <div className="tag-manager-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) closeManager(); }}><section className="tag-manager" role="dialog" aria-modal="true" aria-labelledby="tag-manager-title"><header><div><h2 id="tag-manager-title">{focusedTag ? `Edit #${focusedTag}` : "Manage tags"}</h2><p>{focusedTag ? "Changes apply everywhere this tag is used." : "Shared across notes and folders in this workspace."}</p></div><button aria-label="Close" onClick={closeManager}><X size={17} /></button></header>
-      {focusedTag && tags[focusedTag] ? <div className="tag-manager-edit" data-managed-tag={focusedTag}><label>Tag name<input value={editedName} onChange={event => setEditedName(event.target.value)} /></label><label>Color<input type="color" value={editedColor} onChange={event => setEditedColor(event.target.value)} /></label><button disabled={!editedName.trim()} onClick={() => { onEdit(focusedTag, editedName.trim().replace(/^#/, ""), editedColor); setManage(false); setOpen(false); }}>Save changes</button></div> : Object.keys(tags).sort().map(tag => <div className="tag-manager-row" key={tag}><button className="tag-manager-edit-link" onClick={() => { setFocusedTag(tag); setEditedName(tag); setEditedColor(tags[tag]); }}>#{tag}</button><span className="tag-manager-swatch" style={{ background: tags[tag] }} /><input type="color" aria-label={`Change ${tag} color`} value={tags[tag]} onChange={event => onColor(tag, event.target.value)} /><button onClick={() => onColor(tag, "")} aria-label={`Remove ${tag}`}>Remove</button></div>)}
+    {manage && <div className="tag-manager-backdrop" onMouseDown={event => { if (event.target === event.currentTarget) closeManager(); }}><section className="tag-manager" role="dialog" aria-modal="true" aria-labelledby="tag-manager-title"><header><div><h2 id="tag-manager-title">Manage tags</h2><p>Shared across notes and folders in this workspace.</p></div><button aria-label="Close" onClick={closeManager}><X size={17} /></button></header>
+      {Object.keys(tags).sort().map(tag => <div className="tag-manager-row" key={tag} data-managed-tag={tag}><input className="tag-manager-name" aria-label={`Tag name ${tag}`} defaultValue={`#${tag}`} onBlur={event => { const next = event.currentTarget.value.trim().replace(/^#/, ""); if (!next || next === tag) { event.currentTarget.value = `#${tag}`; return; } onEdit(tag, next, tags[tag]); }} onKeyDown={event => { if (event.key === "Enter") event.currentTarget.blur(); if (event.key === "Escape") { event.currentTarget.value = `#${tag}`; event.currentTarget.blur(); } }} /><span className="tag-usage-count" aria-label={`Used on ${usageCounts[tag] ?? 0} items`}>{usageCounts[tag] ?? 0}</span><input type="color" aria-label={`Change ${tag} color`} value={tags[tag]} onChange={event => onColor(tag, event.target.value)} /><button onClick={() => onColor(tag, "")} aria-label={`Remove ${tag}`}>Remove</button></div>)}
       {!Object.keys(tags).length && <p className="tag-picker-empty">No saved tags yet. Add one below.</p>}
-      {!focusedTag && <><div className="tag-manager-create"><input value={name} onChange={event => setName(event.target.value)} onKeyDown={event => event.key === "Enter" && createManaged()} placeholder="New tag name" /><button onClick={createManaged}>Create tag</button></div><footer><button onClick={closeManager}>Done</button></footer></>}</section></div>}
+      <div className="tag-manager-create"><input value={name} onChange={event => setName(event.target.value)} onKeyDown={event => event.key === "Enter" && createManaged()} placeholder="New tag name" /><button onClick={createManaged}>Create tag</button></div><footer><button onClick={closeManager}>Done</button></footer></section></div>}
     </div>, document.body)}
   </div>;
 }

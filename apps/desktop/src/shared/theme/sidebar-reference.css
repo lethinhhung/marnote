@@ -36,11 +36,13 @@
 .app-shell .sidebar .tree-edit-row input { height: 24px; font-size: 12px; }
 .app-shell .sidebar .folder-context-menu { border-color: #e5e2dc; background: #fffdf9; }
 .app-shell .sidebar .folder-context-menu button:hover { background: #eef3f0; color: #526b58; }
-:root[data-theme="dark"] .app-shell .sidebar.sidebar { border-color: #39413a; background: #232925; color: #d1d8ce; }
-:root[data-theme="dark"] .app-shell .sidebar .default-workspace, :root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #424a43; background: #292f2a; color: #d1d8ce; }
-:root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: #424a43; color: #c0c9bd; }
-:root[data-theme="dark"] .app-shell .sidebar .tree-children { border-color: #424a43; }
-:root[data-theme="dark"] .app-shell .sidebar .tree-item { color: #c0c9bd; }
-:root[data-theme="dark"] .app-shell .sidebar .tree-item:hover, :root[data-theme="dark"] .app-shell .sidebar .tree-item.selected { background: #343d35; color: #d1e0ce; }
-:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected .tree-item-name { color: #e3e2e6; }
-:root[data-theme="dark"] .app-shell .sidebar .tree-folder-tag { border-color: #424a43; background: #292f2a; color: #c0c9bd; }
+:root[data-theme="dark"] .app-shell .sidebar.sidebar { border-color: #292d29; background: #161816; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace, :root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: #292d29; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace:hover { border-color: rgba(141,148,139,.5); background: #202320; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace svg { color: #8d948b; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-children { border-color: #292d29; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item { color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item:hover, :root[data-theme="dark"] .app-shell .sidebar .tree-item.selected { background: #242824; border-color: #384339; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected .tree-item-name { color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-folder-tag { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }

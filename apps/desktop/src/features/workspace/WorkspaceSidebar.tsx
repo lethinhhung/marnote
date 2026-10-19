@@ -5,6 +5,7 @@ import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import { FileTree, type TreeEdit } from "./FileTree";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
+import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 import "../../shared/theme/sidebar-reference.css";
 
 type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; onDefault: () => void; onOpen: (path: string) => void; onSelect: (e: Entry) => void; onTargetChange?: (path: string, kind: "note" | "folder") => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean>; onUpdateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void };
@@ -85,7 +86,8 @@ export function WorkspaceSidebar(props: Props) {
       <FileTree entries={tree.entries} tagColors={tree.tags} selected={props.selected} selectedFolder={selectedFolder} focus={treeFocus} hideFoldersWithoutNotes={hideFoldersWithoutNotes} edit={edit} onEditSubmit={saveEdit} onEditCancel={() => setEdit(null)} onOpen={selectNote} onFolderSelect={selectFolder} onEntryContext={(path, kind, x, y) => { if (kind === "folder") selectFolder(path); if (kind === "note") { setTreeFocus("note"); props.onTargetChange?.(path, "note"); } setFolderMenu({ path, kind, x: Math.max(8, Math.min(x, window.innerWidth - 200)), y: Math.max(8, Math.min(y, window.innerHeight - 180)) }); }} onMove={props.onMove} />
       {folderMenu && <div className="folder-context-menu" role="menu" style={{ left: folderMenu.x, top: folderMenu.y }} onPointerDown={event => event.stopPropagation()}>
         {folderMenu.kind !== "root" && props.onUpdateMetadata && <>
-          <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); const value = window.prompt("Tags (comma separated)", entry?.metadata?.tags?.join(", ") ?? ""); if (value !== null) updateMenuMetadata({ tags: value.split(",").map(tag => tag.trim()).filter(Boolean) }); }}><Tag size={14} />Edit tags</button>
+          <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); const value = window.prompt("Tags (comma separated)", entry?.metadata?.tags?.join(", ") ?? ""); if (value !== null) updateMenuMetadata({ tags: value.split(",").map(tag => tag.trim()).filter(Boolean) }); }}><Tag size={14} />Assign tags</button>
+          {(menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.tags ?? []).map(tag => <button key={tag} role="menuitem" onClick={() => { setFolderMenu(null); requestTagEdit(tag); }}><Pencil size={14} />Edit #{tag}</button>)}
           <span className="folder-emoji-action" onClick={event => { if ((event.target as HTMLElement).closest(".emoji-picker")) return; (event.currentTarget.querySelector(".emoji-picker > button") as HTMLButtonElement | null)?.click(); }}><EmojiPicker value={menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.icon} label={`Choose ${folderMenu.kind} emoji`} onChange={icon => updateMenuMetadata({ icon })} />Choose emoji icon</span>
           <button role="menuitem" onClick={() => { const entry = menuEntry(tree?.entries ?? [], folderMenu.path); updateMenuMetadata({ favorite: !entry?.metadata?.favorite }); }}><Star size={14} />{menuEntry(tree?.entries ?? [], folderMenu.path)?.metadata?.favorite ? "Remove favorite" : "Add favorite"}</button>
         </>}
