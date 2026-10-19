@@ -13,7 +13,7 @@
 .note-tab:hover .note-tab-close, .note-tab.active .note-tab-close, .note-tab-close:focus-visible { opacity: 1; }
 .note-tab-close:hover, .note-tab-add:hover { background: #eaeae5; color: #435b48; }
 .note-tab-add:disabled { opacity: .35; cursor: default; }
-.note-tab-add { align-self: center; margin: 0 0 0 4px; }
+.note-tab-add { align-self: center; flex-basis: 24px; width: 24px; height: 24px; margin: 0 0 0 5px; transform: translateY(3px); }
 .note-tab button:focus-visible { outline: 2px solid #526b58; outline-offset: -2px; }
 :root[data-theme="dark"] .note-tabs { border-color: #343b35; background: #202520; }
 :root[data-theme="dark"] .note-tab { border-color: #343b35; color: #a3aa9f; }
