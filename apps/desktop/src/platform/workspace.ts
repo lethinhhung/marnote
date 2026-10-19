@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { WorkspaceTree } from "../shared/domain/workspace";
+import type { WorkspaceTree, WorkspaceEntryMetadata } from "../shared/domain/workspace";
 
 export type ReadResult = { path: string; content: string; modifiedMs: number };
 export const openWorkspace = (path: string) => invoke<WorkspaceTree>("open_workspace", { path });
@@ -12,3 +12,11 @@ export const createFile = (rootPath: string, path: string, content = "") => invo
 export const moveFile = (rootPath: string, source: string, destination: string) => invoke<void>("file_move", { rootPath, source, destination });
 export const deleteFile = (rootPath: string, path: string) => invoke<string>("file_delete", { rootPath, path });
 export const createFolder = (rootPath: string, path: string) => invoke<void>("folder_create", { rootPath, path });
+
+export type UpdateEntryMetadataInput = Pick<WorkspaceEntryMetadata, "tags" | "icon" | "favorite">;
+export const updateEntryMetadata = (rootPath: string, path: string, metadata: UpdateEntryMetadataInput) =>
+  invoke<void>("update_entry_metadata", { rootPath, path, ...metadata });
+export const saveWorkspaceTags = (rootPath: string, tags: Record<string, string>) =>
+  invoke<void>("save_workspace_tags", { rootPath, tags });
+export const renameWorkspaceTag = (rootPath: string, oldName: string, newName: string, color: string) =>
+  invoke<void>("rename_workspace_tag", { rootPath, oldName, newName, color });

@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
-import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, writeFile } from "../../platform/workspace";
+import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../platform/workspace";
+import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspaces";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
@@ -55,5 +56,21 @@ export function useWorkspace() {
   const createDirectory = (path: string) => mutate(async () => {
     if (tree) await createFolder(tree.path, path);
   });
-  return { tree, note, error, setError, open, openDefault, recent, select, save, acceptExternal, refresh, create, createDirectory, rename: renameOrMove, move, remove };
+  const updateMetadata = (path: string, metadata: UpdateEntryMetadataInput) => mutate(async () => {
+    if (tree) {
+      await updateEntryMetadata(tree.path, path, metadata);
+      if (metadata.tags) {
+        const tags = { ...(tree.tags ?? {}) };
+        metadata.tags.forEach(tag => { if (!tags[tag]) tags[tag] = "#74856b"; });
+        await saveWorkspaceTags(tree.path, tags);
+      }
+    }
+  });
+  const updateTagColor = (name: string, color: string) => mutate(async () => {
+    if (tree) await saveWorkspaceTags(tree.path, { ...(tree.tags ?? {}), [name]: color });
+  });
+  const editTag = (oldName: string, newName: string, color: string) => mutate(async () => {
+    if (tree) await renameWorkspaceTag(tree.path, oldName, newName, color);
+  });
+  return { tree, note, error, setError, open, openDefault, recent, select, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, remove };
 }

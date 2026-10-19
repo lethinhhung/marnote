@@ -6,12 +6,25 @@
 :root[data-theme="dark"] .tree-item { color: #aeb7aa; }
 :root[data-theme="dark"] .tree-item:hover, :root[data-theme="dark"] .tree-item.selected { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .tree-item.selected-folder { background: #323a48; color: #c2d1ed; }
+:root[data-theme="dark"] .tree-folder-tag { background: #343d35; color: #c5d7c4; }
+:root[data-theme="dark"] .tag-picker-popover, :root[data-theme="dark"] .tag-manager { border-color: #414a41; background: #292f2a; color: #d0d7ce; }
+:root[data-theme="dark"] .tag-picker-heading, :root[data-theme="dark"] .tag-picker-option, :root[data-theme="dark"] .tag-manager h2, :root[data-theme="dark"] .tag-manager-row { color: #d0d7ce; }
+:root[data-theme="dark"] .tag-picker-option:hover, :root[data-theme="dark"] .tag-picker-heading button:hover { background: #343d35; }
+:root[data-theme="dark"] .tag-manager header p, :root[data-theme="dark"] .tag-picker-empty { color: #a0a99d; }
+:root[data-theme="dark"] .tag-picker-create input, :root[data-theme="dark"] .tag-manager-create input { border-color: #424a43; background: #232925; color: #d0d7ce; }
+:root[data-theme="dark"] .tree-folder-timestamps { color: #9ca796; }
 :root[data-theme="dark"] .folder-context-menu { border-color: #414a41; background: #292f2a; box-shadow: 0 8px 24px #0008; }
 :root[data-theme="dark"] .folder-context-menu button { color: #c2c9bd; }
 :root[data-theme="dark"] .folder-context-menu button svg { color: #9ca796; }
 :root[data-theme="dark"] .folder-context-menu button:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .folder-context-menu button:hover svg { color: #d1e0ce; }
 :root[data-theme="dark"] .folder-context-menu button.danger { color: #ef9b8c; }
+:root[data-theme="dark"] .folder-emoji-action { color: #c2c9bd; }
+:root[data-theme="dark"] .folder-emoji-action:hover { background: #343d35; color: #d1e0ce; }
+:root[data-theme="dark"] .emoji-picker-popover { border-color: #414a41; background: #252a26; }
+:root[data-theme="dark"] .emoji-picker-toolbar { background: #252a26; }
+:root[data-theme="dark"] .emoji-picker-remove { color: #c2c9bd; }
+:root[data-theme="dark"] .emoji-picker-remove:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .sidebar-heading button { color: #a6afa2; }
 :root[data-theme="dark"] .sidebar-heading button:hover:not(:disabled) { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .tree-edit-row { color: #c2d1bd; }

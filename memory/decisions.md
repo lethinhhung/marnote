@@ -84,4 +84,51 @@
 - All tests pass; lint, typecheck, and build checks pass for affected packages.
 - No test consolidation; each package retains its own test tooling (core and desktop each have independent `vitest`; Rust uses `cargo test`).
 
-(End of file - total 66 lines)
+## Metadata storage format and workspace tree integration
+
+- Source: epic "note and folder metadata feature" and stage `metadata-storage-and-tree` completion criteria.
+- Metadata persists as portable JSON at `.marnote/metadata` keyed by workspace-relative paths (not absolute), so it is rebuildable from workspace files and does not modify Markdown content.
+- `read_metadata` handles missing, empty, and malformed files gracefully; `merge_metadata` attaches persisted metadata to tree entries with defaults for entries that have none (metadata: None).
+- Workspace tree traversal (`tree.rs`) explicitly skips the `.marnote` directory to avoid exposing metadata storage as user content.
+- Rust types mirror the shared domain contract: optional `tags: Vec<String>`, `icon: Option<String>`, `favorite: bool`, `created_ms: i64`, `updated_ms: i64`; TypeScript domain types in `packages/core/src/workspace.ts` and `apps/desktop/src/shared/domain/workspace.ts` declare the same optional fields.
+- The unused-method warnings for `tags`, `icon`, `favorite`, `created_ms`, `updated_ms` in `metadata.rs` are expected; these methods are reserved for future frontend exposure via Tauri commands.
+
+## Metadata lifecycle: modular file structure
+
+- Source: stage `metadata-lifecycle` validation (attempt 1 failure: file-size guidance).
+- The 360-line `metadata.rs` was split into focused modules under `apps/desktop/src-tauri/src/files/`:
+  - `files.rs` (55 lines) — main module with Tauri command wrappers
+  - `create.rs` (37 lines) — file/folder creation with metadata initialization
+  - `read.rs` (30 lines) — file reading
+  - `update.rs` (57 lines) — content updates advancing `updated_ms` while preserving `created_ms`
+  - `delete.rs` (28 lines) — deletion removing metadata entries
+  - `move_file.rs` (27 lines) — move/rename updating metadata paths
+  - `metadata_paths.rs` (40 lines) — metadata path helpers
+  - `metadata_paths_tests.rs` (67 lines) — tests for path helpers
+- All modules under the 120-line limit; conflict between `files.rs` and `files/mod.rs` resolved by removing the old `mod.rs`.
+- Tauri command macros moved to `files.rs` as thin wrappers calling implementation functions in submodules, fixing E0433 compilation errors.
+
+## Data-safety: atomic temp-file + rename writes
+
+- Source: stage `metadata-lifecycle` completion criteria.
+- All metadata writes use atomic temp-file + rename pattern to avoid silently losing metadata on failure or conflict.
+- Malformed metadata and write failures return errors without corrupting the existing metadata file.
+- Unrelated metadata records are preserved during create/edit/move/rename/delete operations.
+
+## Metadata application state and UI integration
+
+- Source: stage `metadata-application-ui` completion criteria and validation (attempt 2).
+- Application state reads and updates metadata through the shared workspace services (`useWorkspace` hook calling `platform/workspace.ts` Tauri commands).
+- UI controls in `WorkspaceSidebar` expose editing of tags, emoji icon, and favorite status; created/updated timestamps are displayed in the note editor footer (`NoteFooter`) via `noteStats` utility.
+- `useWorkspace.updateMetadata` implementation calls the Tauri `metadata_update` command, then refreshes the tree via `listWorkspace` to expose updated metadata in hook state without workspace reopen.
+- A focused test for `useWorkspace.updateMetadata` verifies the metadata update call, tree refresh via `listWorkspace`, and refreshed metadata in hook state.
+- All 4 validation checks pass (test, lint, typecheck, build); 1/1 task validation passes.
+
+## FileTree metadata display
+
+- Source: stage `metadata-application-ui` completion criteria and validation (attempt 3).
+- `FileTree.tsx` displays folder metadata inline: tags in `#tag` format, created/updated timestamps with Clock icons, emoji icons, and favorite stars.
+- Notes retain existing metadata display (icon and favorite only; no tags/timestamps per spec).
+- 6 focused FileTree tests cover full metadata, partial metadata, no metadata, and note rendering preservation.
+
+(End of file - total 97 lines)

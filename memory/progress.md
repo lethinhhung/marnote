@@ -58,9 +58,36 @@ Branch: `test/add-unit-tests`.
 - Evidence: `pnpm run test` → core 5/5, desktop 89/89, Rust 36/36; `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass.
 - Validation: pass, 2/2 task validations. No spec or behavior changes.
 
-## Next
+## metadata-storage-and-tree — passed (attempt 2)
 
-- Remaining epic work: continue adding unit coverage for still-untested desktop and core modules; editor helpers SlashMenu, blockDnd, tableResize, autosave, theme, searchNotes, and noteStats are now covered; workspace logic (tree visibility, conflict, save, paths, recent workspaces) is now covered; Rust filesystem behavior (workspace paths, tree, file CRUD, moves, deletion) is now covered. The test runner now discovers and executes all three test suites via the root `test` command.
+- Completion criteria: notes/folders represent optional tags, emoji icon, favorite status, and created/updated timestamps in shared domain types; opening a workspace without metadata remains supported and does not modify Markdown; workspace tree entries expose persisted metadata with defaults for items that have none; metadata storage is reconstructable by reading its persisted representation and is not required for note content.
+- Outcome: 
+  - Core and desktop TypeScript domain types (`packages/core/src/workspace.ts`, `apps/desktop/src/shared/domain/workspace.ts`) define optional `tags`, `icon`, `favorite`, `createdMs`, `updatedMs` fields.
+  - Rust `metadata.rs` implements portable JSON storage at `.marnote/metadata` keyed by workspace-relative paths; `read_metadata` handles missing/empty/malformed files; `merge_metadata` attaches metadata to tree entries with defaults for missing records.
+  - `workspace.rs` integrates metadata reading into `open_workspace`, `default_workspace`, `list_workspace_tree`; `tree.rs` skips `.marnote` directory during traversal.
+  - All 143 tests pass (5 core + 89 desktop TS + 49 Rust); lint, typecheck, build pass.
+  - Attempt 1 had test failure (exit code 101) but lint/typecheck/build passed; attempt 2 resolved with all checks passing.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all exit 0; 143 total tests pass.
+- Validation: pass, 1/1 task validations (attempt 2). Previous validation failure was due to agent response format, not implementation.
+
+## metadata-application-ui — passed (attempt 3)
+
+- Completion criteria: application state can read and update metadata using shared workspace services; UI displays metadata for notes and folders with controls to edit tags, emoji icons, and toggle favorite status; created/updated timestamps visible in appropriate UI surfaces; metadata changes refresh tree and editor views without workspace reopen.
+- Outcome:
+  - **Attempt 1**: checks passed but Tester/Validator failed — `WorkspaceSidebar` controls not wired (`App.tsx` missing `onUpdateMetadata`), no focused hook test for `updateMetadata` tree refresh.
+  - **Attempt 2**: wired `onUpdateMetadata` through `App.tsx` → `WorkspaceSidebar`; implemented `useWorkspace.updateMetadata` calling `metadata_update` then `listWorkspace`; added focused test verifying call, refresh, and updated hook state; `NoteFooter` shows timestamps via `noteStats`. All checks and validations pass.
+  - **Attempt 3**: `FileTree.tsx` renders folder metadata (tags `#tag`, timestamps with Clock icons, emoji icons, favorite stars); notes retain icon+favorite only (no tags/timestamps). 6 focused FileTree tests pass.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; focused `useWorkspace.updateMetadata` test and 6 FileTree tests pass.
+- Validation: pass, 1/1 task validations (attempt 3). Previous attempts failed on UI wiring and hook refresh verification.
+
+## metadata-lifecycle — passed (attempt 2)
+
+- Completion criteria: metadata persists on create/edit/move/rename/delete through workspace services; timestamps advance correctly (updated advances, created preserved); unrelated records preserved; atomic temp-file + rename writes follow data-safety conventions; malformed metadata and write failures return errors without corrupting the metadata file.
+- Outcome: 
+  - Attempt 1: all automated checks passed (test, lint, typecheck, build) but validation failed — `metadata.rs` was 360 lines, exceeding the 120-line guidance.
+  - Attempt 2: split `metadata.rs` into focused modules under `apps/desktop/src-tauri/src/files/` (8 files, all ≤ 120 lines); resolved `files.rs` vs `files/mod.rs` module conflict; moved Tauri command macros to `files.rs` as thin wrappers; fixed test flakiness by cleaning temp directories before each test.
+- Evidence: `pnpm run test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build` all pass; 43 Rust tests and 94 frontend tests pass; `git diff --check` passes.
+- Validation: pass, 2/2 task validations (attempt 2). Previous validation failure was due to file-size guidance.
 
 # Prior epic: refactor desktop app to feature-based structure
 
