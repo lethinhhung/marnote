@@ -1,8 +1,21 @@
+import type { CSSProperties } from "react";
+
 export function tagStyle(color: string, surface = "#fffdf9") {
   const accent = color.toLowerCase() === "#74856b" ? "#526b58" : color;
-  if (!/^#[\da-f]{6}$/i.test(accent)) return { backgroundColor: surface, color: "#526b58" };
+  if (!/^#[\da-f]{6}$/i.test(accent)) return tagColors("#526b58", surface);
+  return tagColors(accent, surface);
+}
+
+function tagColors(accent: string, surface: string): CSSProperties {
   const backgroundColor = `color-mix(in srgb, ${accent} 9%, ${surface})`;
-  return { backgroundColor, color: contrastText(accent, surface) };
+  const darkBackground = `color-mix(in srgb, ${accent} 18%, #252a25)`;
+  return {
+    "--tag-light-background": backgroundColor,
+    "--tag-light-color": contrastText(accent, surface),
+    "--tag-dark-background": darkBackground,
+    "--tag-dark-color": "#e2e5de",
+    "--tag-accent": accent,
+  } as CSSProperties;
 }
 
 function contrastText(accent: string, surface: string) {

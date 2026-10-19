@@ -37,7 +37,9 @@
 .app-shell .sidebar .folder-context-menu { border-color: #e5e2dc; background: #fffdf9; }
 .app-shell .sidebar .folder-context-menu button:hover { background: #eef3f0; color: #526b58; }
 :root[data-theme="dark"] .app-shell .sidebar.sidebar { border-color: #292d29; background: #161816; color: #e2e5de; }
-:root[data-theme="dark"] .app-shell .sidebar .default-workspace, :root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace { border-color: #2f352f; background: #202420; color: #f0f3ec; }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace svg { color: #4edea3; }
+:root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
 :root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: #292d29; color: #e2e5de; }
 :root[data-theme="dark"] .app-shell .sidebar .open-workspace:hover { border-color: rgba(141,148,139,.5); background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .app-shell .sidebar .open-workspace svg { color: #8d948b; }
