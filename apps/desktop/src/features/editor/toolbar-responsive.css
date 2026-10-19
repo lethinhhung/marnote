@@ -45,7 +45,8 @@
   .editor-frame .toolbar-actions { gap: 6px; }
   .toolbar-spacer { display: none; }
   .editor-frame .toolbar-group-divider { margin: 0 2px; }
-  .toolbar-action-menu, .table-actions-menu { position: static; }
+  .toolbar-action-menu { position: relative; }
+  .table-actions-menu { position: static; }
   .toolbar-action-menu-panel, .table-actions-menu-panel { left: 12px; right: 12px; min-width: 0; max-width: none; }
 }
 .editor-frame .table-actions-menu { position: static; }
@@ -80,7 +81,7 @@
   .editor-frame .toolbar-more-controls { display: flex; }
   .editor-frame .toolbar-utility { flex: 0 0 auto; gap: 3px; margin-left: 0; }
   .editor-frame .wide-content-toggle { width: 28px; min-width: 28px; padding: 0; }
-  .editor-frame .wide-content-toggle span, .editor-frame .toolbar-save { display: none; }
+  .editor-frame .wide-content-toggle span { display: none; }
   .editor-frame .toolbar-control-group, .editor-frame .toolbar-expanded-controls > .tool,
   .editor-frame .toolbar-expanded-controls > .toolbar-responsive-menu,
   .editor-frame .toolbar-more-controls, .editor-frame .table-actions-menu { flex: 0 0 28px; }
@@ -99,18 +100,45 @@
   .editor-frame .table-actions-expanded { display: none !important; }
 }
 @container editor-frame (max-width: 640px) {
-  .editor-frame .toolbar .toolbar-action-menu[open] > .toolbar-action-menu-panel,
+  .editor-frame .toolbar .toolbar-action-menu-panel {
+    left: 0; right: auto; width: min(200px, calc(100vw - 24px));
+    min-width: min(164px, calc(100vw - 24px)); max-width: calc(100vw - 24px);
+  }
   .editor-frame .toolbar .table-actions-menu[open] > .table-actions-menu-panel {
     position: fixed; top: 44px; left: 8px; right: 8px; width: auto; max-width: none;
   }
 }
 @container editor-frame (max-width: 640px) {
   .editor-frame .toolbar .wide-content-toggle { width: 28px; min-width: 28px; padding: 0; }
-  .editor-frame .toolbar .toolbar-save { display: none; }
 }
 @container editor-frame (max-width: 800px) {
   .editor-frame .toolbar .toolbar-style-menu { display: block; }
 }
 @container editor-frame (max-width: 700px) {
   .editor-frame .toolbar .toolbar-text-menu { display: block; }
+}
+
+/* Keep the toolbar on one line while the note pane narrows beside the sidebar. */
+.editor-frame .toolbar.toolbar { flex-wrap: nowrap; }
+.editor-frame .toolbar-actions { flex-wrap: nowrap; }
+.editor-frame .toolbar-expanded-controls { flex-wrap: nowrap; }
+@container editor-frame (max-width: 760px) {
+  .editor-frame .toolbar.toolbar { gap: 4px; padding-right: 12px; padding-left: 12px; }
+  .editor-frame .toolbar-actions { gap: 4px; }
+  .editor-frame .toolbar-expanded-controls { gap: 3px; }
+  .toolbar-text-menu summary > span, .toolbar-text-menu summary > svg:last-child { display: none; }
+  .toolbar-text-menu summary { width: 28px; padding: 0; justify-content: center; }
+  .editor-frame .table-actions-menu summary > span,
+  .editor-frame .table-actions-menu summary > svg:last-child { display: none; }
+  .editor-frame .table-actions-menu summary { width: 28px; padding: 0; justify-content: center; }
+}
+@container editor-frame (max-width: 640px) {
+  .editor-frame .toolbar-expanded-controls.tool-group { gap: 3px; }
+  .editor-frame .toolbar-expanded-controls > .toolbar-block-desktop { display: none; }
+}
+.editor-frame .toolbar .toolbar-link-desktop { display: inline-flex; }
+.editor-frame .toolbar .toolbar-link-menu-item { display: none; }
+@container editor-frame (max-width: 1100px) {
+  .editor-frame .toolbar .toolbar-link-desktop { display: none; }
+  .editor-frame .toolbar .toolbar-action-menu-panel .toolbar-link-menu-item { display: flex; }
 }

@@ -17,12 +17,6 @@
 .editor-frame .tool-glyph-9, .editor-frame .tool-glyph-10, .editor-frame .tool-glyph-11 { display: none; }
 .editor-frame .tool-glyph-9 ~ .tool-icon, .editor-frame .tool-glyph-10 ~ .tool-icon, .editor-frame .tool-glyph-11 ~ .tool-icon { display: block; }
 .editor-frame .toolbar-group-divider { height: 12px; margin: 0 5px; border-left: 1px solid #e5e2dc; }
-.editor-frame .toolbar-save { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: #92948c; font-size: 11px; }
-.editor-frame .toolbar-save i { width: 6px; height: 6px; border-radius: 50%; background: #526b58; }
-.editor-frame .toolbar-save.saving i { background: #e5a93c; }
-.editor-frame .toolbar-save.error { color: #b44f47; }
-.editor-frame .toolbar-save.error i { background: #c95e55; }
-.editor-frame .toolbar-save { margin-left: 8px; }
 .editor-frame .tool-separator { height: 12px; border-color: #e5e2dc; }
 .editor-frame .note-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; width: min(768px, calc(100% - 48px)); padding: 40px 0 8px; border-bottom: 1px solid #eae7e1; }
 .editor-frame .note-heading > .emoji-picker { margin-left: -8px; }

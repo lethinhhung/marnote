@@ -260,7 +260,7 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .theme-toggle { width: 24px; height: 24px; display: grid; place-items: center; align-self: center; flex: 0 0 24px; margin: 0; padding: 0; line-height: 0; border: 1px solid #e8e7e1; border-radius: 7px; background: transparent; color: #73786f; cursor: pointer; }
 .theme-toggle svg { display: block; }
 .theme-toggle:hover { background: #f0f1ec; color: #405b46; }
-@media (max-width: 760px) { .app-layout { display: grid; grid-template-rows: minmax(170px, 34dvh) minmax(0, 1fr); } .sidebar { width: 100%; border-right: 0; border-bottom: 1px solid #e9e8e3; } .welcome { margin-top: 30px; } }
+@media (max-width: 760px) { .app-layout { display: flex; } .sidebar { width: clamp(190px, 28vw, 214px); flex-basis: clamp(190px, 28vw, 214px); padding: 14px 6px; border-right: 1px solid #e9e8e3; border-bottom: 0; } .workspace { min-width: 0; } .welcome { margin: 30px 20px 0; } }
 @media (max-width: 640px) { .note-heading, .editor-prose, .markdown-source { width: calc(100% - 44px); } .note-heading { padding: 28px 12px 14px; } .editor-prose, .markdown-source { min-height: 55vh; padding: 8px 12px 30px; } .source-toggle { flex: 0 0 auto; } .note-footer { gap: 10px; padding: 0 11px; font-size: 9px; } .note-footer-stats { gap: 4px; } }
 .topbar { min-width: 0; }
 .address { flex: 0 1 auto; }
