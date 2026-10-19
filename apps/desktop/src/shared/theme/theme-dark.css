@@ -14,6 +14,10 @@
 :root[data-theme="dark"] .folder-context-menu button:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .folder-context-menu button:hover svg { color: #d1e0ce; }
 :root[data-theme="dark"] .folder-context-menu button.danger { color: #ef9b8c; }
+:root[data-theme="dark"] .emoji-picker-popover { border-color: #414a41; background: #252a26; }
+:root[data-theme="dark"] .emoji-picker-toolbar { background: #252a26; }
+:root[data-theme="dark"] .emoji-picker-remove { color: #c2c9bd; }
+:root[data-theme="dark"] .emoji-picker-remove:hover { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .sidebar-heading button { color: #a6afa2; }
 :root[data-theme="dark"] .sidebar-heading button:hover:not(:disabled) { background: #343d35; color: #d1e0ce; }
 :root[data-theme="dark"] .tree-edit-row { color: #c2d1bd; }

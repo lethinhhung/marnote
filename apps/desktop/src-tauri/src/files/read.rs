@@ -1,6 +1,6 @@
 use crate::workspace::{root, target};
 use serde::Serialize;
-use std::{fs, path::Path, time::{SystemTime, UNIX_EPOCH}};
+use std::{fs, time::UNIX_EPOCH};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]

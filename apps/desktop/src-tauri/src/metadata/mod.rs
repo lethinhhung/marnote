@@ -16,6 +16,7 @@ pub struct EntryMetadata {
     pub updated_ms: Option<u128>,
 }
 
+#[cfg(test)]
 impl EntryMetadata {
     pub fn tags(&self) -> &[String] { self.tags.as_deref().unwrap_or_default() }
     pub fn icon(&self) -> Option<&str> { self.icon.as_deref() }
@@ -52,6 +53,7 @@ pub fn update_metadata(
     write_metadata(root, &store)
 }
 
+#[cfg(test)]
 pub fn remove_metadata(root: &Path, path: &str) -> Result<(), String> {
     let mut store = read_metadata(root)?;
     store.entries.remove(path);

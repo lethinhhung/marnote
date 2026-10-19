@@ -23,7 +23,7 @@ fn update_entry_metadata(
         metadata.tags = Some(tags);
     }
     if let Some(icon) = icon {
-        metadata.icon = Some(icon);
+        metadata.icon = if icon.trim().is_empty() { None } else { Some(icon) };
     }
     if let Some(favorite) = favorite {
         metadata.favorite = Some(favorite);

@@ -81,17 +81,17 @@ function TreeRow({ entry, selected, selectedFolder, focus, dragging, expanded, o
   const isExpanded = expanded.has(entry.path);
   const selectedClass = folder ? focus === "folder" && selectedFolder === entry.path ? "selected-folder" : "" : focus === "note" && selected === entry.path ? "selected" : "";
   const meta = entry.metadata;
-  const folderTags = folder && meta?.tags && meta.tags.length > 0 ? meta.tags : null;
+  const tags = meta?.tags && meta.tags.length > 0 ? meta.tags : null;
   const folderCreated = folder && meta?.createdMs ? formatTimestamp(meta.createdMs) : null;
   const folderUpdated = folder && meta?.updatedMs ? formatTimestamp(meta.updatedMs) : null;
   return <li>
     {edit?.path === entry.path ? <TreeEditor kind={folder ? "folder" : "note"} value={edit.value} depth={depth} onSubmit={onEditSubmit} onCancel={onEditCancel} /> : <button data-kind={entry.kind} data-path={entry.path} className={`tree-item ${selectedClass} ${dragging === entry.path ? "dragging" : ""}`} style={{ paddingLeft: 5 + depth * 14 }} onPointerDown={event => { if (event.button !== 0) { event.preventDefault(); return; } onStart(entry.path, event); }} onContextMenu={event => { event.preventDefault(); event.stopPropagation(); onEntryContext(entry.path, folder ? "folder" : "note", event.clientX, event.clientY); }} onClick={() => { if (folder) onExpanded(current => { const next = new Set(current); if (next.has(entry.path)) next.delete(entry.path); else next.add(entry.path); return next; }); onClick(entry); }} title={entry.path}>
       {folder ? isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} /> : <span className="tree-indent" />}
       {entry.metadata?.icon ? <span className="tree-icon-emoji" style={{ fontSize: 15 }}>{entry.metadata.icon}</span> : folder ? <Folder size={15} /> : <FileText size={15} />}
-      <span>{entry.name}</span>
-      {folderTags && <span className="tree-folder-tags">{folderTags.map(tag => <span key={tag} className="tree-folder-tag">#{tag}</span>)}</span>}
+      <span className="tree-item-name">{entry.name}</span>
+      {tags && <span className="tree-folder-tags">{tags.map(tag => <span key={tag} className="tree-folder-tag">#{tag}</span>)}</span>}
       {(folderCreated || folderUpdated) && <span className="tree-folder-timestamps">{folderCreated && <span className="tree-folder-timestamp" title="Created"><Clock size={9} /> {folderCreated}</span>}{folderUpdated && <span className="tree-folder-timestamp" title="Updated"><Clock size={9} /> {folderUpdated}</span>}</span>}
-      {entry.metadata?.favorite && <Star size={12} className="tree-favorite" data-testid="tree-favorite" />}
+      {entry.metadata?.favorite && <Star size={12} fill="currentColor" className="tree-favorite" data-testid="tree-favorite" />}
     </button>}
     {folder && isExpanded && (!!entry.children?.length || edit?.path === `${entry.path}/`) && <ul>{entry.children?.map(child => <TreeRow key={child.path} entry={child} selected={selected} selectedFolder={selectedFolder} focus={focus} dragging={dragging} expanded={expanded} onExpanded={onExpanded} depth={depth + 1} onStart={onStart} onClick={onClick} onEntryContext={onEntryContext} edit={edit} onEditSubmit={onEditSubmit} onEditCancel={onEditCancel} />)}{edit?.path === `${entry.path}/` && <li><TreeEditor kind={edit.kind === "note" ? "note" : "folder"} value={edit.value} depth={depth + 1} onSubmit={onEditSubmit} onCancel={onEditCancel} /></li>}</ul>}
   </li>;

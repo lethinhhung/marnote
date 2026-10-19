@@ -1,4 +1,4 @@
-use crate::metadata::{EntryMetadata, update_metadata, read_metadata};
+use crate::metadata::{EntryMetadata, update_metadata};
 use crate::workspace::{root, target};
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};

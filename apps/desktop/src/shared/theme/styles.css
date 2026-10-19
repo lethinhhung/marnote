@@ -25,11 +25,12 @@ button, input { font: inherit; }
 .tree-edit-row button { display: grid; place-items: center; width: 20px; height: 22px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: #858a80; cursor: pointer; }
 .tree-edit-row button:hover { background: #eff1eb; color: #435c48; }
 .file-tree, .file-tree * { -webkit-user-select: none; user-select: none; }
-.tree-item { display: flex; align-items: center; gap: 5px; width: 100%; height: 30px; padding-right: 4px; border: 0; border-radius: 5px; background: transparent; color: #6e756a; font-size: 11px; text-align: left; cursor: pointer; -webkit-user-select: none; user-select: none; }
-.tree-item span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-item { display: flex; align-items: center; gap: 5px; width: 100%; height: 30px; padding-right: 10px; border: 0; border-radius: 5px; background: transparent; color: #6e756a; font-size: 11px; text-align: left; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.tree-item-name { min-width: 0; flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tree-icon-emoji { flex: 0 0 15px; text-align: center; line-height: 1; }
 .tree-item:hover, .tree-item.selected { background: #eff1eb; color: #435c48; }
 .tree-item.selected-folder { background: #e9edf5; color: #465b7a; }
-.tree-folder-tags { display: inline-flex; align-items: center; gap: 2px; flex-wrap: wrap; }
+.tree-folder-tags { min-width: 0; display: inline-flex; align-items: center; gap: 2px; overflow: hidden; }
 .tree-folder-tag { padding: 1px 5px; border-radius: 999px; background: #eff1eb; color: #435c48; font-size: 8px; font-weight: 500; line-height: 1; }
 .tree-folder-timestamps { display: inline-flex; align-items: center; gap: 6px; color: #9b9d94; font-size: 8px; white-space: nowrap; }
 .tree-folder-timestamp { display: inline-flex; align-items: center; gap: 2px; }
@@ -160,12 +161,20 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .note-footer-tags { display: inline-flex; align-items: center; gap: 4px; flex-wrap: wrap; }
 .note-footer-tag { padding: 1px 6px; border-radius: 999px; background: #eff1eb; color: #435c48; font-size: 9px; font-weight: 500; }
 .note-footer-icon { line-height: 1; }
+.emoji-picker { position: relative; display: inline-flex; }
+.emoji-picker > button { display: inline-flex; flex: 0 0 30px; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 6px; border: 0; border-radius: 5px; background: transparent; color: inherit; font-size: 15px; line-height: 1; cursor: pointer; }
+.emoji-picker > button:hover, .emoji-picker-popover button:hover { background: #eff1eb; }
+.emoji-picker-popover { position: fixed; z-index: 200; overflow: hidden; border: 1px solid #e9e8e3; border-radius: 8px; background: #fff; box-shadow: 0 8px 24px rgba(32,37,30,.16); }
+.emoji-picker-toolbar { height: 28px; display: flex; align-items: center; justify-content: flex-end; padding: 0 8px; background: transparent; }
+.emoji-picker-remove { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; border: 0; border-radius: 4px; background: transparent; color: #71776d; font-size: 10px; cursor: pointer; }
+.emoji-picker-remove:hover { background: #eff1eb; color: #435c48; }
+.folder-emoji-action { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 4px 9px; color: #464b43; font-size: 12px; }
 .note-footer-edit { display: inline-flex; align-items: center; gap: 6px; }
 .note-footer-edit input { height: 20px; padding: 0 6px; border: 1px solid #dce4d9; border-radius: 4px; background: #fff; color: #3f493e; font-size: 10px; outline: none; width: 160px; }
 .note-footer-edit input:focus { border-color: #82947c; outline: 2px solid #dce7d7; }
 .note-footer-edit button { height: 20px; padding: 0 8px; border: 1px solid #526b58; border-radius: 4px; background: #526b58; color: #fff; font-size: 9px; font-weight: 600; cursor: pointer; }
 .note-footer-edit button:hover { background: #405b46; border-color: #405b46; }
-.note-footer-action { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 0; border-radius: 4px; background: transparent; color: #9b9d94; cursor: pointer; }
+.note-footer-action { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 20px; border: 0; border-radius: 4px; background: transparent; color: #9b9d94; cursor: pointer; }
 .note-footer-action:hover { background: #eff1eb; color: #435c48; }
 .note-footer-action.active { color: #e8b42c; }
 .note-footer-save { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; color: #687d68; }

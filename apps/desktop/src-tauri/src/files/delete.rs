@@ -1,6 +1,6 @@
 use crate::{metadata, workspace::{root, target}};
 use crate::files::metadata_paths::filter_metadata_for_delete;
-use std::{fs, time::{SystemTime, UNIX_EPOCH}};
+use std::{fs, time::UNIX_EPOCH};
 
 fn trash_name(path: &str) -> String {
     format!(

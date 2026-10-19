@@ -24,6 +24,7 @@ const actions: Action[] = [
 
 export function EditorToolbar({ editor, source, onToggleSource, horizontalScroll, onToggleHorizontalScroll }: Props) {
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
+  const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
   const [linkOpen, setLinkOpen] = useState(false);
   const [href, setHref] = useState("");
   const selection = useRef({ from: 0, to: 0 });
@@ -56,7 +57,7 @@ export function EditorToolbar({ editor, source, onToggleSource, horizontalScroll
     {linkOpen && <form className="link-popover" onSubmit={addLink}><label htmlFor="link-url">Link URL</label><input id="link-url" autoFocus placeholder="https://example.com or note.md" value={href} onChange={event => setHref(event.target.value)} onKeyDown={event => event.key === "Escape" && setLinkOpen(false)} /><div><button type="button" onClick={() => setLinkOpen(false)}>Cancel</button><button type="submit" disabled={!href.trim()}>Apply link</button></div></form>}
     <span className="toolbar-spacer" />
     <span className="tool-separator" />
-    <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>
+    {!source && supportsWideContent && <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>}
     <button type="button" className={source ? "tool active source-toggle" : "tool source-toggle"} title="View Markdown" aria-label="View Markdown" aria-pressed={source} onClick={onToggleSource}><Eye size={16} /><span>Markdown</span></button>
   </div>;
 }
