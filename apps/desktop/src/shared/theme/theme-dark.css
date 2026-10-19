@@ -62,6 +62,12 @@
 :root[data-theme="dark"] .tool { color: #8d948b; }
 :root[data-theme="dark"] .tool:hover:not(:disabled), :root[data-theme="dark"] .tool.active { background: #252825; color: #e2e5de; }
 :root[data-theme="dark"] .toolbar-group-divider { border-color: #292d29; }
+:root[data-theme="dark"] .toolbar-action-menu summary { border-color: #292d29; color: #aab2a6; }
+:root[data-theme="dark"] .toolbar-action-menu summary:hover { background: #252825; color: #e2e5de; }
+:root[data-theme="dark"] .toolbar-action-menu-panel { border-color: #292d29; background: #1c1e1c; box-shadow: 0 8px 24px rgba(0,0,0,.42); }
+:root[data-theme="dark"] .table-actions button, :root[data-theme="dark"] .table-actions-menu summary { border-color: #292d29; background: #1c1e1c; color: #aab2a6; }
+:root[data-theme="dark"] .table-actions button:hover, :root[data-theme="dark"] .table-actions-menu summary:hover { background: #252825; color: #e2e5de; }
+:root[data-theme="dark"] .table-actions-menu-panel { border-color: #292d29; background: #1c1e1c; box-shadow: 0 8px 24px rgba(0,0,0,.42); }
 :root[data-theme="dark"] .tool-separator { border-color: #292d29; }
 :root[data-theme="dark"] .table-actions { border-color: #292d29; }
 :root[data-theme="dark"] .table-actions button { border-color: #292d29; background: #161816; color: #e2e5de; }

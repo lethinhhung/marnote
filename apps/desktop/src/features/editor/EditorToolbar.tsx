@@ -1,6 +1,7 @@
 import { useEditorState, type Editor } from "@tiptap/react";
-import { useRef, useState, type FormEvent, type MouseEvent } from "react";
-import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
+import { useEffect, useRef, useState, type FormEvent, type MouseEvent } from "react";
+import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal, AlignLeft, AlignCenter, AlignRight, ChevronDown, MoreHorizontal } from "lucide-react";
+import "./toolbar-responsive.css";
 import { normalizeLinkUrl } from "./linkUrl";
 import { setColumnAlignment } from "./tableAlignment";
 
@@ -23,12 +24,36 @@ const actions: Action[] = [
   { label: "Quote", icon: Quote, run: e => e.chain().focus().toggleBlockquote().run(), active: e => e.isActive("blockquote") },
   { label: "Divider", icon: Minus, run: e => e.chain().focus().setHorizontalRule().run() },
 ];
+const actionGroups = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11, 12, 13]];
+const moreActions = [8, 9, 10, 11, 12, 13];
 
 export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, saveStatus = "saved" }: Props) {
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const [linkOpen, setLinkOpen] = useState(false);
   const [href, setHref] = useState("");
   const selection = useRef({ from: 0, to: 0 });
+  const toolbar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!editor) return;
+    const closeMenus = () => toolbar.current?.querySelectorAll<HTMLDetailsElement>("details[open]").forEach(menu => { menu.open = false; });
+    editor.on("focus", closeMenus);
+    return () => { editor.off("focus", closeMenus); };
+  }, [editor]);
+  const renderAction = (index: number, compact = false) => {
+    const { label, icon: Icon, run, active } = actions[index];
+    const selected = !!editor && !!active?.(editor);
+    return <button type="button" key={label} className={`${selected ? "tool active" : "tool"}${compact ? ` compact-tool compact-tool-action-${index}` : ""}`} title={label} aria-label={label} aria-pressed={selected} disabled={!editor} onClick={() => { if (editor) run(editor); }}><span className={`tool-glyph tool-glyph-${index}`}>{toolbarGlyph(index)}</span><Icon className="tool-icon" size={14} strokeWidth={1.8} />{compact && <span>{label}</span>}</button>;
+  };
+  const actionMenu = (label: string, Icon: typeof Pilcrow, indexes: number[], className = "") => <details className={`toolbar-action-menu ${className}`} key={label} onClick={event => { if ((event.target as HTMLElement).closest("button")) event.currentTarget.open = false; }}><summary aria-label={label} title={label}><Icon size={14} /><span>{label}</span><ChevronDown size={12} /></summary><div className="toolbar-action-menu-panel">{indexes.map(index => renderAction(index, true))}</div></details>;
+  const tableControls = <>
+    {([ ["left", AlignLeft], ["center", AlignCenter], ["right", AlignRight] ] as const).map(([align, Icon]) => <button type="button" className="table-align-button" key={align} title={`Align current column ${align}`} aria-label={`Align current column ${align}`} onMouseDown={keepEditorSelection} onClick={() => editor && setColumnAlignment(editor, align)}><Icon size={11} /><span>{align[0].toUpperCase() + align.slice(1)}</span></button>)}
+    <button type="button" title="Add row below" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().addRowAfter().run()}>+ Row</button>
+    <button type="button" title="Add column to the right" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().addColumnAfter().run()}>+ Column</button>
+    <button type="button" title="Delete current row" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteRow().run()}>− Row</button>
+    <button type="button" title="Delete current column" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteColumn().run()}>− Column</button>
+    <button type="button" title="Toggle header row" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().toggleHeaderRow().run()}>Header</button>
+    <button type="button" title="Delete table" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteTable().run()}>Delete</button>
+  </>;
   const addLink = (event: FormEvent) => {
     event.preventDefault();
     const url = normalizeLinkUrl(href);
@@ -40,21 +65,20 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     setLinkOpen(false);
     setHref("");
   };
-  return <div className="toolbar" role="toolbar" aria-label="Formatting">
+  return <div ref={toolbar} className="toolbar" role="toolbar" aria-label="Formatting">
     <div className="toolbar-actions">
-      <div className="tool-group">{actions.map(({ label, icon: Icon, run, active }, index) => { const selected = !!editor && !!active?.(editor); return <span className="tool-item" key={label}>{[1, 4, 9].includes(index) && <i className="toolbar-group-divider" />}<button type="button" title={label} aria-label={label} aria-pressed={selected} disabled={!editor} className={selected ? "tool active" : "tool"} onClick={() => editor && run(editor)}><span className={`tool-glyph tool-glyph-${index}`}>{toolbarGlyph(index)}</span><Icon className="tool-icon" size={14} strokeWidth={1.8} /></button></span>; })}
-        <button type="button" className="tool" title="Insert table" aria-label="Insert table" disabled={!editor} onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={16} strokeWidth={1.8} /></button>
+      <div className="tool-group toolbar-expanded-controls">
+        <div className="toolbar-control-group toolbar-desktop-group toolbar-text-desktop">{actionGroups[0].map(index => <span className={`tool-item action-item-${index}`} key={actions[index].label}>{renderAction(index)}</span>)}</div>
+        {actionMenu("Text / headings", Pilcrow, actionGroups[0], "toolbar-responsive-menu toolbar-text-menu")}
+        <div className="toolbar-control-group toolbar-desktop-group toolbar-style-desktop"><i className="toolbar-group-divider" />{actionGroups[1].map(index => <span className={`tool-item action-item-${index}`} key={actions[index].label}>{renderAction(index)}</span>)}</div>
+        {actionMenu("Text style", Bold, actionGroups[1], "toolbar-responsive-menu toolbar-style-menu")}
+        <div className="toolbar-control-group toolbar-desktop-group toolbar-block-desktop"><i className="toolbar-group-divider" />{actionGroups[2].map(index => <span className={`tool-item action-item-${index}`} key={actions[index].label}>{renderAction(index)}</span>)}</div>
+        <div className="toolbar-more-controls"><details className="toolbar-action-menu toolbar-more-menu" onClick={event => { if ((event.target as HTMLElement).closest("button")) event.currentTarget.open = false; }}><summary aria-label="More blocks" title="More blocks"><MoreHorizontal size={14} /><span>More</span><ChevronDown size={12} /></summary><div className="toolbar-action-menu-panel">{moreActions.map(index => renderAction(index, true))}</div></details></div>
         <button type="button" className={linkOpen ? "tool active" : "tool"} title="Add link" aria-label="Add link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) selection.current = editor.state.selection; }} onClick={() => setLinkOpen(open => !open)}><Link2 size={16} /></button>
+        <i className="toolbar-group-divider toolbar-table-divider" />
+        <button type="button" className="tool" title="Insert table" aria-label="Insert table" disabled={!editor} onClick={() => editor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><Table2 size={16} strokeWidth={1.8} /></button>
       </div>
-      {inTable && <div className="table-actions" role="group" aria-label="Table controls">
-      {([ ["left", AlignLeft], ["center", AlignCenter], ["right", AlignRight] ] as const).map(([align, Icon]) => <button type="button" className="table-align-button" key={align} title={`Align current column ${align}`} aria-label={`Align current column ${align}`} onMouseDown={keepEditorSelection} onClick={() => editor && setColumnAlignment(editor, align)}><Icon size={11} /><span>{align[0].toUpperCase() + align.slice(1)}</span></button>)}
-      <button type="button" title="Add row below" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().addRowAfter().run()}>+ Row</button>
-      <button type="button" title="Add column to the right" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().addColumnAfter().run()}>+ Column</button>
-      <button type="button" title="Delete current row" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteRow().run()}>− Row</button>
-      <button type="button" title="Delete current column" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteColumn().run()}>− Column</button>
-      <button type="button" title="Toggle header row" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().toggleHeaderRow().run()}>Header</button>
-      <button type="button" title="Delete table" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteTable().run()}>Delete</button>
-      </div>}
+      {inTable && <><details className="table-actions-menu" onClick={event => { if ((event.target as HTMLElement).closest("button")) event.currentTarget.open = false; }}><summary aria-label="Table actions" title="Table actions"><Table2 size={14} /><span>Table Actions</span><ChevronDown size={12} /></summary><div className="table-actions-menu-panel"><div className="table-actions" role="group" aria-label="Table controls">{tableControls}</div></div></details><div className="table-actions table-actions-expanded" role="group" aria-label="Table controls">{tableControls}</div></>}
     </div>
     {linkOpen && <form className="link-popover" onSubmit={addLink}><label htmlFor="link-url">Link URL</label><input id="link-url" autoFocus placeholder="https://example.com or note.md" value={href} onChange={event => setHref(event.target.value)} onKeyDown={event => event.key === "Escape" && setLinkOpen(false)} /><div><button type="button" onClick={() => setLinkOpen(false)}>Cancel</button><button type="submit" disabled={!href.trim()}>Apply link</button></div></form>}
     <span className="toolbar-spacer" />
