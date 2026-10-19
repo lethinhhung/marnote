@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent } from "react";
-import { Eye, FileText, Moon, Search, Sun } from "lucide-react";
+import { Check, Copy, Eye, FileText, Moon, Search, Sun } from "lucide-react";
 import { startWindowDrag } from "../../platform/window";
 import type { Entry, WorkspaceTree } from "../domain/workspace";
 import { searchNotes } from "./searchNotes";
 import "./header-bar.css";
 
-type Props = { tree: WorkspaceTree | null; path: string; theme: string; source: boolean; toggleTheme: () => void; onToggleSource: () => void; onSelect: (entry: Entry) => void };
-export function HeaderBar({ tree, path, theme, source, toggleTheme, onToggleSource, onSelect }: Props) {
+type Props = { tree: WorkspaceTree | null; path: string; content: string; theme: string; source: boolean; toggleTheme: () => void; onToggleSource: () => void; onSelect: (entry: Entry) => void };
+export function HeaderBar({ tree, path, content, theme, source, toggleTheme, onToggleSource, onSelect }: Props) {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [copied, setCopied] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const matches = useMemo(() => searchNotes(tree?.entries, query), [tree, query]);
   useEffect(() => {
@@ -17,6 +18,10 @@ export function HeaderBar({ tree, path, theme, source, toggleTheme, onToggleSour
     return () => window.removeEventListener("keydown", keydown);
   }, []);
   const choose = (entry: Entry) => { onSelect(entry); setQuery(""); setFocused(false); input.current?.blur(); };
+  const copyMarkdown = async () => {
+    try { await navigator.clipboard.writeText(content); setCopied(true); window.setTimeout(() => setCopied(false), 1400); }
+    catch { setCopied(false); }
+  };
   const dragWindow = (event: PointerEvent<HTMLElement>) => {
     if (event.button !== 0 || (event.target as HTMLElement).closest(".global-search, button")) return;
     startWindowDrag();
@@ -27,6 +32,7 @@ export function HeaderBar({ tree, path, theme, source, toggleTheme, onToggleSour
     <div className="global-search"><Search size={14} /><input ref={input} aria-label="Jump to note or command" placeholder="Jump to note or command…" value={query} onChange={event => setQuery(event.target.value)} onFocus={() => setFocused(true)} onKeyDown={event => { if (event.key === "Enter" && matches[0]) choose(matches[0]); }} /><kbd>⌘K</kbd>
       {focused && query && <div className="search-results" role="listbox" aria-label="Matching notes">{matches.length ? matches.map(file => <button key={file.path} type="button" role="option" onMouseDown={event => event.preventDefault()} onClick={() => choose(file)}><FileText size={15} /><span>{file.name}</span><small>{file.path}</small></button>) : <p>No matching notes</p>}</div>}
     </div>
+    <button className="header-copy" type="button" onClick={() => void copyMarkdown()} disabled={!path} aria-label={copied ? "Markdown copied" : "Copy note as Markdown"} title={copied ? "Copied" : "Copy note as Markdown"}>{copied ? <Check size={14} /> : <Copy size={14} />}<span>Copy MD</span></button>
     <button className={source ? "header-markdown active" : "header-markdown"} type="button" onClick={onToggleSource} aria-pressed={source} aria-label="Toggle Markdown source view"><Eye size={14} /><span>Markdown</span></button>
     <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>{theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}</button>
   </header>;
