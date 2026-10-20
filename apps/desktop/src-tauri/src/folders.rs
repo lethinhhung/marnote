@@ -1,13 +1,25 @@
-use crate::metadata::{EntryMetadata, update_metadata};
+use crate::metadata::{update_metadata, EntryMetadata};
 use crate::workspace::{root, target};
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[tauri::command]
-pub fn folder_create(root_path: String, path: String) -> Result<(), String> {
+pub fn folder_create(root_path: String, path: String) -> Result<String, String> {
     let workspace = root(&root_path)?;
-    let folder = target(&workspace, &path, false)?;
-    fs::create_dir(&folder).map_err(|error| error.to_string())?;
+    let mut suffix = 0;
+    let (folder, created_path) = loop {
+        let candidate = if suffix == 0 {
+            path.clone()
+        } else {
+            crate::create_name::with_suffix(&path, suffix, false)
+        };
+        let folder = target(&workspace, &candidate, false)?;
+        match fs::create_dir(&folder) {
+            Ok(()) => break (folder, candidate),
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => suffix += 1,
+            Err(error) => return Err(error.to_string()),
+        }
+    };
 
     let now = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -20,7 +32,7 @@ pub fn folder_create(root_path: String, path: String) -> Result<(), String> {
         ..Default::default()
     };
 
-    if let Err(error) = update_metadata(&workspace, &path, metadata) {
+    if let Err(error) = update_metadata(&workspace, &created_path, metadata) {
         let cleanup = fs::remove_dir(&folder);
         return match cleanup {
             Ok(()) => Err(error),
@@ -30,7 +42,7 @@ pub fn folder_create(root_path: String, path: String) -> Result<(), String> {
         };
     }
 
-    Ok(())
+    Ok(created_path)
 }
 
 #[cfg(test)]

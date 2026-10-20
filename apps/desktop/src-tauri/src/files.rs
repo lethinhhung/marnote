@@ -22,7 +22,7 @@ pub fn file_create_markdown(
     root_path: String,
     path: String,
     content: String,
-) -> Result<(), String> {
+) -> Result<String, String> {
     create_markdown(&root_path, &path, &content)
 }
 

@@ -22,8 +22,8 @@
 .editor-frame .note-heading > .emoji-picker { margin-left: -8px; }
 .editor-frame .note-heading > .emoji-picker > button { width: 40px; min-width: 40px; height: 40px; padding: 0; border-radius: 8px; font-size: 24px; }
 .editor-frame .note-heading > .emoji-picker > button:hover { background: #f8f7f4; }
-.editor-frame .title-field { width: 100%; gap: 4px; }
-.editor-frame .note-heading .title-input { max-width: calc(100% - 2em); font-size: clamp(34px, 3.3vw, 42px); font-weight: 700; line-height: 1; letter-spacing: -.035em; }
+.editor-frame .title-field { width: 100%; line-height: 1.08; }
+.editor-frame .note-heading .title-input { font-size: clamp(34px, 3.3vw, 42px); font-weight: 700; line-height: 1; letter-spacing: -.035em; }
 .editor-frame .title-extension { color: #92948c; font-size: clamp(24px, 2.4vw, 30px); font-weight: 300; line-height: 1; }
 .editor-frame .note-meta { display: flex; align-items: center; gap: 8px; margin: 0; padding: 4px 0 0; border: 0; font-size: 12px; }
 .editor-frame .note-meta-tags { gap: 4px; }
@@ -36,6 +36,8 @@
 .editor-frame .editor-prose h3 { font-size: 20px; }
 .editor-frame .editor-prose h2 + p { margin-top: 16px; font-family: Newsreader, Georgia, serif; font-size: 20px; line-height: 1.65; }
 .editor-frame .editor-prose p + h2, .editor-frame .editor-prose p + h3, .editor-frame .editor-prose ul + h3, .editor-frame .editor-prose blockquote + p { margin-top: 22px; }
+.editor-frame .editor-prose ul + h2, .editor-frame .editor-prose ol + h2 { margin-top: 22px; }
+.editor-frame .editor-prose h2 + ul, .editor-frame .editor-prose h2 + ol { margin-top: 12px; }
 .editor-frame .editor-prose h3 + ul, .editor-frame .editor-prose h3 + blockquote { margin-top: 12px; }
 .editor-frame .editor-prose ul, .editor-frame .editor-prose ol { margin-bottom: 0; padding-left: 22px; }
 .editor-frame .editor-prose li { padding-left: 3px; margin-bottom: 8px; line-height: 1.65; }

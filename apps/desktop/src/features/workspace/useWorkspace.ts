@@ -76,8 +76,8 @@ export function useWorkspace() {
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); dropNote(p); });
   const create = (path: string) => run(async () => {
     if (!tree) return;
-    await createFile(tree.path, path);
-    const created = await readFile(tree.path, path);
+    const createdPath = await createFile(tree.path, path);
+    const created = await readFile(tree.path, createdPath);
     setTree(await listWorkspace(tree.path));
     setNote({ path: created.path, content: created.content });
   });
