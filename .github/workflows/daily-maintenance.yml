@@ -59,12 +59,32 @@ jobs:
             "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
             "openrouter/poolside/laguna-s-2.1:free"
           )
+          summary_file=.daily-maintenance-summary.md
           for model in "${models[@]}"; do
             git reset --hard HEAD
             git clean -fd
+            rm -f "$summary_file"
             echo "Trying $model"
-            if timeout 15m opencode run --auto --model "$model" "$(cat "$PROMPT_FILE")"; then
-              git clean -f -- apps/desktop/src-tauri/gen/schemas/linux-schema.json
+            prompt="$(cat "$PROMPT_FILE")
+
+          After completing the work, write a specific pull request summary to $summary_file. Use exactly these Markdown headings: ## Problem, ## Cause, and ## Fix. Explain the concrete problem, its likely cause, and the changes you made. Name relevant files or behavior. Avoid generic text such as 'see the changes'. Keep it concise."
+            if timeout 15m opencode run --auto --model "$model" "$prompt"; then
+              if [ ! -s "$summary_file" ] || \
+                ! grep -Fxq '## Problem' "$summary_file" || \
+                ! grep -Fxq '## Cause' "$summary_file" || \
+                ! grep -Fxq '## Fix' "$summary_file" || \
+                grep -Eiq 'see the changes|identified by the automated|see this pull request' "$summary_file"; then
+                echo "$model did not produce a specific Problem/Cause/Fix summary"
+                rm -f "$summary_file"
+                continue
+              fi
+              delimiter="MAINTENANCE_SUMMARY_$(openssl rand -hex 16)"
+              {
+                echo "MAINTENANCE_SUMMARY<<$delimiter"
+                cat "$summary_file"
+                printf '\n%s\n' "$delimiter"
+              } >> "$GITHUB_ENV"
+              rm -f "$summary_file"
               changed_files=$(git status --porcelain -z | tr -cd '\0' | wc -c)
               if [ "$changed_files" -gt "$MAX_FILES" ]; then
                 echo "$model changed $changed_files files; limit is $MAX_FILES"
@@ -105,6 +125,10 @@ jobs:
       - name: Validate changes
         run: pnpm check
 
+      - name: Remove generated Linux Tauri schema
+        if: always()
+        run: rm -f apps/desktop/src-tauri/gen/schemas/linux-schema.json
+
       - name: Set maintenance date
         run: echo "MAINTENANCE_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
 
@@ -115,14 +139,7 @@ jobs:
           delete-branch: true
           title: "chore: daily ${{ matrix.session }} maintenance (${{ env.MAINTENANCE_DATE }})"
           body: |
-            ## Problem
-            See the changes in this maintenance session.
-
-            ## Cause
-            Identified by the automated ${{ matrix.session }} session.
-
-            ## Fix
-            See the changes in this pull request.
+            ${{ env.MAINTENANCE_SUMMARY }}
 
             ## Results
             - Validation: `pnpm check` passed.
