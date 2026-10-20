@@ -6,6 +6,7 @@ import { FileTree, type TreeEdit } from "./FileTree";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
+import { uniqueCreatePath } from "./uniqueCreatePath";
 import "../../shared/theme/sidebar-reference.css";
 
 type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; onDefault: () => void; onOpen: (path: string) => void; onSelect: (e: Entry) => void; onTargetChange?: (path: string, kind: "note" | "folder") => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean>; onUpdateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void };
@@ -73,8 +74,8 @@ export function WorkspaceSidebar(props: Props) {
       props.onRename(edit.path, edit.kind === "rename-note" && !next.toLowerCase().endsWith(".md") ? `${next}.md` : next);
     } else {
       const path = [edit.path.replace(/\/$/, ""), name].filter(Boolean).join("/");
-      if (edit.kind === "note") props.onCreate(path.toLowerCase().endsWith(".md") ? path : `${path}.md`);
-      else props.onCreateFolder(path);
+      if (edit.kind === "note") props.onCreate(uniqueCreatePath(tree?.entries ?? [], path.toLowerCase().endsWith(".md") ? path : `${path}.md`));
+      else props.onCreateFolder(uniqueCreatePath(tree?.entries ?? [], path));
     }
     setEdit(null);
   };
