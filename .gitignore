@@ -8,3 +8,5 @@ prompt/
 .codex/config.toml
 apps/desktop/src-tauri/target/
 .DS_Store
+
+apps/desktop/src-tauri/gen/schemas/linux-schema.json
