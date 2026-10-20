@@ -80,3 +80,5 @@ Use this concise format and include relevant validation results:
 ## Results
 ...
 ```
+
+The Problem, Cause, and Fix sections must describe the specific issue and code changes in the pull request. Do not use placeholders such as "See the changes". The workflow rejects a model attempt that does not provide this summary. Exclude generated build and platform schema files from maintenance pull requests.
