@@ -39,6 +39,12 @@
 :root[data-theme="dark"] .tree-edit-row button { color: #8d948b; }
 :root[data-theme="dark"] .tree-edit-row button:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .welcome h1 { color: #f0f3ec; }
+:root[data-theme="dark"] .empty-note-eyebrow { color: #8d9a8c; }
+:root[data-theme="dark"] .empty-note-state h1 { color: #f0f3ec; }
+:root[data-theme="dark"] .empty-note-copy { color: #a1a99e; }
+:root[data-theme="dark"] .empty-note-create { border-color: #54745c; background: #54745c; color: #f5f7f1; }
+:root[data-theme="dark"] .empty-note-create:hover { background: #63856a; }
+:root[data-theme="dark"] .empty-note-hint { color: #7f887c; }
 :root[data-theme="dark"] .app-shell .topbar { border-color: #292d29; background: #161816; color: #8d948b; }
 :root[data-theme="dark"] .app-shell .address-brand { border-color: #292d29; }
 :root[data-theme="dark"] .app-shell .address-separator { color: rgba(141,148,139,.6); }

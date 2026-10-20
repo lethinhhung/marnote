@@ -33,7 +33,7 @@ export function HeaderBar({ tree, path, content, theme, source, toggleTheme, onT
       {focused && query && <div className="search-results" role="listbox" aria-label="Matching notes">{matches.length ? matches.map(file => <button key={file.path} type="button" role="option" onMouseDown={event => event.preventDefault()} onClick={() => choose(file)}><FileText size={15} /><span>{file.name}</span><small>{file.path}</small></button>) : <p>No matching notes</p>}</div>}
     </div>
     <button className="header-copy" type="button" onClick={() => void copyMarkdown()} disabled={!path} aria-label={copied ? "Markdown copied" : "Copy note as Markdown"} title={copied ? "Copied" : "Copy note as Markdown"}>{copied ? <Check size={14} /> : <Copy size={14} />}<span>Copy MD</span></button>
-    <button className={source ? "header-markdown active" : "header-markdown"} type="button" onClick={onToggleSource} aria-pressed={source} aria-label="Toggle Markdown source view"><Eye size={14} /><span>Markdown</span></button>
+    <button className={source ? "header-markdown active" : "header-markdown"} type="button" onClick={onToggleSource} disabled={!path} title={path ? "Toggle Markdown source view" : "Open a note to view Markdown"} aria-pressed={source} aria-label="Toggle Markdown source view"><Eye size={14} /><span>Markdown</span></button>
     <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>{theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}</button>
   </header>;
 }
