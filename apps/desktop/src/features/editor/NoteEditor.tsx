@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { File, FileText } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { CodeBlockWithCopy } from "./CodeBlockWithCopy";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Link from "@tiptap/extension-link";
@@ -38,7 +39,7 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
   const [linkText, setLinkText] = useState("");
   const [linkHref, setLinkHref] = useState("");
   const [selected, setSelected] = useState(0);
-  const editor = useEditor({ extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown, MarkdownPaste], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
+  const editor = useEditor({ extensions: [StarterKit.configure({ codeBlock: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown, MarkdownPaste], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
     onChange(current.getMarkdown());
     const { $from } = current.state.selection;
     const match = $from.parent.type.name === "paragraph" && $from.parent.textContent.match(/(?:^|\s)\/([\w-]*)$/);

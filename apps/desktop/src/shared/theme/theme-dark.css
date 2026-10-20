@@ -93,6 +93,8 @@
 :root[data-theme="dark"] .editor-prose a { color: #4edea3; text-decoration-color: #294334; }
 :root[data-theme="dark"] .editor-prose blockquote { border-color: #3c4a42; color: #a2ada0; }
 :root[data-theme="dark"] .editor-prose pre { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .editor-prose .code-block-copy { border-color: #363d36; background: #202320; color: #a2ada0; }
+:root[data-theme="dark"] .editor-prose .code-block-copy:hover { border-color: #4b5b4d; background: #292d29; color: #e2e5de; }
 :root[data-theme="dark"] .editor-prose pre, :root[data-theme="dark"] .editor-prose .tableWrapper { scrollbar-color: #3b423b transparent; }
 :root[data-theme="dark"] .editor-prose pre::-webkit-scrollbar-thumb, :root[data-theme="dark"] .editor-prose .tableWrapper::-webkit-scrollbar-thumb { background: #3b423b; }
 :root[data-theme="dark"] .editor-prose code { background: #202320; color: #b8d5b6; }
