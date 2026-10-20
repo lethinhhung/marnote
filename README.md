@@ -1,6 +1,11 @@
 # Marnote
 
-Marnote is a local-first Markdown workspace. Product and architecture constraints live in [`specs/`](./specs/).
+Marnote is a local-first Markdown workspace. Project guidance lives in [`AGENTS.md`](./AGENTS.md) and [`specs/`](./specs/):
+
+- [`core.md`](./specs/core.md): product behavior and requirements.
+- [`tech.md`](./specs/tech.md): architecture and technology constraints.
+- [`brand.md`](./specs/brand.md): visual identity.
+- [`daily-maintenance.md`](./specs/daily-maintenance.md): automated maintenance sessions and pull request rules.
 
 ## Development
 
