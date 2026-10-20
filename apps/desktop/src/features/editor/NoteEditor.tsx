@@ -4,7 +4,6 @@ import type { FormEvent, KeyboardEvent } from "react";
 import type { ReactNode } from "react";
 import { File, FileText } from "lucide-react";
 import { EditorContent, useEditor } from "@tiptap/react";
-import type { Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
@@ -12,9 +11,11 @@ import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { TableKit } from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
+import { MarkdownPaste } from "./MarkdownPaste";
 import { EditorToolbar } from "./EditorToolbar";
 import { initialMarkdown } from "./initialMarkdown";
 import { matchingSlashIds, SlashMenu } from "./SlashMenu";
+import { slashPosition } from "./slashPosition";
 import { BlockDragHandle } from "./BlockDragHandle";
 import { TableEdgeControls } from "./TableEdgeControls";
 import { clearColumnWidths } from "./tableResize";
@@ -29,20 +30,6 @@ import "./editor-reference.css";
 
 type SlashState = { query: string; from: number; to: number; top: number; left: number; maxHeight: number };
 type SlashLinkState = { from: number; to: number; top: number; bottom: number; left: number };
-function slashPosition(editor: Editor, position: number, query: string) {
-  const cursor = editor.view.coordsAtPos(position);
-  const below = window.innerHeight - cursor.bottom - 12;
-  const above = cursor.top - 12;
-  const opensAbove = above > below;
-  const maxHeight = Math.max(60, Math.min(340, (opensAbove ? above : below) - 12));
-  const itemCount = matchingSlashIds(query).length;
-  const menuHeight = Math.min(maxHeight, 40 + itemCount * 45);
-  return {
-    top: Math.max(12, opensAbove ? cursor.top - menuHeight - 6 : cursor.bottom + 6),
-    left: Math.max(12, Math.min(cursor.left, window.innerWidth - 282)),
-    maxHeight,
-  };
-}
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, heading, metadata, updateMetadata, path, tagColors = {}, entries, onNavigate }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; tagColors?: Record<string, string>; entries: Entry[]; onNavigate: (path: string, kind: "file" | "directory") => void }) {
   const [slash, setSlash] = useState<SlashState | null>(null);
   const [slashLink, setSlashLink] = useState<SlashLinkState | null>(null);
@@ -51,7 +38,7 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
   const [linkText, setLinkText] = useState("");
   const [linkHref, setLinkHref] = useState("");
   const [selected, setSelected] = useState(0);
-  const editor = useEditor({ extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
+  const editor = useEditor({ extensions: [StarterKit, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown, MarkdownPaste], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
     onChange(current.getMarkdown());
     const { $from } = current.state.selection;
     const match = $from.parent.type.name === "paragraph" && $from.parent.textContent.match(/(?:^|\s)\/([\w-]*)$/);

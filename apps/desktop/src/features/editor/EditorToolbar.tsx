@@ -30,6 +30,7 @@ const actionGroups = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11, 12, 13]];
 const moreActions = [8, 9, 10, 11, 12, 13];
 
 export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, path, entries }: Props) {
+  const activeActions = useEditorState({ editor, selector: ({ editor: current }) => actions.map(action => !!current && !!action.active?.(current)) });
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
   const [linkOpen, setLinkOpen] = useState(false);
@@ -51,8 +52,8 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     });
   };
   const renderAction = (index: number, compact = false) => {
-    const { label, icon: Icon, run, active } = actions[index];
-    const selected = !!editor && !!active?.(editor);
+    const { label, icon: Icon, run } = actions[index];
+    const selected = activeActions?.[index] ?? false;
     return <button type="button" key={label} className={`${selected ? "tool active" : "tool"}${compact ? ` compact-tool compact-tool-action-${index}` : ""}`} title={label} aria-label={label} aria-pressed={selected} disabled={!editor} onClick={() => { if (editor) run(editor); }}><span className={`tool-glyph tool-glyph-${index}`}>{toolbarGlyph(index)}</span><Icon className="tool-icon" size={14} strokeWidth={1.8} />{compact && <span>{label}</span>}</button>;
   };
   const renderLinkAction = (compact = false) => <button type="button" className={`tool toolbar-link-action${compact ? " compact-tool toolbar-link-menu-item" : " toolbar-link-desktop"}${linkOpen ? " active" : ""}`} title="Add or edit link" aria-label="Add or edit link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) { selection.current = editor.state.selection; setHref(editor.getAttributes("link").href ?? ""); } }} onClick={() => setLinkOpen(open => !open)}><Link2 size={14} />{compact && <span>Add link</span>}</button>;

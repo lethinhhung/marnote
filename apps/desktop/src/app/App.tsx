@@ -50,7 +50,7 @@ export function App() {
   const [footerTarget, setFooterTarget] = useState<{ path: string; kind: "note" | "folder" }>({ path: "", kind: "note" });
   const [draft, setDraft] = useState("");
   const [external, setExternal] = useState<string | null>(null);
-  const titleInput = useRef<HTMLInputElement>(null);
+  const titleInput = useRef<HTMLSpanElement>(null);
   const path = workspace.note?.path || "";
   const name = path.split("/").pop()?.replace(/\.md$/i, "") || "Untitled note";
   useEffect(() => { setExternal(null); }, [path]);
@@ -68,8 +68,10 @@ export function App() {
     return () => window.clearInterval(timer);
   }, [path, workspace.tree?.path, workspace.note?.content, draft]);
   const renameTitle = async (title: string) => {
-    const next = title.trim(); if (!path || !next) return;
-    const target = `${path.slice(0, path.lastIndexOf("/") + 1)}${next.endsWith(".md") ? next : `${next}.md`}`;
+    const next = title.replace(/\s+/g, " ").trim().replace(/\.md$/i, "");
+    if (titleInput.current) titleInput.current.textContent = next;
+    if (!path || !next) return;
+    const target = `${path.slice(0, path.lastIndexOf("/") + 1)}${next}.md`;
     if (target !== path && await noteTabs.saveCurrent()) workspace.rename(path, target);
   };
   const noteMetadata = useMemo(
@@ -92,7 +94,7 @@ export function App() {
       <section className="workspace" onPointerDown={event => { if (workspace.note && (event.target as HTMLElement).closest(".editor-canvas")) document.dispatchEvent(new CustomEvent("marnote-focus-note")); }}>
         {workspace.note && <NoteTabs paths={noteTabs.tabs} icons={tabIcons} dirtyPath={path && (saveStatus !== "saved" || draft !== workspace.note?.content) ? path : ""} activePath={path} canCreate={!!workspace.tree} onSelect={target => { void noteTabs.selectTab(target); }} onClose={target => { void noteTabs.closeTab(target); }} onCreate={() => document.dispatchEvent(new CustomEvent("marnote-create-note"))} />}
         {workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}{external !== null && <div className="status-banner conflict" role="status">This file changed outside Marnote. <button onClick={() => { workspace.acceptExternal(path, external); noteTabs.updateDraft(external); setExternal(null); }}>Load external version</button><button onClick={() => { workspace.acceptExternal(path, external); setExternal(null); }}>Keep mine</button></div>}
-        {workspace.note ? <NoteEditor key={path} path={path} entries={workspace.tree?.entries ?? []} onNavigate={(target, kind) => { if (kind === "file") void noteTabs.selectTab(target); else document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: target })); }} updateMetadata={workspace.updateMetadata} value={draft} onChange={noteTabs.updateDraft} source={source} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} heading={<div className="title-field"><input ref={titleInput} className="title-input" aria-label="Note file name" defaultValue={name} size={Math.max(name.length, 1)} key={path} onBlur={event => { void renameTitle(event.currentTarget.value); }} onKeyDown={event => event.key === "Enter" && event.currentTarget.blur()} /><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} tagColors={workspace.tree?.tags} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
+        {workspace.note ? <NoteEditor key={path} path={path} entries={workspace.tree?.entries ?? []} onNavigate={(target, kind) => { if (kind === "file") void noteTabs.selectTab(target); else document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: target })); }} updateMetadata={workspace.updateMetadata} value={draft} onChange={noteTabs.updateDraft} source={source} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} tagColors={workspace.tree?.tags} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
       </section>
     </div>
     <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
