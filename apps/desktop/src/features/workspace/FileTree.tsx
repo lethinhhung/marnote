@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, File, FileText, Folder, Star } from "lucide-
 import type { Entry } from "./workspaceTypes";
 import { TreeEditor } from "./TreeEditor";
 import { visibleEntries } from "./treeVisibility";
+import { parentPath } from "./workspacePaths";
 import { tagStyle } from "../../shared/ui/tagStyle";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 
@@ -48,7 +49,7 @@ export function FileTree(props: Props) {
       const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".tree-item");
       const kind = row?.dataset.kind;
       const path = row?.dataset.path || "";
-      const folder = kind === "directory" ? path : path.slice(0, path.lastIndexOf("/"));
+      const folder = kind === "directory" ? path : parentPath(path);
       const name = active.path.split("/").pop() || "";
       const destination = [folder, name].filter(Boolean).join("/");
       if (destination && destination !== active.path && path !== active.path && !folder.startsWith(`${active.path}/`)) {
