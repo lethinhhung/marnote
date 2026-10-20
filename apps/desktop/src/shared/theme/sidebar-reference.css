@@ -11,7 +11,7 @@
 .app-shell .sidebar .open-workspace { min-height: 30px; justify-content: center; gap: 6px; padding: 5px 10px; border: 1px dashed #e5e2dc; border-radius: 6px; background: transparent; color: #454a43; font-size: 12px; font-weight: 500; }
 .app-shell .sidebar .open-workspace svg { color: #92948c; }
 .app-shell .sidebar .open-workspace:hover { border-color: #92948c; background: #fffdf9; color: #292c27; }
-.app-shell .sidebar .sidebar-tree-section { min-height: 0; padding-top: 8px; }
+.app-shell .sidebar .sidebar-tree-section { display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: 8px; }
 .app-shell .sidebar .sidebar-heading { min-height: 20px; justify-content: space-between; margin: 0 4px 8px; color: #92948c; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
 .app-shell .sidebar .sidebar-heading div { gap: 2px; color: #92948c; }
 .app-shell .sidebar .sidebar-heading button { width: 20px; height: 20px; color: #92948c; }
