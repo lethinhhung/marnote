@@ -137,7 +137,7 @@ describe("useTheme", () => {
       });
       await flushEffects();
 
-      expect(meta.getAttribute("content")).toBe("#1c201d");
+      expect(meta.getAttribute("content")).toBe("#121316");
 
       act(() => {
         getResult().toggleTheme();

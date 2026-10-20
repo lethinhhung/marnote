@@ -33,6 +33,7 @@ pub fn collect(dir: &Path, base: &Path) -> Result<Vec<Entry>, String> {
                 name: item.file_name().to_string_lossy().into_owned(),
                 path,
                 kind: if directory { "directory" } else { "file" }.into(),
+                is_empty: !directory && std::fs::metadata(&p).map(|metadata| metadata.len() == 0).unwrap_or(true),
                 children,
                 metadata: None,
             });

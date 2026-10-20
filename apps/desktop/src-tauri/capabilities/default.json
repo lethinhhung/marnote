@@ -3,5 +3,5 @@
   "identifier": "default",
   "description": "Main window permissions for Marnote",
   "windows": ["main"],
-  "permissions": ["dialog:allow-open", "core:window:allow-start-dragging"]
+  "permissions": ["dialog:allow-open", "core:window:allow-start-dragging", "shell:allow-open"]
 }

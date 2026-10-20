@@ -25,6 +25,6 @@ describe("matchingSlashIds", () => {
 
   it("returns no ids for an unmatched query", () => {
     expect(matchingSlashIds("nonexistent")).toEqual([]);
-    expect(matchingSlashIds("")).toHaveLength(11);
+    expect(matchingSlashIds("")).toHaveLength(12);
   });
 });

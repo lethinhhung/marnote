@@ -1,0 +1,144 @@
+/* Query the editor pane, including when the sidebar changes its available width. */
+.editor-frame .toolbar.toolbar { height: auto; flex: 0 0 auto; flex-wrap: wrap; }
+.editor-frame .toolbar-actions { flex-wrap: wrap; }
+.editor-frame .toolbar-expanded-controls { min-width: 0; flex-wrap: wrap; gap: 4px; }
+.editor-frame .toolbar-control-group, .editor-frame .toolbar-expanded-controls > .tool { flex-shrink: 0; }
+.editor-frame .toolbar-utility { margin-left: auto; }
+.toolbar-action-menu summary, .table-actions-menu summary { white-space: nowrap; }
+.toolbar-action-menu summary svg, .table-actions-menu summary svg { flex-shrink: 0; }
+/* Keep popup contents independent from the collapsed trigger's dimensions. */
+.editor-frame .toolbar-action-menu-panel .compact-tool { width: 100%; height: auto; }
+.editor-frame .toolbar-action-menu-panel .tool-glyph { display: none; }
+.editor-frame .toolbar-action-menu-panel .tool-icon { display: block; }
+.editor-frame .toolbar-action-menu-panel .compact-tool-action-12,
+.editor-frame .toolbar-action-menu-panel .compact-tool-action-13 { display: none; }
+@container editor-frame (max-width: 1400px) {
+  .table-actions-menu { display: block; }
+  .table-actions-expanded { display: none; }
+}
+@container editor-frame (max-width: 1100px) {
+  .editor-frame .toolbar-more-controls { display: flex; }
+  .editor-frame .toolbar .action-item-13 { display: none; }
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-13 { display: flex; }
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-8,
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-10 { display: none; }
+}
+@container editor-frame (max-width: 1000px) {
+  .editor-frame .toolbar .action-item-12 { display: none; }
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-12 { display: flex; }
+}
+@container editor-frame (max-width: 900px) {
+  .editor-frame .toolbar .action-item-8, .editor-frame .toolbar .action-item-10 { display: none; }
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-8,
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-10 { display: flex; }
+}
+@container editor-frame (max-width: 800px) {
+  .toolbar-expanded-controls .toolbar-style-desktop { display: none; }
+  .toolbar-style-menu { display: block; }
+}
+@container editor-frame (max-width: 700px) {
+  .toolbar-expanded-controls .toolbar-text-desktop { display: none; }
+  .toolbar-text-menu { display: block; }
+}
+@container editor-frame (max-width: 640px) {
+  .editor-frame .toolbar.toolbar { padding: 6px 12px; gap: 6px; }
+  .editor-frame .toolbar-actions { gap: 6px; }
+  .toolbar-spacer { display: none; }
+  .editor-frame .toolbar-group-divider { margin: 0 2px; }
+  .toolbar-action-menu { position: relative; }
+  .table-actions-menu { position: static; }
+  .toolbar-action-menu-panel, .table-actions-menu-panel { left: 12px; right: 12px; min-width: 0; max-width: none; }
+}
+.editor-frame .table-actions-menu { position: static; }
+.editor-frame .table-actions-menu-panel { left: auto; right: 12px; width: max-content; min-width: 0; max-width: calc(100% - 24px); }
+@container editor-frame (max-width: 640px) {
+  .editor-frame .table-actions-menu-panel { left: 12px; width: auto; }
+}
+
+/* Collapsed controls use the original group's icon, keeping their footprint smaller. */
+@container editor-frame (max-width: 1100px) {
+  .toolbar-action-menu.toolbar-more-menu summary > span,
+  .toolbar-action-menu.toolbar-more-menu summary > svg:last-child { display: none; }
+  .toolbar-action-menu.toolbar-more-menu summary { width: 28px; padding: 0; justify-content: center; }
+}
+@container editor-frame (max-width: 800px) {
+  .toolbar-style-menu summary > span, .toolbar-style-menu summary > svg:last-child,
+  .toolbar-style-menu summary > svg:first-child { display: none; }
+  .toolbar-style-menu summary::before { content: "B"; font-size: 12px; font-weight: 700; }
+  .toolbar-style-menu summary { width: 28px; padding: 0; justify-content: center; }
+}
+@container editor-frame (max-width: 700px) {
+  .toolbar-text-menu summary > span, .toolbar-text-menu summary > svg:last-child { display: none; }
+  .toolbar-text-menu summary { width: 28px; padding: 0; justify-content: center; }
+}
+@container editor-frame (max-width: 640px) {
+  .editor-frame .toolbar.toolbar { flex-wrap: nowrap; gap: 3px; padding: 6px 8px; }
+  .editor-frame .toolbar-actions { flex: 1 1 0; flex-wrap: nowrap; gap: 3px; }
+  .editor-frame .toolbar-expanded-controls { flex: 0 0 auto; flex-wrap: nowrap; gap: 3px; }
+  .editor-frame .toolbar-control-group.toolbar-block-desktop .tool-item { display: none; }
+  .editor-frame .toolbar-control-group.toolbar-block-desktop .toolbar-group-divider,
+  .editor-frame .toolbar-table-divider { display: none; }
+  .editor-frame .toolbar-more-controls { display: flex; }
+  .editor-frame .toolbar-utility { flex: 0 0 auto; gap: 3px; margin-left: 0; }
+  .editor-frame .wide-content-toggle { width: 28px; min-width: 28px; padding: 0; }
+  .editor-frame .wide-content-toggle span { display: none; }
+  .editor-frame .toolbar-control-group, .editor-frame .toolbar-expanded-controls > .tool,
+  .editor-frame .toolbar-expanded-controls > .toolbar-responsive-menu,
+  .editor-frame .toolbar-more-controls, .editor-frame .table-actions-menu { flex: 0 0 28px; }
+  .editor-frame .toolbar-action-menu summary, .editor-frame .table-actions-menu summary {
+    width: 28px; height: 26px; padding: 0; justify-content: center;
+  }
+  .editor-frame .toolbar-action-menu summary > span, .editor-frame .table-actions-menu summary > span,
+  .editor-frame .toolbar-action-menu summary > svg:last-child, .editor-frame .table-actions-menu summary > svg:last-child { display: none; }
+  .editor-frame .toolbar-action-menu.toolbar-more-menu summary > svg:first-child { display: block; }
+  .editor-frame .toolbar-expanded-controls > .toolbar-block-desktop .toolbar-group-divider { display: none; }
+  .editor-frame .toolbar-expanded-controls > .toolbar-block-desktop .tool-item { display: none; }
+  .editor-frame .table-actions-menu-panel { left: 8px; right: 8px; width: auto; }
+}
+@container editor-frame (max-width: 1400px) {
+  .editor-frame .table-actions-menu { display: block; }
+  .editor-frame .table-actions-expanded { display: none !important; }
+}
+@container editor-frame (max-width: 640px) {
+  .editor-frame .toolbar .toolbar-action-menu-panel {
+    left: 0; right: auto; width: min(200px, calc(100vw - 24px));
+    min-width: min(164px, calc(100vw - 24px)); max-width: calc(100vw - 24px);
+  }
+  .editor-frame .toolbar .table-actions-menu[open] > .table-actions-menu-panel {
+    position: fixed; top: 44px; left: 8px; right: 8px; width: auto; max-width: none;
+  }
+}
+@container editor-frame (max-width: 640px) {
+  .editor-frame .toolbar .wide-content-toggle { width: 28px; min-width: 28px; padding: 0; }
+}
+@container editor-frame (max-width: 800px) {
+  .editor-frame .toolbar .toolbar-style-menu { display: block; }
+}
+@container editor-frame (max-width: 700px) {
+  .editor-frame .toolbar .toolbar-text-menu { display: block; }
+}
+
+/* Keep the toolbar on one line while the note pane narrows beside the sidebar. */
+.editor-frame .toolbar.toolbar { flex-wrap: nowrap; }
+.editor-frame .toolbar-actions { flex-wrap: nowrap; }
+.editor-frame .toolbar-expanded-controls { flex-wrap: nowrap; }
+@container editor-frame (max-width: 760px) {
+  .editor-frame .toolbar.toolbar { gap: 4px; padding-right: 12px; padding-left: 12px; }
+  .editor-frame .toolbar-actions { gap: 4px; }
+  .editor-frame .toolbar-expanded-controls { gap: 3px; }
+  .toolbar-text-menu summary > span, .toolbar-text-menu summary > svg:last-child { display: none; }
+  .toolbar-text-menu summary { width: 28px; padding: 0; justify-content: center; }
+  .editor-frame .table-actions-menu summary > span,
+  .editor-frame .table-actions-menu summary > svg:last-child { display: none; }
+  .editor-frame .table-actions-menu summary { width: 28px; padding: 0; justify-content: center; }
+}
+@container editor-frame (max-width: 640px) {
+  .editor-frame .toolbar-expanded-controls.tool-group { gap: 3px; }
+  .editor-frame .toolbar-expanded-controls > .toolbar-block-desktop { display: none; }
+}
+.editor-frame .toolbar .toolbar-link-desktop { display: inline-flex; }
+.editor-frame .toolbar .toolbar-link-menu-item { display: none; }
+@container editor-frame (max-width: 1100px) {
+  .editor-frame .toolbar .toolbar-link-desktop { display: none; }
+  .editor-frame .toolbar .toolbar-action-menu-panel .toolbar-link-menu-item { display: flex; }
+}

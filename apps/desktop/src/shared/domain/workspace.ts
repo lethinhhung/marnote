@@ -5,6 +5,6 @@ export type WorkspaceEntryMetadata = {
   createdMs?: number;
   updatedMs?: number;
 };
-export type Entry = { name: string; path: string; kind: "directory" | "file"; metadata?: WorkspaceEntryMetadata; children?: Entry[] };
+export type Entry = { name: string; path: string; kind: "directory" | "file"; isEmpty?: boolean; metadata?: WorkspaceEntryMetadata; children?: Entry[] };
 export type WorkspaceTree = { name: string; path: string; entries: Entry[]; tags?: Record<string, string> };
 export type WorkspaceTag = { name: string; color: string };
