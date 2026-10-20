@@ -63,7 +63,7 @@ jobs:
             git reset --hard HEAD
             git clean -fd
             echo "Trying $model"
-            if timeout 10m opencode run --auto --model "$model" "$(cat "$PROMPT_FILE")"; then
+            if timeout 15m opencode run --auto --model "$model" "$(cat "$PROMPT_FILE")"; then
               git clean -f -- apps/desktop/src-tauri/gen/schemas/linux-schema.json
               changed_files=$(git status --porcelain -z | tr -cd '\0' | wc -c)
               if [ "$changed_files" -gt "$MAX_FILES" ]; then
