@@ -1,3 +1,4 @@
+use crate::files::markdown::is_markdown;
 use crate::workspace::{root, target};
 use serde::Serialize;
 use std::{fs, time::UNIX_EPOCH};
@@ -13,7 +14,7 @@ pub struct Document {
 pub fn read_markdown(root_path: &str, path: &str) -> Result<Document, String> {
     let r = root(root_path)?;
     let p = target(&r, path, true)?;
-    if p.extension().and_then(|s| s.to_str()) != Some("md") || !p.is_file() {
+    if !is_markdown(&p) || !p.is_file() {
         return Err("Expected a Markdown file".into());
     }
     let content = fs::read_to_string(&p).map_err(|e| e.to_string())?;

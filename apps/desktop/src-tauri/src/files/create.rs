@@ -1,3 +1,4 @@
+use crate::files::markdown::is_markdown;
 use crate::{metadata, workspace::{root, target}};
 use std::{fs, io::Write, time::{SystemTime, UNIX_EPOCH}};
 
@@ -15,7 +16,7 @@ pub fn create_markdown(
 ) -> Result<(), String> {
     let r = root(root_path)?;
     let p = target(&r, path, false)?;
-    if p.extension().and_then(|s| s.to_str()) != Some("md") {
+    if !is_markdown(&p) {
         return Err("Expected a .md path".into());
     }
     let mut f = fs::OpenOptions::new()

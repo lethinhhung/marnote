@@ -2,6 +2,8 @@
 mod create;
 #[path = "files/delete.rs"]
 mod delete;
+#[path = "files/markdown.rs"]
+mod markdown;
 #[path = "files/metadata_paths.rs"]
 mod metadata_paths;
 #[path = "files/move_file.rs"]
@@ -51,6 +53,9 @@ pub fn file_delete(root_path: String, path: String) -> Result<String, String> {
     delete(&root_path, &path)
 }
 
+#[cfg(test)]
+#[path = "files/markdown_extension_tests.rs"]
+mod markdown_extension_tests;
 #[cfg(test)]
 #[path = "files/metadata_paths_tests.rs"]
 mod metadata_paths_tests;

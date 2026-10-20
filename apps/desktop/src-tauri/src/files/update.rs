@@ -1,3 +1,4 @@
+use crate::files::markdown::is_markdown;
 use crate::{metadata, workspace::{root, target}};
 use std::{fs, io::Write, path::Path, time::{SystemTime, UNIX_EPOCH}};
 
@@ -37,7 +38,7 @@ pub fn update_markdown(
 ) -> Result<(), String> {
     let r = root(root_path)?;
     let p = target(&r, path, true)?;
-    if p.extension().and_then(|s| s.to_str()) != Some("md") {
+    if !is_markdown(&p) {
         return Err("Expected a Markdown file".into());
     }
     if fs::read_to_string(&p).map_err(|e| e.to_string())? != expected_content {
