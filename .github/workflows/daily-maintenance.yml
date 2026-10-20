@@ -1,0 +1,129 @@
+name: Daily maintenance
+
+on:
+  schedule:
+    - cron: "59 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  maintenance:
+    name: ${{ matrix.session }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - session: refactor
+            prompt: .github/prompts/daily-refactor.md
+            branch_prefix: refactor
+          - session: fix
+            prompt: .github/prompts/daily-fix.md
+            branch_prefix: fix
+    steps:
+      - name: Check out default branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install OpenCode
+        run: npm install --global opencode-ai
+
+      - name: Run OpenCode with free model fallbacks
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PROMPT_FILE: ${{ matrix.prompt }}
+          MAX_FILES: ${{ matrix.session == 'refactor' && '3' || '999' }}
+        run: |
+          set -u
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "OPENROUTER_API_KEY is not configured" >&2
+            exit 1
+          fi
+          models=(
+            "openrouter/minimax/minimax-m3.1-flash:free"
+            "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+            "openrouter/poolside/laguna-s-2.1:free"
+          )
+          for model in "${models[@]}"; do
+            git reset --hard HEAD
+            git clean -fd
+            echo "Trying $model"
+            if opencode run --auto --model "$model" "$(cat "$PROMPT_FILE")"; then
+              changed_files=$(git status --porcelain -z | tr -cd '\0' | wc -c)
+              if [ "$changed_files" -gt "$MAX_FILES" ]; then
+                echo "$model changed $changed_files files; limit is $MAX_FILES"
+                echo "Trying the next model after discarding this attempt"
+              elif [ "$changed_files" -gt 0 ]; then
+                echo "MAINTENANCE_MODEL=$model" >> "$GITHUB_ENV"
+                exit 0
+              else
+                echo "$model completed without changes; trying next model"
+              fi
+            else
+              echo "$model failed; trying next model"
+            fi
+          done
+          echo "All free models failed or produced no changes" >&2
+          exit 1
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            librsvg2-dev \
+            wget
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate changes
+        run: pnpm check
+
+      - name: Set maintenance date
+        run: echo "MAINTENANCE_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: agent/${{ matrix.branch_prefix }}-${{ env.MAINTENANCE_DATE }}
+          delete-branch: true
+          title: "chore: daily ${{ matrix.session }} maintenance (${{ env.MAINTENANCE_DATE }})"
+          body: |
+            ## Problem
+            See the changes in this maintenance session.
+
+            ## Cause
+            Identified by the automated ${{ matrix.session }} session.
+
+            ## Fix
+            See the changes in this pull request.
+
+            ## Results
+            - Validation: `pnpm check` passed.
+            - Model: `${{ env.MAINTENANCE_MODEL }}`
+          base: ${{ github.event.repository.default_branch }}
