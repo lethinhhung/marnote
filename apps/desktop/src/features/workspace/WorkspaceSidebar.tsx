@@ -52,10 +52,10 @@ export function WorkspaceSidebar(props: Props) {
       setBrowseError(`Could not open folder picker: ${String(error)}`);
     }
   };
-  const beginCreate = (kind: "note" | "folder", parent = selectedFolder) => setEdit({ kind, path: parent ? `${parent}/` : "", value: kind === "note" ? "Untitled.md" : "New folder" });
+  const beginCreate = (kind: "note" | "folder", parent = selectedFolder) => setEdit({ kind, path: parent ? `${parent}/` : "", value: kind === "note" ? "Untitled" : "New folder" });
   const beginCreateNote = () => beginCreate("note", noteParent);
   useEffect(() => {
-    const createNote = () => setEdit({ kind: "note", path: noteParent ? `${noteParent}/` : "", value: "Untitled.md" });
+    const createNote = () => setEdit({ kind: "note", path: noteParent ? `${noteParent}/` : "", value: "Untitled" });
     document.addEventListener("marnote-create-note", createNote);
     return () => document.removeEventListener("marnote-create-note", createNote);
   }, [noteParent]);
