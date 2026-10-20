@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSameOrDescendant, parentPath, rebasePath } from "./workspacePaths";
+import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 
 describe("rebasePath", () => {
   it("rebases an exact path when a workspace item is renamed or moved", () => {
@@ -31,17 +31,5 @@ describe("isSameOrDescendant", () => {
   it("does not match unrelated paths or similarly prefixed siblings", () => {
     expect(isSameOrDescendant("other/today.md", "notes")).toBe(false);
     expect(isSameOrDescendant("notes-old/today.md", "notes")).toBe(false);
-  });
-});
-
-describe("parentPath", () => {
-  it("returns the containing folder of a nested item", () => {
-    expect(parentPath("notes/today.md")).toBe("notes");
-    expect(parentPath("notes/deep/today.md")).toBe("notes/deep");
-  });
-
-  it("returns an empty parent for root-level items", () => {
-    expect(parentPath("today.md")).toBe("");
-    expect(parentPath("")).toBe("");
   });
 });
