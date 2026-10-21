@@ -18,7 +18,8 @@ Automate daily repository maintenance with GitHub Actions and OpenCode free mode
 ## Schedule and Sessions
 
 - Run every day at 23:59 in `Asia/Ho_Chi_Minh` (16:59 UTC; GitHub Actions scheduled workflows use UTC).
-- Run two independent sessions, each starting from the repository's default branch:
+- GitHub starts scheduled workflows from the repository's default branch (`main`), but each maintenance job checks out `develop` and opens its pull request against `develop`.
+- Run two independent sessions, each starting from `develop`:
   1. Refactor
   2. Bug fix
 - Each session uses its own dedicated branch and pull request.

@@ -24,10 +24,10 @@ jobs:
             prompt: .github/prompts/daily-fix.md
             branch_prefix: fix
     steps:
-      - name: Check out default branch
+      - name: Check out develop
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.repository.default_branch }}
+          ref: develop
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -206,4 +206,4 @@ jobs:
             - Validation: `pnpm check` passed.
             - Model: `${{ env.MAINTENANCE_MODEL }}`
             - OpenCode token usage across fallback attempts: input ${{ env.MAINTENANCE_INPUT_TOKENS }}, output ${{ env.MAINTENANCE_OUTPUT_TOKENS }}, reasoning ${{ env.MAINTENANCE_REASONING_TOKENS }}, cache read ${{ env.MAINTENANCE_CACHE_READ_TOKENS }}, cache write ${{ env.MAINTENANCE_CACHE_WRITE_TOKENS }}. Per-model counts are in the Actions job summary.
-          base: ${{ github.event.repository.default_branch }}
+          base: develop
