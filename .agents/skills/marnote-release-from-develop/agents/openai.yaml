@@ -1,0 +1,3 @@
+interface:
+  display_name: "Marnote Release From Develop"
+  short_description: "Release app changes while keeping Strata state on develop"
