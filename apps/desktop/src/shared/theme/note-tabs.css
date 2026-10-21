@@ -1,7 +1,7 @@
 .note-tabs { width: 100%; max-width: 100%; min-width: 0; height: 36px; flex: 0 0 36px; align-self: stretch; overflow: hidden; border-bottom: 1px solid #e9e8e3; background: #f8f7f4; user-select: none; -webkit-user-select: none; }
 .note-tabs-list { display: flex; align-items: center; gap: 4px; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; height: 36px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .note-tabs-list::-webkit-scrollbar { display: none; }
-.note-tab { position: relative; display: flex; align-items: center; flex: 0 0 auto; min-width: 145px; max-width: 230px; height: 30px; align-self: flex-end; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; background: transparent; color: #92948c; font-weight: 400; user-select: none; -webkit-user-select: none; transition: background-color .15s, color .15s; }
+.note-tab { position: relative; display: flex; align-items: center; flex: 0 0 auto; min-width: 145px; max-width: 230px; height: 30px; align-self: flex-end; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; background: transparent; color: #92948c; font-weight: 400; user-select: none; -webkit-user-select: none; transition: background-color .15s, color .15s, box-shadow .15s, transform .15s; }
 .note-tab:not(.active):hover { background: color-mix(in srgb, #fffdf9 60%, transparent); color: #292c27; }
 .note-tab::after { position: absolute; right: 0; bottom: 0; left: 0; height: 2px; background: transparent; content: ""; }
 .note-tab.active { background: #fffdf9; color: #373c35; }
@@ -11,7 +11,9 @@
 .note-tab > button:first-child svg { flex: 0 0 auto; color: #91958c; }
 .note-tab-close, .note-tab-add { display: grid; place-items: center; flex: 0 0 16px; width: 16px; height: 16px; margin: 0 6px 0 0; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #969990; cursor: pointer; }
 .note-tab-close { opacity: 0; }
-.note-tab.dragging { opacity: .45; }
+.note-tab.dragging { z-index: 2; opacity: .82; transform: translateY(-2px); box-shadow: 0 4px 12px #292c2733; }
+.note-tab.drop-target { background: #e9efe7; }
+.note-tab.drop-target::before { position: absolute; z-index: 3; top: 2px; bottom: 2px; left: -4px; width: 3px; border-radius: 3px; background: #526b58; box-shadow: 0 0 0 2px #fffdf9; content: ""; }
 .note-tab { cursor: grab; }
 .note-tab:active { cursor: grabbing; }
 .note-tab-dirty { width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: #b97937; }
@@ -27,6 +29,8 @@
 :root[data-theme="dark"] .note-tab { border-color: transparent; background: transparent; color: #8d948b; }
 :root[data-theme="dark"] .note-tab:not(.active):hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .note-tab.active { background: #1c1e1c; color: #f0f3ec; border-top: 2px solid #63806a; }
+:root[data-theme="dark"] .note-tab.drop-target { background: #29352d; }
+:root[data-theme="dark"] .note-tab.drop-target::before { background: #4edea3; box-shadow: 0 0 0 2px #1c1e1c; }
 :root[data-theme="dark"] .note-tab.active::after { background: transparent; }
 :root[data-theme="dark"] .note-tab-close:hover, :root[data-theme="dark"] .note-tab-add:hover { background: #252825; color: #e2e5de; }
 :root[data-theme="dark"] .note-tab-menu { border-color: #292d29; background: #1c1e1c; box-shadow: 0 8px 24px rgba(0,0,0,.42); }

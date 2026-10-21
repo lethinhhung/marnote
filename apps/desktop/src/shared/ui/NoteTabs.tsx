@@ -8,6 +8,7 @@ type Menu = { path: string; x: number; y: number } | null;
 export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, onClose, onCloseOthers, onCloseAll, onCreate, onReorder, canCreate }: Props) {
   const [menu, setMenu] = useState<Menu>(null);
   const [dragging, setDragging] = useState("");
+  const [dropTarget, setDropTarget] = useState("");
   const stopDrag = useRef<(() => void) | null>(null);
   const suppressClick = useRef(false);
   useEffect(() => {
@@ -26,13 +27,14 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
       moved = true;
       setDragging(path);
       const target = document.elementFromPoint(pointer.clientX, pointer.clientY)?.closest<HTMLElement>(".note-tab")?.dataset.path;
+      setDropTarget(target && target !== path ? target : "");
       if (target && target !== over) { onReorder(path, target); over = target; }
       pointer.preventDefault();
     };
     const finish = () => {
       window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", finish); window.removeEventListener("pointercancel", finish);
       if (moved) { suppressClick.current = true; window.setTimeout(() => { suppressClick.current = false; }, 0); }
-      stopDrag.current = null; setDragging("");
+      stopDrag.current = null; setDragging(""); setDropTarget("");
     };
     stopDrag.current?.();
     stopDrag.current = finish;
@@ -46,8 +48,8 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
       {paths.map(path => {
         const title = path.split("/").pop() || path;
         const active = path === activePath;
-        return <div key={path} data-path={path} className={`note-tab ${active ? "active" : ""} ${dragging === path ? "dragging" : ""}`} onPointerDown={event => beginDrag(event, path)} onContextMenu={event => { event.preventDefault(); showMenu(path, event.clientX, event.clientY); }}>
-          <button type="button" role="tab" aria-selected={active} title={path} onClick={() => onSelect(path)}>
+        return <div key={path} data-path={path} className={`note-tab ${active ? "active" : ""} ${dragging === path ? "dragging" : ""} ${dropTarget === path ? "drop-target" : ""}`} onPointerDown={event => beginDrag(event, path)} onContextMenu={event => { event.preventDefault(); showMenu(path, event.clientX, event.clientY); }}>
+          <button type="button" role="tab" aria-selected={active} title={`${path} · Drag to reorder`} onClick={() => onSelect(path)}>
             <span className="note-tab-icon" aria-hidden="true">{icons[path] || <File size={14} />}</span><span>{title}</span>
           </button>
           {dirtyPath === path && <span className="note-tab-dirty" role="img" aria-label="Unsaved changes" title="Unsaved changes" />}
