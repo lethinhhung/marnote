@@ -28,10 +28,11 @@ The macOS app is ad-hoc signed and not notarized. On first launch, macOS may req
 
 Project guidance lives in [`AGENTS.md`](./AGENTS.md) and [`specs/`](./specs/):
 
-- [`core.md`](./specs/core.md): product behavior and requirements.
-- [`tech.md`](./specs/tech.md): architecture and technology constraints.
-- [`brand.md`](./specs/brand.md): visual identity.
-- [`daily-maintenance.md`](./specs/daily-maintenance.md): automated maintenance sessions and pull request rules.
+- [`product/`](./specs/product/): product behavior and requirements.
+- [`ux/`](./specs/ux/): user interface interactions and workflows.
+- [`engineering/architecture.md`](./specs/engineering/architecture.md): architecture and technology constraints.
+- [`design/brand.md`](./specs/design/brand.md): visual identity.
+- [`operations/`](./specs/operations/): release and maintenance procedures.
 
 ## Development
 

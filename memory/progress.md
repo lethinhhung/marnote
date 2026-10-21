@@ -123,7 +123,7 @@ Branch: `test/add-unit-tests`.
 
 ## desktop-integration — passed (attempt 1)
 
-- Completion criteria: desktop source separates app composition, features, shared UI, and platform adapters per `specs/core.md`; all imports/entry references resolve and desktop lint, typecheck, build pass; behavior and specs preserved.
+- Completion criteria: desktop source separates app composition, features, shared UI, and platform adapters per `specs/product/core.md`; all imports/entry references resolve and desktop lint, typecheck, build pass; behavior and specs preserved.
 - Outcome: canonical `Entry`/`WorkspaceTree` moved to `apps/desktop/src/shared/domain/workspace.ts`; `features/workspace/workspaceTypes.ts` re-exports them (plus `NoteData`); `platform/workspace.ts` and `shared/ui/HeaderBar.tsx` import from `shared/domain`. No `features/` imports remain under `platform/` or `shared/`.
 - Checks passed: `pnpm test`, `pnpm lint`, `pnpm typecheck`, `pnpm build`.
 - Validation: pass, 3/3 task validations. Type-relocation/import-path only; no spec or behavior changes.
