@@ -1,6 +1,6 @@
 import { appendFile, readFile } from 'node:fs/promises';
 
-const version = process.argv[2]?.replace(/^v/, '');
+const version = (process.env.RELEASE_TAG ?? process.argv[2])?.replace(/^v/, '');
 if (!version) throw new Error('Pass the release tag, for example v0.1.0.');
 
 const changelog = await readFile('CHANGELOG.md', 'utf8');
