@@ -3,7 +3,10 @@
 ## Tree
 
 - The sidebar shows **My Notes**, recent workspaces, **Open workspace…**, and the active tree.
-- The tree shows nested folders and Markdown notes, sorted case-insensitively. Folders expand/collapse; notes open and folders focus independently.
+- The tree shows nested folders and Markdown notes. Folders expand/collapse; notes open and folders focus independently.
+- Sort by **Name** (default, case-insensitive), **Recently modified** (newest first), or **Manual order**; folders appear before notes, with names breaking ties.
+- In **Manual order**, drag siblings to reorder them; drops onto folders or the root move items. Other sort modes disable reordering.
+- Save manual order per folder in `.marnote/metadata.json`. Switching sort modes preserves it; new or moved items append to the destination order, and deleted items are removed.
 - **Hide folders without notes** filters empty folders for the current session.
 
 ## Actions

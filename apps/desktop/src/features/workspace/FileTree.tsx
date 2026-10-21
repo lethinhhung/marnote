@@ -6,9 +6,10 @@ import { visibleEntries } from "./treeVisibility";
 import { parentPath } from "./workspacePaths";
 import { dropDestination } from "./treeDrop";
 import { useTreeFolderFocus } from "./useTreeFolderFocus";
+import { reorderedPaths, siblingPaths, sortEntries, type ExplorerSort } from "./sortEntries";
 
 export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };
-type Props = { entries: Entry[]; selected: string; selectedFolder: string; focus: "note" | "folder" | "none"; hideFoldersWithoutNotes: boolean; edit: TreeEdit | null; tagColors?: Record<string, string>; onEditSubmit: (name: string) => void; onEditCancel: () => void; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onClearFocus?: () => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; onMove: (source: string, destination: string) => Promise<boolean> };
+type Props = { entries: Entry[]; manualOrder: Record<string, string[]>; sort: ExplorerSort; selected: string; selectedFolder: string; focus: "note" | "folder" | "none"; hideFoldersWithoutNotes: boolean; edit: TreeEdit | null; tagColors?: Record<string, string>; onEditSubmit: (name: string) => void; onEditCancel: () => void; onOpen: (entry: Entry) => void; onFolderSelect: (path: string) => void; onClearFocus?: () => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; onMove: (source: string, destination: string) => Promise<boolean>; onReorder: (parent: string, paths: string[]) => Promise<boolean> };
 type Drag = { path: string; x: number; y: number; moved: boolean };
 
 export function FileTree(props: Props) {
@@ -50,6 +51,18 @@ export function FileTree(props: Props) {
       const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".tree-item");
       const kind = row?.dataset.kind;
       const path = row?.dataset.path || "";
+      const sameParent = row && path && parentPath(path) === parentPath(active.path) && path !== active.path;
+      if (props.sort === "manual" && sameParent && (kind === "file" || kind === "directory")) {
+        const bounds = row.getBoundingClientRect();
+        const after = event.clientY >= bounds.top + bounds.height / 2;
+        const edgeDrop = event.clientY <= bounds.top + bounds.height * 0.25 || event.clientY >= bounds.top + bounds.height * 0.75;
+        if (kind === "file" || edgeDrop) {
+          const parent = parentPath(path);
+          const paths = reorderedPaths(siblingPaths(props.entries, parent), active.path, path, after);
+          if (paths.length) await props.onReorder(parent, paths);
+          return;
+        }
+      }
       const folder = kind === "directory" ? path : parentPath(path);
       const name = active.path.split("/").pop() || "";
       const destination = [folder, name].filter(Boolean).join("/");
@@ -78,7 +91,8 @@ export function FileTree(props: Props) {
       const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".tree-item");
       const path = row?.dataset.path || "";
       if (row) {
-        setDropTarget(dropDestination(drag.current.path, path, row.dataset.kind) ? path : "");
+        const canReorder = props.sort === "manual" && path !== drag.current.path && parentPath(path) === parentPath(drag.current.path) && (row.dataset.kind === "file" || row.dataset.kind === "directory");
+        setDropTarget(dropDestination(drag.current.path, path, row.dataset.kind) || canReorder ? path : "");
         setBlankDropY(null);
       } else {
         const tree = document.querySelector<HTMLElement>(".file-tree");
@@ -93,7 +107,7 @@ export function FileTree(props: Props) {
     window.addEventListener("pointermove", move);
     window.addEventListener("keydown", undoMove);
     return () => { window.removeEventListener("pointerup", finish); window.removeEventListener("pointercancel", finish); window.removeEventListener("pointermove", move); window.removeEventListener("keydown", undoMove); };
-  }, [props.onMove]);
+  }, [props.onMove, props.onReorder, props.entries, props.sort]);
   const start = (path: string, event: PointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return;
     skipClick.current = false;
@@ -105,7 +119,15 @@ export function FileTree(props: Props) {
     if (entry.kind === "directory") props.onFolderSelect(entry.path);
     else props.onOpen(entry);
   };
-  const entries = visibleEntries(props.entries, props.hideFoldersWithoutNotes);
+  const entries = visibleEntries(sortEntries(props.entries, props.sort, props.manualOrder), props.hideFoldersWithoutNotes);
   const editor = props.edit;
-  return <ul className={`file-tree ${dragging ? "is-dragging" : ""}`} onClick={event => { if (!(event.target as HTMLElement).closest(".tree-item")) props.onClearFocus?.(); }} onContextMenu={event => { if ((event.target as HTMLElement).closest(".tree-item")) return; event.preventDefault(); props.onClearFocus?.(); props.onEntryContext("", "root", event.clientX, event.clientY); }}>{editor && (editor.kind === "note" || editor.kind === "folder") && !editor.path && <li><TreeEditor kind={editor.kind} value={editor.value} depth={0} onSubmit={props.onEditSubmit} onCancel={props.onEditCancel} /></li>}{entries.map(entry => <TreeRow key={entry.path} entry={entry} tagColors={props.tagColors ?? {}} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} dropTarget={dropTarget} focusPath={focusPath} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} onEntryContext={props.onEntryContext} edit={editor} onEditSubmit={props.onEditSubmit} onEditCancel={props.onEditCancel} />)}{dropTarget === "__blank__" && blankDropY !== null && <li className="tree-drop-blank-line" style={{ top: blankDropY }} aria-hidden="true" />}</ul>;
+  return (
+    <ul className={`file-tree ${dragging ? "is-dragging" : ""}`}
+      onClick={event => { if (!(event.target as HTMLElement).closest(".tree-item")) props.onClearFocus?.(); }}
+      onContextMenu={event => { if ((event.target as HTMLElement).closest(".tree-item")) return; event.preventDefault(); props.onClearFocus?.(); props.onEntryContext("", "root", event.clientX, event.clientY); }}>
+      {editor && (editor.kind === "note" || editor.kind === "folder") && !editor.path && <li><TreeEditor kind={editor.kind} value={editor.value} depth={0} onSubmit={props.onEditSubmit} onCancel={props.onEditCancel} /></li>}
+      {entries.map(entry => <TreeRow key={entry.path} entry={entry} tagColors={props.tagColors ?? {}} selected={props.selected} selectedFolder={props.selectedFolder} focus={props.focus} dragging={dragging} dropTarget={dropTarget} focusPath={focusPath} expanded={expanded} onExpanded={setExpanded} depth={0} onStart={start} onClick={click} onEntryContext={props.onEntryContext} edit={editor} onEditSubmit={props.onEditSubmit} onEditCancel={props.onEditCancel} />)}
+      {dropTarget === "__blank__" && blankDropY !== null && <li className="tree-drop-blank-line" style={{ top: blankDropY }} aria-hidden="true" />}
+    </ul>
+  );
 }

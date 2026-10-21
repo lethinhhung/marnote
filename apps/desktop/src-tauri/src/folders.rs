@@ -1,4 +1,4 @@
-use crate::metadata::{update_metadata, EntryMetadata};
+use crate::metadata::{append_manual_order, update_metadata, EntryMetadata};
 use crate::workspace::{root, target};
 use std::fs;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -41,6 +41,7 @@ pub fn folder_create(root_path: String, path: String) -> Result<String, String> 
             )),
         };
     }
+    append_manual_order(&workspace, &created_path)?;
 
     Ok(created_path)
 }

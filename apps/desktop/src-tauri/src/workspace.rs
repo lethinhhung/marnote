@@ -14,17 +14,20 @@ pub struct Entry {
     pub(crate) path: String,
     pub(crate) kind: String,
     pub(crate) is_empty: bool,
+    pub(crate) modified_ms: u128,
     pub(crate) children: Vec<Entry>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) metadata: Option<crate::metadata::EntryMetadata>,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Workspace {
     name: String,
     path: String,
     entries: Vec<Entry>,
     tags: std::collections::HashMap<String, String>,
+    manual_order: std::collections::HashMap<String, Vec<String>>,
 }
 
 pub fn root(path: &str) -> Result<PathBuf, String> {
@@ -82,6 +85,7 @@ fn workspace_snapshot(root: &Path, name: String) -> Result<Workspace, String> {
         path: root.to_string_lossy().into_owned(),
         entries: merge_metadata(collect(root, root)?, &metadata),
         tags: metadata.tags,
+        manual_order: metadata.manual_order,
     })
 }
 
