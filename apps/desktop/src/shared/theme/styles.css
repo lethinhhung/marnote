@@ -11,6 +11,7 @@ button, input { font: inherit; }
 .app-shell { display: grid; grid-template-rows: 36px minmax(0, 1fr) 26px; height: 100vh; height: 100dvh; overflow: hidden; background: #f8f7f4; }
 .app-layout { position: relative; display: flex; min-width: 0; min-height: 0; overflow: hidden; }
 .explorer-dock { position: relative; display: flex; flex: 0 0 auto; min-width: 0; min-height: 0; transition: width 180ms ease, flex-basis 180ms ease; }
+.explorer-resizing .explorer-dock { transition: none; }
 .explorer-dock.is-collapsed { z-index: 3; border-right: 1px solid #e5e2dc; box-shadow: 2px 0 7px #292c2712; }
 .explorer-splitter { z-index: 2; flex: 0 0 24px; width: 24px; margin-left: -12px; cursor: col-resize; touch-action: none; outline: 0; }
 .explorer-splitter::after { display: block; width: 1px; height: 100%; margin: 0 auto; background: #e5e2dc; content: ""; }

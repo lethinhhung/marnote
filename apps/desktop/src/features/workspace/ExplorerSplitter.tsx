@@ -5,6 +5,8 @@ type Props = { width: number; collapsed: boolean; onResize: (width: number) => v
 
 export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props) {
   const start = useRef<{ x: number; width: number } | null>(null);
+  const preview = useRef<number | null>(null);
+  const frame = useRef<number | null>(null);
   const limits = () => {
     const available = document.querySelector(".app-layout")?.clientWidth ?? window.innerWidth;
     const max = Math.max(120, Math.min(420, available - 384));
@@ -14,6 +16,21 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
     const { min, max } = limits();
     onResize(Math.max(min, Math.min(max, value)));
   };
+  const applyPreview = () => {
+    frame.current = null;
+    if (preview.current === null) return;
+    const dock = document.querySelector<HTMLElement>(".explorer-dock");
+    if (dock) {
+      dock.style.width = `${preview.current}px`;
+      dock.style.flexBasis = `${preview.current}px`;
+      const sidebar = dock.querySelector<HTMLElement>("#workspace-explorer");
+      if (sidebar) {
+        sidebar.style.width = `${preview.current}px`;
+        sidebar.style.flexBasis = `${preview.current}px`;
+        sidebar.style.setProperty("--explorer-width", `${preview.current}px`);
+      }
+    }
+  };
   useEffect(() => {
     const clamp = () => resizeTo(width);
     window.addEventListener("resize", clamp);
@@ -21,6 +38,7 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
     return () => window.removeEventListener("resize", clamp);
   }, [width, onResize]);
   useEffect(() => () => document.documentElement.classList.remove("explorer-resizing"), []);
+  useEffect(() => () => { if (frame.current !== null) cancelAnimationFrame(frame.current); }, []);
   const pointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     event.preventDefault();
@@ -30,9 +48,16 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const pointerMove = (event: PointerEvent<HTMLDivElement>) => {
-    if (start.current) resizeTo(start.current.width + event.clientX - start.current.x);
+    if (!start.current) return;
+    const { min, max } = limits();
+    preview.current = Math.max(min, Math.min(max, start.current.width + event.clientX - start.current.x));
+    if (frame.current === null) frame.current = requestAnimationFrame(applyPreview);
   };
   const stopResize = () => {
+    if (frame.current !== null) { cancelAnimationFrame(frame.current); frame.current = null; }
+    applyPreview();
+    if (preview.current !== null) onResize(preview.current);
+    preview.current = null;
     start.current = null;
     document.documentElement.classList.remove("explorer-resizing");
   };
