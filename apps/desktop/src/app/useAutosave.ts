@@ -24,9 +24,9 @@ export function useAutosave({
 
   useEffect(() => {
     setStatus("saved");
-    if (onStatusChange) onStatusChange("saved");
+    current.current.onStatusChange?.("saved");
     saveSequence.current += 1;
-  }, [path, onStatusChange]);
+  }, [path]);
 
   useEffect(() => {
     if (!path || noteContent === undefined) return;
@@ -37,18 +37,18 @@ export function useAutosave({
     const scheduled = window.setTimeout(() => {
       timer.current = null;
       setStatus("saving");
-      if (onStatusChange) onStatusChange("saving");
-      void save(path, draft, noteContent || "").then((saved) => {
+      current.current.onStatusChange?.("saving");
+      void current.current.save(path, draft, noteContent || "").then((saved) => {
         if (sequence === saveSequence.current) {
           const nextStatus = saved ? "saved" : "error";
           setStatus(nextStatus);
-          if (onStatusChange) onStatusChange(nextStatus);
+          current.current.onStatusChange?.(nextStatus);
         }
       });
     }, 650);
     timer.current = scheduled;
     return () => window.clearTimeout(scheduled);
-  }, [draft, path, noteContent, save, onStatusChange]);
+  }, [draft, path, noteContent]);
 
   const saveNow = async () => {
     const value = current.current;
