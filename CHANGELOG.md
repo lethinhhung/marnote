@@ -4,6 +4,12 @@ Notable user-facing changes are recorded here for each release. Add a dated vers
 
 ## Unreleased
 
+## [0.1.1] - 2026-10-21
+
+### Fixed
+
+- Load the note editor and emoji picker on demand to reduce the initial app bundle.
+
 ## [0.1.0] - 2026-10-21
 
 ### Added
