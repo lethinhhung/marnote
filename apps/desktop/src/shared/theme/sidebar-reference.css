@@ -12,11 +12,13 @@
 .app-shell .sidebar .open-workspace svg { color: #92948c; }
 .app-shell .sidebar .open-workspace:hover { border-color: #92948c; background: #fffdf9; color: #292c27; }
 .app-shell .sidebar .sidebar-tree-section { display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: 8px; }
-.app-shell .sidebar .sidebar-heading { min-height: 20px; justify-content: space-between; margin: 0 4px 8px; color: #92948c; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
-.app-shell .sidebar .sidebar-heading div { gap: 2px; color: #92948c; }
-.app-shell .sidebar .sidebar-heading button { width: 20px; height: 20px; color: #92948c; }
-.app-shell .sidebar .sidebar-heading .explorer-sort { width: 94px; height: 22px; padding: 0 3px; border: 0; border-radius: 4px; background: transparent; color: #777b73; font-size: 10px; letter-spacing: 0; cursor: pointer; }
-.app-shell .sidebar .sidebar-heading .explorer-sort:hover { background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .sidebar-heading { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-height: 35px; margin: 0 4px 9px; color: #92948c; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
+.app-shell .sidebar .sidebar-heading > span { overflow: hidden; color: #70766d; text-overflow: ellipsis; white-space: nowrap; }
+.app-shell .sidebar .sidebar-heading div { align-items: center; justify-content: flex-start; gap: 3px; width: 100%; color: #92948c; }
+.app-shell .sidebar .sidebar-heading button { flex: 0 0 20px; width: 20px; height: 22px; color: #858a80; }
+.app-shell .sidebar .sidebar-heading .explorer-sort { flex: 1 1 auto; min-width: 0; height: 24px; margin-right: 2px; padding: 0 6px; border: 1px solid #e5e2dc; border-radius: 5px; background: #fffdf9; color: #454a43; font-size: 10.5px; letter-spacing: 0; cursor: pointer; }
+.app-shell .sidebar .sidebar-heading .explorer-sort:hover { border-color: #c9d1c7; background: #fff; color: #292c27; }
+.app-shell .sidebar .sidebar-heading .explorer-sort:focus-visible { outline: 2px solid #79927b; outline-offset: 1px; }
 .app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: #fffdf9; color: #292c27; }
 .app-shell .sidebar .file-tree, .app-shell .sidebar .file-tree ul { margin: 0; padding: 0; list-style: none; }
 .app-shell .sidebar .file-tree { position: relative; min-height: 0; overflow: visible; color: #292c27; font-size: 12px; }
@@ -52,6 +54,9 @@
 :root[data-theme="dark"] .app-shell .sidebar .default-workspace { border-color: #2f352f; background: #202420; color: #f0f3ec; }
 :root[data-theme="dark"] .app-shell .sidebar .default-workspace svg { color: #4edea3; }
 :root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .sidebar-heading > span { color: #adb3aa; }
+:root[data-theme="dark"] .app-shell .sidebar .sidebar-heading .explorer-sort { border-color: #333a33; background: #1c1e1c; color: #d4d9d1; }
+:root[data-theme="dark"] .app-shell .sidebar .sidebar-heading .explorer-sort:hover { border-color: #4b5b4d; background: #242824; color: #f0f2ed; }
 :root[data-theme="dark"] .app-shell .sidebar .recent-workspace-select > svg { color: #8d948b; }
 :root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: #292d29; background: transparent; color: #8d948b; }
 :root[data-theme="dark"] .app-shell .sidebar .open-workspace:hover { border-color: rgba(141,148,139,.5); background: #202320; color: #e2e5de; }

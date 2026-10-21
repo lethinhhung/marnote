@@ -21,6 +21,7 @@ pub struct Entry {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Workspace {
     name: String,
     path: String,

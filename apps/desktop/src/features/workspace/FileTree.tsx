@@ -51,11 +51,12 @@ export function FileTree(props: Props) {
       const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".tree-item");
       const kind = row?.dataset.kind;
       const path = row?.dataset.path || "";
-      if (props.sort === "manual" && row && path && parentPath(path) === parentPath(active.path) && path !== active.path) {
+      const sameParent = row && path && parentPath(path) === parentPath(active.path) && path !== active.path;
+      if (props.sort === "manual" && sameParent && (kind === "file" || kind === "directory")) {
         const bounds = row.getBoundingClientRect();
-        const after = event.clientY >= bounds.top + bounds.height * 0.75;
-        const before = event.clientY <= bounds.top + bounds.height * 0.25;
-        if (before || after) {
+        const after = event.clientY >= bounds.top + bounds.height / 2;
+        const edgeDrop = event.clientY <= bounds.top + bounds.height * 0.25 || event.clientY >= bounds.top + bounds.height * 0.75;
+        if (kind === "file" || edgeDrop) {
           const parent = parentPath(path);
           const paths = reorderedPaths(siblingPaths(props.entries, parent), active.path, path, after);
           if (paths.length) await props.onReorder(parent, paths);
@@ -90,7 +91,7 @@ export function FileTree(props: Props) {
       const row = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLButtonElement>(".tree-item");
       const path = row?.dataset.path || "";
       if (row) {
-        const canReorder = props.sort === "manual" && path !== drag.current.path && parentPath(path) === parentPath(drag.current.path);
+        const canReorder = props.sort === "manual" && path !== drag.current.path && parentPath(path) === parentPath(drag.current.path) && (row.dataset.kind === "file" || row.dataset.kind === "directory");
         setDropTarget(dropDestination(drag.current.path, path, row.dataset.kind) || canReorder ? path : "");
         setBlankDropY(null);
       } else {
