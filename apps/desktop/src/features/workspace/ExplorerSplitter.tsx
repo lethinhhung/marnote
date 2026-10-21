@@ -20,14 +20,21 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
     clamp();
     return () => window.removeEventListener("resize", clamp);
   }, [width, onResize]);
+  useEffect(() => () => document.documentElement.classList.remove("explorer-resizing"), []);
   const pointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
+    event.preventDefault();
     start.current = { x: event.clientX, width };
+    document.documentElement.classList.add("explorer-resizing");
     if (collapsed) onToggle();
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const pointerMove = (event: PointerEvent<HTMLDivElement>) => {
     if (start.current) resizeTo(start.current.width + event.clientX - start.current.x);
+  };
+  const stopResize = () => {
+    start.current = null;
+    document.documentElement.classList.remove("explorer-resizing");
   };
   const keyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = event.shiftKey ? 40 : 10;
@@ -41,5 +48,5 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
     }
   };
   if (collapsed) return <button className="explorer-collapsed-icon" type="button" onClick={onToggle} aria-label="Expand Explorer" aria-controls="workspace-explorer" title="Expand Explorer"><PanelLeftOpen size={17} /></button>;
-  return <div className="explorer-splitter" role="separator" aria-label="Resize Explorer" aria-orientation="vertical" aria-controls="workspace-explorer" aria-valuenow={width} aria-valuemin={limits().min} aria-valuemax={limits().max} tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={() => { start.current = null; }} onPointerCancel={() => { start.current = null; }} onKeyDown={keyDown} />;
+  return <div className="explorer-splitter" role="separator" aria-label="Resize Explorer" aria-orientation="vertical" aria-controls="workspace-explorer" aria-valuenow={width} aria-valuemin={limits().min} aria-valuemax={limits().max} tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={stopResize} onPointerCancel={stopResize} onLostPointerCapture={stopResize} onKeyDown={keyDown} />;
 }

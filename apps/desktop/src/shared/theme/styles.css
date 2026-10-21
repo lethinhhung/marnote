@@ -5,6 +5,7 @@
 *::-webkit-scrollbar { width: 6px; height: 6px; }
 *::-webkit-scrollbar-thumb { border-radius: 6px; background: #c4c8be; }
 *::-webkit-scrollbar-track { background: transparent; }
+.explorer-resizing, .explorer-resizing * { -webkit-user-select: none !important; user-select: none !important; }
 body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; }
 button, input { font: inherit; }
 .app-shell { display: grid; grid-template-rows: 36px minmax(0, 1fr) 26px; height: 100vh; height: 100dvh; overflow: hidden; background: #f8f7f4; }
