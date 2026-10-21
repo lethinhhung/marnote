@@ -1,4 +1,5 @@
 .app-shell .sidebar.sidebar { width: 256px; flex: 0 0 256px; padding: 0; border-color: #e5e2dc; background: #f8f7f4; color: #292c27; }
+.app-shell .explorer-splitter::after { background: #e5e2dc; }
 .app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 0; overflow: auto; padding: 12px; }
 .app-shell .sidebar .default-workspace { width: 100%; min-height: 36px; justify-content: flex-start; gap: 8px; margin: 0; padding: 8px 12px; border-color: #e2dfd8; border-radius: 8px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 600; letter-spacing: -.02em; box-shadow: 0 1px 2px #292c2708; }
 .app-shell .sidebar .default-workspace svg { color: #526b58; }

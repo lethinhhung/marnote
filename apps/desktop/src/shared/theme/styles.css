@@ -9,7 +9,36 @@ body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; }
 button, input { font: inherit; }
 .app-shell { display: grid; grid-template-rows: 36px minmax(0, 1fr) 26px; height: 100vh; height: 100dvh; overflow: hidden; background: #f8f7f4; }
 .app-layout { display: flex; min-width: 0; min-height: 0; overflow: hidden; }
-.sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; min-height: 0; padding: 20px 8px; border-right: 1px solid #e9e8e3; background: #fdfdfb; color: #666b62; overflow: hidden; }
+.explorer-splitter { z-index: 2; flex: 0 0 24px; width: 24px; margin-left: -12px; cursor: col-resize; touch-action: none; outline: 0; }
+.explorer-splitter::after { display: block; width: 1px; height: 100%; margin: 0 auto; background: #e5e2dc; content: ""; }
+.explorer-splitter:hover::after, .explorer-splitter:focus-visible::after { width: 2px; background: #526b58; }
+.explorer-splitter:focus-visible { outline: 2px solid #526b58; outline-offset: -2px; }
+.header-explorer-toggle { display: grid; flex: 0 0 28px; width: 28px; height: 28px; place-items: center; border: 0; border-radius: 5px; background: transparent; color: #92948c; cursor: pointer; }
+.header-explorer-toggle:hover { background: #fffdf9; color: #292c27; }
+.move-dialog-backdrop { position: fixed; z-index: 60; inset: 0; display: grid; place-items: center; background: #16181666; }
+.move-dialog { width: min(380px, calc(100vw - 32px)); padding: 18px; border: 1px solid #e5e2dc; border-radius: 10px; background: #fffdf9; box-shadow: 0 14px 40px #0003; color: #292c27; }
+.move-dialog h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 15px; }
+.move-dialog p { overflow: hidden; margin: 0 0 16px; color: #70766d; text-overflow: ellipsis; white-space: nowrap; }
+.move-dialog label { display: grid; gap: 6px; font-size: 12px; }
+.move-dialog select { min-width: 0; padding: 8px; border: 1px solid #e5e2dc; border-radius: 5px; background: #fff; color: inherit; }
+.move-dialog footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+.move-dialog button { padding: 7px 12px; border: 1px solid #e5e2dc; border-radius: 5px; background: #fff; cursor: pointer; }
+.move-dialog button:last-child { border-color: #526b58; background: #526b58; color: white; }
+.move-dialog button:disabled { opacity: .5; cursor: default; }
+.trash-dialog { width: min(520px, calc(100vw - 32px)); max-height: min(620px, calc(100vh - 32px)); display: flex; flex-direction: column; padding: 16px; border: 1px solid #e5e2dc; border-radius: 10px; background: #fffdf9; box-shadow: 0 14px 40px #0003; color: #292c27; }
+.trash-dialog > header, .trash-dialog > footer, .trash-row { display: flex; align-items: center; gap: 8px; }
+.trash-dialog > header { justify-content: space-between; }
+.trash-dialog h2 { margin: 0; font-size: 16px; }
+.trash-dialog button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 30px; padding: 5px 9px; border: 1px solid #e5e2dc; border-radius: 5px; background: #fff; color: inherit; cursor: pointer; }
+.trash-dialog button:disabled { opacity: .5; cursor: default; }
+.trash-list { min-height: 80px; overflow: auto; margin: 12px 0; }
+.trash-list > p { color: #858a80; font-size: 13px; }
+.trash-row { justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #eeede8; }
+.trash-row span { min-width: 0; overflow: hidden; color: #555b52; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.trash-row button { flex: 0 0 auto; }
+.trash-dialog > footer { justify-content: space-between; }
+.trash-dialog > footer .danger { border-color: #a04436; background: #a04436; color: white; }
+.sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 20px 8px; border-right: 1px solid #e9e8e3; background: #fdfdfb; color: #666b62; overflow: hidden; }
 .workspace-open { display: grid; gap: 8px; padding: 0 7px 17px; border-bottom: 1px solid #eeede8; }
 .open-workspace { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 7px; border: 1px solid #e8e8e1; border-radius: 6px; background: #f7f7f3; color: #596858; font-size: 11px; cursor: pointer; }
 .default-workspace { display: flex; align-items: center; gap: 8px; margin: 0 7px 12px; padding: 8px 10px; border: 1px solid #dce4d9; border-radius: 7px; background: #f0f4ed; color: #405b46; font-size: 12px; font-weight: 600; text-align: left; cursor: pointer; }
