@@ -24,6 +24,8 @@ Marnote keeps notes as regular Markdown files in folders you control. Work offli
 
 The release workflow builds installers for macOS, Windows, and Linux. Check [GitHub Releases](https://github.com/lethinhhung/marnote/releases) for available downloads, and see the [changelog](CHANGELOG.md) for version history.
 
+The macOS app is ad-hoc signed and not notarized. On first launch, macOS may require approval in **System Settings → Privacy & Security → Open Anyway**.
+
 ## Development
 
 ### Requirements

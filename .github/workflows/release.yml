@@ -3,6 +3,13 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release tag whose macOS assets should be rebuilt
+        required: true
+        type: string
+        default: v0.1.0
 
 permissions:
   contents: read
@@ -22,11 +29,18 @@ jobs:
           cache: pnpm
       - uses: dtolnay/rust-toolchain@stable
       - name: Check tag, versions, and release notes
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          git fetch --no-tags origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/release-validation"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "$GITHUB_REF" != "refs/heads/main" ]]; then
+            echo "::error::Published macOS repairs must be dispatched from main."
+            exit 1
+          fi
+          release_tag="$RELEASE_TAG"
+          git fetch --no-tags origin "refs/tags/${release_tag}:refs/tags/release-validation"
           test "$(git cat-file -t refs/tags/release-validation)" = tag
-          node scripts/check-release-version.mjs "${GITHUB_REF_NAME}"
-          node scripts/release-notes.mjs "${GITHUB_REF_NAME}"
+          node scripts/check-release-version.mjs "$release_tag"
+          node scripts/release-notes.mjs "$release_tag"
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
@@ -46,7 +60,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        platform: [macos-latest, ubuntu-22.04, windows-latest]
+        platform: ${{ github.event_name == 'workflow_dispatch' && fromJSON('["macos-latest"]') || fromJSON('["macos-latest","ubuntu-22.04","windows-latest"]') }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -58,7 +72,7 @@ jobs:
       - id: notes
         name: Prepare version notes
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: node scripts/release-notes.mjs
       - uses: dtolnay/rust-toolchain@stable
       - name: Install Linux build dependencies
@@ -68,19 +82,44 @@ jobs:
           sudo apt-get install -y build-essential curl file libayatana-appindicator3-dev \
             libssl-dev libwebkit2gtk-4.1-dev libxdo-dev librsvg2-dev wget
       - run: pnpm install --frozen-lockfile
+      - name: Confirm macOS repair target is a published release
+        if: runner.os == 'macOS' && github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          published_tag=$(gh release view "$RELEASE_TAG" --json tagName,isDraft --jq 'select(.isDraft == false).tagName')
+          if [[ "$published_tag" != "$RELEASE_TAG" ]]; then
+            echo "::error::${RELEASE_TAG} is not an existing published release."
+            exit 1
+          fi
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_SIGNING_IDENTITY: ${{ matrix.platform == 'macos-latest' && '-' || '' }}
         with:
           projectPath: apps/desktop
-          tagName: ${{ github.ref_name }}
-          releaseName: Marnote ${{ github.ref_name }}
+          tagName: ${{ inputs.tag || github.ref_name }}
+          releaseName: Marnote ${{ inputs.tag || github.ref_name }}
           releaseBody: ${{ steps.notes.outputs.body }}
-          releaseDraft: true
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          releaseDraft: ${{ github.event_name == 'push' }}
+          prerelease: ${{ contains(inputs.tag || github.ref_name, '-') }}
+      - name: Verify ad hoc macOS signature
+        if: runner.os == 'macOS'
+        run: |
+          dmg=$(find apps/desktop/src-tauri/target/release/bundle/dmg -name 'Marnote_*.dmg' -print -quit)
+          test -n "$dmg"
+          mountpoint=$(mktemp -d)
+          hdiutil attach "$dmg" -mountpoint "$mountpoint" -nobrowse -readonly
+          trap 'hdiutil detach "$mountpoint" -quiet || true; rmdir "$mountpoint"' EXIT
+          app=$(find "$mountpoint" -maxdepth 3 -name 'Marnote.app' -type d -print -quit)
+          test -n "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+          codesign -dv --verbose=4 "$app" 2>&1 | grep -F 'Signature=adhoc'
 
   publish:
     name: Publish release
+    if: github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     permissions:
