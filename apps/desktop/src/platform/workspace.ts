@@ -18,5 +18,7 @@ export const updateEntryMetadata = (rootPath: string, path: string, metadata: Up
   invoke<void>("update_entry_metadata", { rootPath, path, ...metadata });
 export const saveWorkspaceTags = (rootPath: string, tags: Record<string, string>) =>
   invoke<void>("save_workspace_tags", { rootPath, tags });
+export const saveManualOrder = (rootPath: string, parent: string, paths: string[]) =>
+  invoke<void>("save_manual_order", { rootPath, parent, paths });
 export const renameWorkspaceTag = (rootPath: string, oldName: string, newName: string, color: string) =>
   invoke<void>("rename_workspace_tag", { rootPath, oldName, newName, color });

@@ -5,6 +5,8 @@ import type { Entry } from "./workspaceTypes";
 
 const mockProps = {
   entries: [] as Entry[],
+  manualOrder: {} as Record<string, string[]>,
+  sort: "name" as const,
   selected: "",
   selectedFolder: "",
   focus: "note" as const,
@@ -16,6 +18,7 @@ const mockProps = {
   onFolderSelect: vi.fn(),
   onEntryContext: vi.fn(),
   onMove: vi.fn(),
+  onReorder: vi.fn(),
 };
 
 function renderFileTree(entries: Entry[]) {

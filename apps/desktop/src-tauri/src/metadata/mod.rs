@@ -18,11 +18,21 @@ pub struct EntryMetadata {
 
 #[cfg(test)]
 impl EntryMetadata {
-    pub fn tags(&self) -> &[String] { self.tags.as_deref().unwrap_or_default() }
-    pub fn icon(&self) -> Option<&str> { self.icon.as_deref() }
-    pub fn favorite(&self) -> bool { self.favorite.unwrap_or(false) }
-    pub fn created_ms(&self) -> Option<u128> { self.created_ms }
-    pub fn updated_ms(&self) -> Option<u128> { self.updated_ms }
+    pub fn tags(&self) -> &[String] {
+        self.tags.as_deref().unwrap_or_default()
+    }
+    pub fn icon(&self) -> Option<&str> {
+        self.icon.as_deref()
+    }
+    pub fn favorite(&self) -> bool {
+        self.favorite.unwrap_or(false)
+    }
+    pub fn created_ms(&self) -> Option<u128> {
+        self.created_ms
+    }
+    pub fn updated_ms(&self) -> Option<u128> {
+        self.updated_ms
+    }
 }
 #[derive(Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -31,6 +41,8 @@ pub struct WorkspaceMetadata {
     pub entries: HashMap<String, EntryMetadata>,
     #[serde(default)]
     pub tags: HashMap<String, String>,
+    #[serde(default)]
+    pub manual_order: HashMap<String, Vec<String>>,
 }
 
 pub fn read_metadata(root: &Path) -> Result<WorkspaceMetadata, String> {
@@ -45,13 +57,23 @@ pub fn read_metadata(root: &Path) -> Result<WorkspaceMetadata, String> {
     serde_json::from_str(&content).map_err(|e| e.to_string())
 }
 
-pub fn update_metadata(
-    root: &Path,
-    path: &str,
-    metadata: EntryMetadata,
-) -> Result<(), String> {
+pub fn update_metadata(root: &Path, path: &str, metadata: EntryMetadata) -> Result<(), String> {
     let mut store = read_metadata(root)?;
     store.entries.insert(path.to_owned(), metadata);
+    write_metadata(root, &store)
+}
+
+pub fn append_manual_order(root: &Path, path: &str) -> Result<(), String> {
+    let mut store = read_metadata(root)?;
+    let parent = Path::new(path)
+        .parent()
+        .unwrap_or(Path::new(""))
+        .to_string_lossy()
+        .replace('\\', "/");
+    let order = store.manual_order.entry(parent).or_default();
+    if !order.iter().any(|item| item == path) {
+        order.push(path.to_owned());
+    }
     write_metadata(root, &store)
 }
 

@@ -16,6 +16,8 @@ const entries: Entry[] = [
 function renderTree(onMove: (source: string, destination: string) => Promise<boolean>) {
   return render(<FileTree
     entries={entries}
+    manualOrder={{}}
+    sort="name"
     selected=""
     selectedFolder=""
     focus="note"
@@ -27,6 +29,7 @@ function renderTree(onMove: (source: string, destination: string) => Promise<boo
     onFolderSelect={vi.fn()}
     onEntryContext={vi.fn()}
     onMove={onMove}
+    onReorder={vi.fn()}
   />);
 }
 

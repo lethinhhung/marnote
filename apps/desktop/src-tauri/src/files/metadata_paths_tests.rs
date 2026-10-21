@@ -1,6 +1,10 @@
 use super::{file_create_markdown, file_delete, file_move, file_update_markdown};
 use crate::metadata;
-use std::{fs, path::PathBuf, sync::atomic::{AtomicU64, Ordering}};
+use std::{
+    fs,
+    path::PathBuf,
+    sync::atomic::{AtomicU64, Ordering},
+};
 
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
@@ -46,9 +50,12 @@ fn moving_and_deleting_folder_metadata_rebases_then_removes_descendants() {
 #[test]
 fn rebase_changes_only_matching_path_prefixes() {
     let store = metadata::WorkspaceMetadata {
-        entries: [("old/a.md".into(), metadata::EntryMetadata::default()),
-            ("older/a.md".into(), metadata::EntryMetadata::default())].into(),
-        ..Default::default()
+        entries: [
+            ("old/a.md".into(), metadata::EntryMetadata::default()),
+            ("older/a.md".into(), metadata::EntryMetadata::default()),
+        ]
+        .into(),
+        ..Default::default()..Default::default()
     };
     let result = super::metadata_paths::rebase_metadata_paths(&store, "old", "new");
     assert!(result.contains_key("new/a.md"));
@@ -58,10 +65,16 @@ fn rebase_changes_only_matching_path_prefixes() {
 #[test]
 fn delete_filter_removes_exact_path_and_descendants() {
     let store = metadata::WorkspaceMetadata {
-        entries: [("folder".into(), metadata::EntryMetadata::default()),
+        entries: [
+            ("folder".into(), metadata::EntryMetadata::default()),
             ("folder/note.md".into(), metadata::EntryMetadata::default()),
-            ("folderish/note.md".into(), metadata::EntryMetadata::default())].into(),
-        ..Default::default()
+            (
+                "folderish/note.md".into(),
+                metadata::EntryMetadata::default(),
+            ),
+        ]
+        .into(),
+        ..Default::default()..Default::default()
     };
     let result = super::metadata_paths::filter_metadata_for_delete(&store, "folder");
     assert_eq!(result.len(), 1);
