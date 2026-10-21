@@ -46,7 +46,10 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear }
   useEffect(() => {
     if (!tree || loadedRoot !== tree.path || restored.current !== tree.path) return;
     const available = new Set(notePaths(tree.entries));
-    setTabs(current => current.filter(tab => available.has(tab)));
+    setTabs(current => {
+      const valid = current.filter(tab => available.has(tab));
+      return valid.length === current.length ? current : valid;
+    });
     if (path && note) {
       setTabs(current => current.includes(path) ? current : [...current, path]);
       recent.current = [...recent.current.filter(item => item !== path), path];
