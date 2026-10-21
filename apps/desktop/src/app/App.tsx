@@ -48,6 +48,7 @@ export function App() {
   const workspace = useWorkspace();
   const wideContent = useWideContent();
   const explorer = useExplorerLayout();
+  const [explorerPeek, setExplorerPeek] = useState(false);
   useEffect(() => { void workspace.openLastOrDefault(); }, []);
   const [source, setSource] = useState(false);
   const [footerTarget, setFooterTarget] = useState<{ path: string; kind: "note" | "folder" }>({ path: "", kind: "note" });
@@ -66,11 +67,13 @@ export function App() {
   });
   const noteTabs = useNoteTabs({ tree: workspace.tree, note: workspace.note, draft, setDraft, save: saveNow, select: workspace.select, clear: workspace.clearNote });
   const toggleExplorer = () => {
+    setExplorerPeek(false);
     if (!explorer.collapsed && document.querySelector("#workspace-explorer")?.contains(document.activeElement)) {
       document.querySelector<HTMLButtonElement>(".header-explorer-toggle")?.focus();
     }
     explorer.toggle();
   };
+  useEffect(() => { const close = (event: KeyboardEvent) => { if (event.key === "Escape") setExplorerPeek(false); }; window.addEventListener("keydown", close); return () => window.removeEventListener("keydown", close); }, []);
   useEffect(() => {
     if (!path || !workspace.note) return;
     const timer = window.setInterval(() => { void readFile(workspace.tree?.path || "", path).then(value => { if (isExternalConflict(value.content, workspace.note?.content || "", draft)) setExternal(value.content); }).catch(error => workspace.setError(String(error))); }, 2500);
@@ -99,7 +102,7 @@ export function App() {
   const tagUsageCounts = useMemo(() => countTagUsage(workspace.tree?.entries), [workspace.tree]);
   return <main className="app-shell">
     <HeaderBar tree={workspace.tree} path={path} content={draft} theme={theme} source={source} explorerCollapsed={explorer.collapsed} onToggleExplorer={toggleExplorer} toggleTheme={toggleTheme} onToggleSource={() => setSource(value => !value)} onSelect={entry => { void noteTabs.selectTab(entry.path); }} />
-    <div className="app-layout"><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} recent={workspace.recent} width={explorer.width} collapsed={explorer.collapsed} trash={workspace.trash} onListTrash={workspace.refreshTrash} onRestoreTrash={workspace.restore} onEmptyTrash={workspace.empty} onDefault={async () => { if (await noteTabs.saveCurrent()) workspace.openDefault(); }} selected={path} onOpen={async target => { if (await noteTabs.saveCurrent()) workspace.open(target); }} onSelect={entry => { void noteTabs.selectTab(entry.path); }} onTargetChange={(target, kind) => setFooterTarget({ path: target, kind })} onCreate={async target => { if (await noteTabs.saveCurrent()) workspace.create(target); }} onCreateFolder={workspace.createDirectory} onRename={workspace.rename} onDelete={workspace.remove} onMove={workspace.move} onReorder={workspace.reorder} onUpdateMetadata={workspace.updateMetadata} /><ExplorerSplitter width={explorer.width} collapsed={explorer.collapsed} onResize={explorer.resize} onToggle={toggleExplorer} />
+    <div className={`app-layout explorer-layout${explorer.collapsed ? " explorer-layout-compact" : ""}`}><div className={`explorer-dock${explorer.collapsed ? " is-collapsed" : ""}`} style={{ width: explorer.collapsed ? 48 : explorer.width, flexBasis: explorer.collapsed ? 48 : explorer.width }} onPointerEnter={() => explorer.collapsed && setExplorerPeek(true)} onPointerLeave={() => explorer.collapsed && setExplorerPeek(false)} onFocusCapture={() => explorer.collapsed && setExplorerPeek(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setExplorerPeek(false); }}><WorkspaceSidebar key={workspace.tree?.path || "empty"} tree={workspace.tree} recent={workspace.recent} width={explorer.width} collapsed={explorer.collapsed} peekOpen={explorerPeek} trash={workspace.trash} onListTrash={workspace.refreshTrash} onRestoreTrash={workspace.restore} onEmptyTrash={workspace.empty} onDefault={async () => { if (await noteTabs.saveCurrent()) workspace.openDefault(); }} selected={path} onOpen={async target => { if (await noteTabs.saveCurrent()) workspace.open(target); }} onSelect={entry => { void noteTabs.selectTab(entry.path); }} onTargetChange={(target, kind) => setFooterTarget({ path: target, kind })} onCreate={async target => { if (await noteTabs.saveCurrent()) workspace.create(target); }} onCreateFolder={workspace.createDirectory} onRename={workspace.rename} onDelete={workspace.remove} onMove={workspace.move} onReorder={workspace.reorder} onUpdateMetadata={workspace.updateMetadata} /><ExplorerSplitter width={explorer.width} collapsed={explorer.collapsed} onResize={explorer.resize} onToggle={toggleExplorer} /></div>
       <section className="workspace" onPointerDown={event => { if (workspace.note && (event.target as HTMLElement).closest(".editor-canvas")) document.dispatchEvent(new CustomEvent("marnote-focus-note")); }}>
         {noteTabs.tabs.length > 0 && <NoteTabs paths={noteTabs.tabs} icons={tabIcons} dirtyPath={path && (saveStatus !== "saved" || draft !== workspace.note?.content) ? path : ""} activePath={path} canCreate={!!workspace.tree} onSelect={target => { void noteTabs.selectTab(target); }} onClose={target => { void noteTabs.closeTab(target); }} onCloseOthers={target => { void noteTabs.closeOthers(target); }} onCloseAll={() => { void noteTabs.closeAll(); }} onCreate={() => { void noteTabs.create(); }} onReorder={noteTabs.reorder} />}
         {workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}{external !== null && <div className="status-banner conflict" role="status">This file changed outside Marnote. <button onClick={() => { workspace.acceptExternal(path, external); noteTabs.updateDraft(external); setExternal(null); }}>Load external version</button><button onClick={() => { workspace.acceptExternal(path, external); setExternal(null); }}>Keep mine</button></div>}

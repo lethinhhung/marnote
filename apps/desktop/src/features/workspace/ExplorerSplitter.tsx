@@ -1,4 +1,5 @@
 import { useEffect, useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { PanelLeftOpen } from "lucide-react";
 
 type Props = { width: number; collapsed: boolean; onResize: (width: number) => void; onToggle: () => void };
 
@@ -22,6 +23,7 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
   const pointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     start.current = { x: event.clientX, width };
+    if (collapsed) onToggle();
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const pointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -38,5 +40,6 @@ export function ExplorerSplitter({ width, collapsed, onResize, onToggle }: Props
       resizeTo(width + (event.key === "ArrowRight" ? step : -step));
     }
   };
-  return <div className="explorer-splitter" role="separator" aria-label="Resize Explorer" aria-orientation="vertical" aria-controls="workspace-explorer" aria-valuenow={collapsed ? 0 : width} aria-valuemin={0} aria-valuemax={limits().max} tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={() => { start.current = null; }} onPointerCancel={() => { start.current = null; }} onKeyDown={keyDown} />;
+  if (collapsed) return <button className="explorer-collapsed-icon" type="button" onClick={onToggle} aria-label="Expand Explorer" aria-controls="workspace-explorer" title="Expand Explorer"><PanelLeftOpen size={17} /></button>;
+  return <div className="explorer-splitter" role="separator" aria-label="Resize Explorer" aria-orientation="vertical" aria-controls="workspace-explorer" aria-valuenow={width} aria-valuemin={limits().min} aria-valuemax={limits().max} tabIndex={0} onPointerDown={pointerDown} onPointerMove={pointerMove} onPointerUp={() => { start.current = null; }} onPointerCancel={() => { start.current = null; }} onKeyDown={keyDown} />;
 }

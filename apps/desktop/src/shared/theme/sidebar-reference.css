@@ -1,6 +1,6 @@
 .app-shell .sidebar.sidebar { width: 256px; flex: 0 0 256px; padding: 0; border-color: #e5e2dc; background: #f8f7f4; color: #292c27; }
 .app-shell .explorer-splitter::after { background: #e5e2dc; }
-.app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 0; overflow: auto; padding: 12px; }
+.app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 0; overflow: hidden; padding: 12px; }
 .app-shell .sidebar .default-workspace { width: 100%; min-height: 36px; justify-content: flex-start; gap: 8px; margin: 0; padding: 8px 12px; border-color: #e2dfd8; border-radius: 8px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 600; letter-spacing: -.02em; box-shadow: 0 1px 2px #292c2708; }
 .app-shell .sidebar .default-workspace svg { color: #526b58; }
 .app-shell .sidebar-workspaces { display: grid; gap: 6px; }
@@ -22,7 +22,7 @@
 .app-shell .sidebar .sidebar-heading .explorer-sort:focus-visible { outline: 2px solid #79927b; outline-offset: 1px; }
 .app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: #fffdf9; color: #292c27; }
 .app-shell .sidebar .file-tree, .app-shell .sidebar .file-tree ul { margin: 0; padding: 0; list-style: none; }
-.app-shell .sidebar .file-tree { position: relative; min-height: 0; overflow: visible; color: #292c27; font-size: 12px; }
+.app-shell .sidebar .file-tree { position: relative; flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; color: #292c27; font-size: 12px; }
 .app-shell .sidebar .file-tree .tree-children { margin: 2px 0 2px 16px; padding-left: 8px; border-left: 1px solid #eae7e1; }
 .app-shell .sidebar .file-tree > li + li, .app-shell .sidebar .tree-children > li + li { margin-top: 4px; }
 .app-shell .sidebar .tree-item { position: relative; isolation: isolate; width: 100%; height: 28px; gap: 6px; padding-right: 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #454a43; font-size: 12px; font-weight: 400; line-height: 16px; }
