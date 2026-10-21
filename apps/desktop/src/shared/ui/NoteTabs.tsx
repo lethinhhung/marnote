@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { File, Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, File, Plus, X } from "lucide-react";
 import type { PointerEvent as ReactPointerEvent, ReactNode } from "react";
 
 type Props = { paths: string[]; icons?: Record<string, ReactNode>; dirtyPath?: string; activePath: string; onSelect: (path: string) => void; onClose: (path: string) => void; onCloseOthers: (path: string) => void; onCloseAll: () => void; onCreate: () => void; onReorder: (from: string, to: string) => void; canCreate: boolean };
@@ -9,6 +9,8 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
   const [menu, setMenu] = useState<Menu>(null);
   const [dragging, setDragging] = useState("");
   const [dropTarget, setDropTarget] = useState("");
+  const [edges, setEdges] = useState({ left: false, right: false });
+  const list = useRef<HTMLDivElement>(null);
   const stopDrag = useRef<(() => void) | null>(null);
   const suppressClick = useRef(false);
   useEffect(() => {
@@ -17,6 +19,16 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
     document.addEventListener("pointerdown", dismiss); document.addEventListener("keydown", key);
     return () => { document.removeEventListener("pointerdown", dismiss); document.removeEventListener("keydown", key); stopDrag.current?.(); };
   }, []);
+  useEffect(() => {
+    const element = list.current;
+    if (!element) return;
+    const update = () => setEdges({ left: element.scrollLeft > 2, right: element.scrollLeft + element.clientWidth < element.scrollWidth - 2 });
+    update();
+    element.addEventListener("scroll", update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => { element.removeEventListener("scroll", update); observer.disconnect(); };
+  }, [paths.length]);
   const beginDrag = (event: ReactPointerEvent<HTMLDivElement>, path: string) => {
     if (event.button !== 0 || event.pointerType === "touch" || (event.target as HTMLElement).closest(".note-tab-close")) return;
     const origin = { x: event.clientX, y: event.clientY };
@@ -44,7 +56,7 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
   };
   const showMenu = (path: string, x: number, y: number) => { setMenu({ path, x: Math.max(8, Math.min(x, window.innerWidth - 190)), y: Math.max(8, Math.min(y, window.innerHeight - 120)) }); };
   return <nav className="note-tabs" aria-label="Open notes" onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
-    <div className="note-tabs-list" role="tablist">
+    <div className="note-tabs-list" ref={list} role="tablist">
       {paths.map(path => {
         const title = path.split("/").pop() || path;
         const active = path === activePath;
@@ -58,6 +70,8 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
       })}
       <button className="note-tab-add" type="button" aria-label="New note" title="New note" disabled={!canCreate} onClick={onCreate}><Plus size={15} /></button>
     </div>
+    {edges.left && <button className="note-tabs-edge left" type="button" aria-label="Show previous tabs" onClick={() => list.current?.scrollBy({ left: -220, behavior: "smooth" })}><ChevronLeft size={15} /></button>}
+    {edges.right && <button className="note-tabs-edge right" type="button" aria-label="Show more tabs" onClick={() => list.current?.scrollBy({ left: 220, behavior: "smooth" })}><ChevronRight size={15} /></button>}
     {menu && <div className="note-tab-menu" role="menu" style={{ left: menu.x, top: menu.y }} onPointerDown={event => event.stopPropagation()}>
       <button role="menuitem" onClick={() => { onClose(menu.path); setMenu(null); }}>Close</button>
       <button role="menuitem" onClick={() => { onCloseOthers(menu.path); setMenu(null); }}>Close others</button>

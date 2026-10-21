@@ -1,4 +1,4 @@
-.note-tabs { width: 100%; max-width: 100%; min-width: 0; height: 36px; flex: 0 0 36px; align-self: stretch; overflow: hidden; border-bottom: 1px solid #e9e8e3; background: #f8f7f4; user-select: none; -webkit-user-select: none; }
+.note-tabs { position: relative; width: 100%; max-width: 100%; min-width: 0; height: 36px; flex: 0 0 36px; align-self: stretch; overflow: hidden; border-bottom: 1px solid #e9e8e3; background: #f8f7f4; user-select: none; -webkit-user-select: none; }
 .note-tabs-list { display: flex; align-items: center; gap: 4px; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; height: 36px; padding: 0 8px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
 .note-tabs-list::-webkit-scrollbar { display: none; }
 .note-tab { position: relative; display: flex; align-items: center; flex: 0 0 auto; min-width: 145px; max-width: 230px; height: 30px; align-self: flex-end; border: 1px solid transparent; border-bottom: 0; border-radius: 6px 6px 0 0; background: transparent; color: #92948c; font-weight: 400; user-select: none; -webkit-user-select: none; transition: background-color .15s, color .15s, box-shadow .15s, transform .15s; }
@@ -23,9 +23,17 @@
 .note-tab:hover .note-tab-close, .note-tab.active .note-tab-close, .note-tab-close:focus-visible { opacity: 1; }
 .note-tab-close:hover, .note-tab-add:hover { background: #eaeae5; color: #435b48; }
 .note-tab-add:disabled { opacity: .35; cursor: default; }
-.note-tab-add { align-self: center; flex-basis: 24px; width: 24px; height: 24px; margin: 0 0 0 5px; transform: translateY(3px); }
+.note-tabs-edge { position: absolute; z-index: 4; top: 0; display: grid; place-items: center; width: 30px; height: 35px; padding: 0; border: 0; color: #526b58; cursor: pointer; }
+.note-tabs-edge.left { left: 0; background: linear-gradient(90deg, #f8f7f4 60%, transparent); }
+.note-tabs-edge.right { right: 0; background: linear-gradient(270deg, #f8f7f4 60%, transparent); }
+.note-tabs-edge:hover { color: #292c27; }
+.note-tab-add { align-self: center; flex: 0 0 24px; width: 24px; height: 24px; margin: 0 0 0 5px; transform: translateY(3px); }
 .note-tab button:focus-visible { outline: 2px solid #526b58; outline-offset: -2px; }
 :root[data-theme="dark"] .note-tabs { border-color: #292d29; background: #161816; }
+:root[data-theme="dark"] .note-tabs-edge { color: #8fbd96; }
+:root[data-theme="dark"] .note-tabs-edge.left { background: linear-gradient(90deg, #161816 60%, transparent); }
+:root[data-theme="dark"] .note-tabs-edge.right { background: linear-gradient(270deg, #161816 60%, transparent); }
+:root[data-theme="dark"] .note-tab-add { background: #161816; }
 :root[data-theme="dark"] .note-tab { border-color: transparent; background: transparent; color: #8d948b; }
 :root[data-theme="dark"] .note-tab:not(.active):hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .note-tab.active { background: #1c1e1c; color: #f0f3ec; border-top: 2px solid #63806a; }
