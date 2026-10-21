@@ -7,4 +7,6 @@
 - The **+** button creates a note in the current note's parent folder.
 - Restore open tabs and drafts after restart. Allow tabs to be reordered.
 - Right-click a tab for **Close**, **Close others**, and **Close all**. Apply normal save safeguards to each action.
-- Adapt the tab bar to the window width; allow horizontal scrolling when tabs do not fit.
+- Keep the tab bar within the window; scroll horizontally when tabs overflow.
+- Show left/right chevrons when tabs are hidden; clicking a chevron scrolls the bar.
+- Keep **+** at the end of the tab sequence so it scrolls with the tabs.
