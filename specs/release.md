@@ -13,6 +13,8 @@
 - Prepare a release by synchronizing versions and updating `CHANGELOG.md`, then merge the release commit to `main` and tag it.
 - Build platform installers in GitHub Actions and attach them to a GitHub Release. Keep prereleases marked as such.
 - Run the existing CI checks and desktop build successfully before publishing.
+- Sign macOS app bundles ad hoc (`APPLE_SIGNING_IDENTITY=-`) so downloaded builds have a valid code signature without paid Apple Developer credentials. These builds are not notarized; macOS may require users to approve the first launch in Privacy & Security settings.
+- Repair a published macOS release by dispatching the Release workflow from `main` with its existing tag. This rebuilds and replaces only the macOS assets; the other platform assets stay in place.
 
 ## Release Notes and README
 
