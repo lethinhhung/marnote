@@ -8,4 +8,16 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("/node_modules/@tiptap/pm/")) return "prosemirror";
+          if (id.includes("/node_modules/@tiptap/core/")) return "tiptap-core";
+          if (id.includes("/node_modules/@tiptap/")) return "tiptap";
+          if (id.includes("/node_modules/prosemirror-")) return "prosemirror";
+        },
+      },
+    },
+  },
 });

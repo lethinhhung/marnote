@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import FullEmojiPicker from "emoji-picker-react";
 import type { ThemeValue } from "emoji-picker-react";
 import { X } from "lucide-react";
+
+const FullEmojiPicker = lazy(() => import("emoji-picker-react"));
 
 type Props = { value?: string; onChange: (emoji: string) => void; label?: string; fallback?: ReactNode };
 type Position = { top: number; left: number; width: number; height: number };
@@ -52,7 +53,7 @@ export function EmojiPicker({ value, onChange, label = "Choose emoji", fallback 
     <button type="button" aria-label={label} title={label} aria-expanded={open} onClick={() => setOpen(current => !current)}>{value || fallback}</button>
     {open && position && createPortal(<div className="emoji-picker-popover" ref={panel} style={position} onClick={event => event.stopPropagation()}>
       <div className="emoji-picker-toolbar"><button type="button" className="emoji-picker-remove" onClick={() => { onChange(""); setOpen(false); }}><X size={12} />Remove emoji</button></div>
-      <FullEmojiPicker width={position.width} height={Math.max(240, position.height - 34)} theme={theme} style={{ "--epr-header-padding": "5px 8px", "--epr-category-navigation-button-size": "27px" } as CSSProperties} onEmojiClick={emoji => { onChange(emoji.emoji); setOpen(false); }} />
+      <Suspense fallback={<div className="emoji-picker-loading" aria-label="Loading emoji picker" />}><FullEmojiPicker width={position.width} height={Math.max(240, position.height - 34)} theme={theme} style={{ "--epr-header-padding": "5px 8px", "--epr-category-navigation-button-size": "27px" } as CSSProperties} onEmojiClick={emoji => { onChange(emoji.emoji); setOpen(false); }} /></Suspense>
     </div>, document.body)}
   </span>;
 }
