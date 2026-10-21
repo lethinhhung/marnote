@@ -1,0 +1,69 @@
+.app-shell .sidebar.sidebar { width: 256px; flex: 0 0 256px; padding: 0; border-color: #e5e2dc; background: #f8f7f4; color: #292c27; }
+.app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 0; overflow: auto; padding: 12px; }
+.app-shell .sidebar .default-workspace { width: 100%; min-height: 36px; justify-content: flex-start; gap: 8px; margin: 0; padding: 8px 12px; border-color: #e2dfd8; border-radius: 8px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 600; letter-spacing: -.02em; box-shadow: 0 1px 2px #292c2708; }
+.app-shell .sidebar .default-workspace svg { color: #526b58; }
+.app-shell .sidebar-workspaces { display: grid; gap: 6px; }
+.app-shell .sidebar .recent-workspaces { display: grid; gap: 6px; margin: 0; padding: 0 4px; color: #92948c; font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.app-shell .sidebar .recent-workspace-select { position: relative; display: block; }
+.app-shell .sidebar .recent-workspaces select { width: 100%; min-height: 30px; appearance: none; padding: 5px 28px 5px 10px; border: 1px solid #e5e2dc; border-radius: 6px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 500; box-shadow: 0 1px 2px #292c2708; cursor: pointer; }
+.app-shell .sidebar .recent-workspace-select > svg { position: absolute; top: 50%; right: 8px; color: #92948c; pointer-events: none; transform: translateY(-50%); }
+.app-shell .sidebar .workspace-open { display: grid; gap: 6px; padding: 0; border: 0; }
+.app-shell .sidebar .open-workspace { min-height: 30px; justify-content: center; gap: 6px; padding: 5px 10px; border: 1px dashed #e5e2dc; border-radius: 6px; background: transparent; color: #454a43; font-size: 12px; font-weight: 500; }
+.app-shell .sidebar .open-workspace svg { color: #92948c; }
+.app-shell .sidebar .open-workspace:hover { border-color: #92948c; background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .sidebar-tree-section { display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: 8px; }
+.app-shell .sidebar .sidebar-heading { min-height: 20px; justify-content: space-between; margin: 0 4px 8px; color: #92948c; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
+.app-shell .sidebar .sidebar-heading div { gap: 2px; color: #92948c; }
+.app-shell .sidebar .sidebar-heading button { width: 20px; height: 20px; color: #92948c; }
+.app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .file-tree, .app-shell .sidebar .file-tree ul { margin: 0; padding: 0; list-style: none; }
+.app-shell .sidebar .file-tree { position: relative; min-height: 0; overflow: visible; color: #292c27; font-size: 12px; }
+.app-shell .sidebar .file-tree .tree-children { margin: 2px 0 2px 16px; padding-left: 8px; border-left: 1px solid #eae7e1; }
+.app-shell .sidebar .file-tree > li + li, .app-shell .sidebar .tree-children > li + li { margin-top: 4px; }
+.app-shell .sidebar .tree-item { position: relative; isolation: isolate; width: 100%; height: 28px; gap: 6px; padding-right: 6px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: #454a43; font-size: 12px; font-weight: 400; line-height: 16px; }
+.app-shell .sidebar .tree-item[data-kind="directory"] { height: 28px; font-weight: 500; }
+.app-shell .sidebar .tree-item:hover { background: #fffdf9; color: #292c27; }
+.app-shell .sidebar .tree-item.selected { border-color: #526b5833; background: #eef3f0; color: #526b58; box-shadow: 0 1px 2px #292c2708; }
+.app-shell .sidebar .tree-item.selected .tree-item-name { color: #292c27; font-weight: 600; }
+.app-shell .sidebar .tree-item.selected-folder { border-color: #526b5833; background: #eef3f0; color: #526b58; box-shadow: 0 1px 2px #292c2708; }
+.app-shell .sidebar .tree-item.dragging { opacity: .42; }
+.app-shell .sidebar .tree-item.drop-target { border-color: #526b58; background: #e8efe6; box-shadow: inset 0 0 0 1px #526b5833; }
+.app-shell .sidebar .tree-item.drop-target::after { position: absolute; right: 3px; bottom: -3px; left: 3px; height: 3px; border-radius: 3px; background: #526b58; box-shadow: 0 0 0 2px #526b5826; content: ""; pointer-events: none; }
+.app-shell .sidebar .tree-item.focus-pulse { position: relative; z-index: 2; outline: 1px solid #65846a; outline-offset: 1px; background: #e8efe6; box-shadow: 0 0 0 2px #6aaf6a30, 0 0 8px 3px #6aaf6a24; animation: explorer-folder-focus 2s ease-in-out 2; }
+@keyframes explorer-folder-focus { 0%, 100% { box-shadow: 0 0 0 2px #6aaf6a30, 0 0 8px 3px #6aaf6a24; } 50% { box-shadow: 0 0 0 4px #6aaf6a55, 0 0 12px 5px #6aaf6a40; } }
+.app-shell .sidebar .tree-drop-blank-line { position: absolute; z-index: 4; right: 4px; left: 4px; height: 3px; border-radius: 3px; background: #526b58; box-shadow: 0 0 0 2px #526b5826; list-style: none; pointer-events: none; }
+.app-shell .sidebar .file-tree.is-dragging, .app-shell .sidebar .file-tree.is-dragging * { cursor: grabbing !important; }
+.app-shell .sidebar .tree-indent { width: 10px; flex-basis: 10px; }
+.app-shell .sidebar .tree-item > svg { flex: 0 0 14px; color: #92948c; }
+.app-shell .sidebar .tree-icon-emoji { flex: 0 0 16px; font-size: 14px; text-align: center; line-height: 1; }
+.app-shell .sidebar .tree-folder-tags { flex: 0 1 auto; gap: 3px; margin-left: auto; }
+.app-shell .sidebar .tree-folder-timestamps { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); clip-path: inset(50%); white-space: nowrap; }
+.app-shell .sidebar .tree-folder-tag { max-width: 58px; overflow: hidden; padding: 2px 5px; border: 1px solid color-mix(in srgb, var(--tag-accent, #526b58) 25%, #e5e2dc); border-radius: 4px; background: var(--tag-light-background, #eff1eb); color: var(--tag-light-color, #435c48); font-size: 10px; font-weight: 500; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
+.app-shell .sidebar .tree-item.selected .tree-folder-tag { border-color: color-mix(in srgb, var(--tag-accent, #526b58) 35%, #e5e2dc); background: var(--tag-light-background, #eff1eb); }
+.app-shell .sidebar .tree-favorite { flex: 0 0 12px; color: #de9e26; }
+.app-shell .sidebar .sidebar-empty { padding: 8px 4px; color: #92948c; font-size: 12px; }
+.app-shell .sidebar .tree-edit-row { height: 28px; }
+.app-shell .sidebar .tree-edit-row input { height: 24px; font-size: 12px; }
+.app-shell .sidebar .folder-context-menu { border-color: #e5e2dc; background: #fffdf9; }
+.app-shell .sidebar .folder-context-menu button:hover { background: #eef3f0; color: #526b58; }
+:root[data-theme="dark"] .app-shell .sidebar.sidebar { border-color: #292d29; background: #161816; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace { border-color: #2f352f; background: #202420; color: #f0f3ec; }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace svg { color: #4edea3; }
+:root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .recent-workspace-select > svg { color: #8d948b; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: #292d29; background: transparent; color: #8d948b; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace:hover { border-color: rgba(141,148,139,.5); background: #202320; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace svg { color: #8d948b; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-children { border-color: #292d29; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item { color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item:hover { background: #242824; border-color: #384339; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected { background: #242824; border-color: #384339; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected-folder { border-color: #3c4a42; background: #202320; color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.drop-target { border-color: #6f9b78; background: #29352b; box-shadow: inset 0 0 0 1px #6f9b7840; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.drop-target::after { background: #8fbd96; box-shadow: 0 0 0 2px #8fbd9633; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.focus-pulse { outline-color: #739779; background: #283329; box-shadow: 0 0 0 2px #8fbd9630, 0 0 8px 3px #8fbd9624; animation-name: explorer-folder-focus-dark; }
+@keyframes explorer-folder-focus-dark { 0%, 100% { box-shadow: 0 0 0 2px #8fbd9630, 0 0 8px 3px #8fbd9624; } 50% { box-shadow: 0 0 0 4px #8fbd9655, 0 0 12px 5px #8fbd9640; } }
+@media (prefers-reduced-motion: reduce) { .app-shell .sidebar .tree-item.focus-pulse { animation: none; outline: 1px solid #65846a; background: #e8efe6; } :root[data-theme="dark"] .app-shell .sidebar .tree-item.focus-pulse { outline-color: #739779; background: #283329; } }
+:root[data-theme="dark"] .app-shell .sidebar .tree-drop-blank-line { background: #8fbd96; box-shadow: 0 0 0 2px #8fbd9633; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected .tree-item-name { color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-folder-tag { border-color: color-mix(in srgb, var(--tag-accent, #333a33) 35%, #333a33); background: var(--tag-dark-background, #252a25); color: var(--tag-dark-color, #e2e5de); }

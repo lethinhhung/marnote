@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "pnpm --filter @marnote/desktop dev",
     "build": "pnpm -r build",
-    "test": "pnpm -r test",
+    "test": "pnpm -r test && pnpm --filter @marnote/desktop test:rust",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "check": "pnpm lint && pnpm typecheck && pnpm test"

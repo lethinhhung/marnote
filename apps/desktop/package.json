@@ -10,6 +10,7 @@
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
     "test": "vitest run --passWithNoTests",
+    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src vite.config.ts"
   },
@@ -17,6 +18,8 @@
     "@marnote/core": "workspace:*",
     "@tauri-apps/api": "^2.2.0",
     "@tauri-apps/plugin-dialog": "^2.8.3",
+    "@tauri-apps/plugin-shell": "^2.2.0",
+    "@tiptap/extension-code-block": "^3.32.0",
     "@tiptap/extension-drag-handle": "^3.32.0",
     "@tiptap/extension-drag-handle-react": "^3.32.0",
     "@tiptap/extension-link": "^3.32.0",
@@ -28,15 +31,21 @@
     "@tiptap/pm": "^3.32.0",
     "@tiptap/react": "^3.32.0",
     "@tiptap/starter-kit": "^3.32.0",
+    "emoji-picker-react": "^5.0.0",
     "lucide-react": "^1.58.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.2.5",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^6.0.5"
+    "jsdom": "^25.0.1",
+    "vite": "^6.0.5",
+    "vitest": "^2.1.8"
   }
 }

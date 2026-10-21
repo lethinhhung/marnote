@@ -3,10 +3,19 @@ export type WorkspaceFile = {
   kind?: "file" | "directory";
 };
 
+export type WorkspaceEntryMetadata = {
+  tags?: string[];
+  icon?: string;
+  favorite?: boolean;
+  createdMs?: number;
+  updatedMs?: number;
+};
+
 export type WorkspaceNode = {
   name: string;
   path: string;
   kind: "file" | "directory";
+  metadata?: WorkspaceEntryMetadata;
   children: WorkspaceNode[];
 };
 

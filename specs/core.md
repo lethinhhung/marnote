@@ -46,6 +46,7 @@
   - Delete.
 - Essential note content must not depend on an internal database.
 - App-specific metadata should remain minimal.
+- Support optional tags, emoji icons, favorite status, and created/updated timestamps for notes and folders. Persist metadata locally in a portable, rebuildable form and expose it through MCP.
 - Existing Markdown files must remain usable outside Marnote.
 - External file changes should be detected and safely reloaded.
 
