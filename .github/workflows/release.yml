@@ -13,9 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
       - uses: pnpm/action-setup@v4
         with:
           version: 9.15.0
@@ -26,7 +23,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Check tag, versions, and release notes
         run: |
-          test "$(git cat-file -t "$GITHUB_REF")" = tag
+          git fetch --no-tags origin "refs/tags/${GITHUB_REF_NAME}:refs/tags/release-validation"
+          test "$(git cat-file -t refs/tags/release-validation)" = tag
           node scripts/check-release-version.mjs "${GITHUB_REF_NAME}"
           node scripts/release-notes.mjs "${GITHUB_REF_NAME}"
       - name: Install Linux build dependencies
