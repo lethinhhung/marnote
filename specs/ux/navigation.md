@@ -9,7 +9,9 @@
 
 - Tree items, tabs, and workspace links navigate to notes; folder links focus the folder.
 - Closing the active tab selects the most recent remaining tab. Closing the last shows the empty-note prompt.
-- `⌘K` / `Ctrl+K` focuses title/path search; Enter opens the first result and Escape closes it. Header controls toggle theme and Markdown source view.
+- `⌘K` / `Ctrl+K` opens a global palette with grouped note/file, command, and tag results. Note results show their location and matching excerpt; notes can open in a new tab.
+- Arrow keys select results, Enter opens or runs the selection, and Escape closes the palette. Enter defaults to the first result or note creation.
+- Header controls toggle theme and Markdown source view.
 
 ## Saving
 
@@ -18,4 +20,4 @@
 
 ## Gaps
 
-- Search has no folder results or commands. Tab and tree keyboard navigation shortcuts are absent.
+- Search currently covers titles and paths only; content search, folder results, commands, tags, and backlinks remain unimplemented. Tab and tree keyboard navigation shortcuts are absent.
