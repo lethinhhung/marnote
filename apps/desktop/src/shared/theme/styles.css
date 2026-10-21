@@ -8,7 +8,7 @@
 body { margin: 0; min-width: 320px; min-height: 100vh; overflow: hidden; }
 button, input { font: inherit; }
 .app-shell { display: grid; grid-template-rows: 36px minmax(0, 1fr) 26px; height: 100vh; height: 100dvh; overflow: hidden; background: #f8f7f4; }
-.app-layout { display: flex; min-height: 0; }
+.app-layout { display: flex; min-width: 0; min-height: 0; overflow: hidden; }
 .sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; min-height: 0; padding: 20px 8px; border-right: 1px solid #e9e8e3; background: #fdfdfb; color: #666b62; overflow: hidden; }
 .workspace-open { display: grid; gap: 8px; padding: 0 7px 17px; border-bottom: 1px solid #eeede8; }
 .open-workspace { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 7px; border: 1px solid #e8e8e1; border-radius: 6px; background: #f7f7f3; color: #596858; font-size: 11px; cursor: pointer; }
