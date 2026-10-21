@@ -60,15 +60,68 @@ jobs:
             "openrouter/poolside/laguna-s-2.1:free"
           )
           summary_file=.daily-maintenance-summary.md
+          total_input=0
+          total_output=0
+          total_reasoning=0
+          total_cache_read=0
+          total_cache_write=0
+          declare -A model_input=() model_output=() model_reasoning=() model_cache_read=() model_cache_write=()
+          models_used=()
+          collect_usage() {
+            local model="$1" log="$2" input output reasoning cache_read cache_write
+            read -r input output reasoning cache_read cache_write < <(
+              jq -Rn '[inputs | fromjson? | select(.type == "step_finish") | .part.tokens // {}] |
+                [([.[].input // 0] | add // 0), ([.[].output // 0] | add // 0),
+                 ([.[].reasoning // 0] | add // 0), ([.[].cache.read // 0] | add // 0),
+                 ([.[].cache.write // 0] | add // 0)] | @tsv' "$log"
+            )
+            if [[ -z "${model_input[$model]+x}" ]]; then
+              models_used+=("$model")
+              model_input[$model]=0 model_output[$model]=0 model_reasoning[$model]=0
+              model_cache_read[$model]=0 model_cache_write[$model]=0
+            fi
+            model_input[$model]=$((model_input[$model] + input))
+            model_output[$model]=$((model_output[$model] + output))
+            model_reasoning[$model]=$((model_reasoning[$model] + reasoning))
+            model_cache_read[$model]=$((model_cache_read[$model] + cache_read))
+            model_cache_write[$model]=$((model_cache_write[$model] + cache_write))
+            total_input=$((total_input + input))
+            total_output=$((total_output + output))
+            total_reasoning=$((total_reasoning + reasoning))
+            total_cache_read=$((total_cache_read + cache_read))
+            total_cache_write=$((total_cache_write + cache_write))
+          }
+          write_usage_summary() {
+            {
+              echo "## OpenCode usage"
+              echo "Session: ${{ matrix.session }}"
+              echo "| Model | Input | Output | Reasoning | Cache read | Cache write |"
+              echo "|---|---:|---:|---:|---:|---:|"
+              if ((${#models_used[@]})); then
+                for model in "${models_used[@]}"; do
+                  echo "| $model | ${model_input[$model]} | ${model_output[$model]} | ${model_reasoning[$model]} | ${model_cache_read[$model]} | ${model_cache_write[$model]} |"
+                done
+              else
+                echo "| No completed model steps | 0 | 0 | 0 | 0 | 0 |"
+              fi
+              echo "| **Total** | **$total_input** | **$total_output** | **$total_reasoning** | **$total_cache_read** | **$total_cache_write** |"
+              echo "Token counts are OpenCode-reported totals across completed model steps, including cache tokens."
+            } >> "$GITHUB_STEP_SUMMARY"
+          }
+          trap write_usage_summary EXIT
           for model in "${models[@]}"; do
             git reset --hard HEAD
             git clean -fd
             rm -f "$summary_file"
+            attempt_log=$(mktemp)
             echo "Trying $model"
             prompt="$(cat "$PROMPT_FILE")
 
           After completing the work, write a specific pull request summary to $summary_file. Use exactly these Markdown headings: ## Problem, ## Cause, and ## Fix. Explain the concrete problem, its likely cause, and the changes you made. Name relevant files or behavior. Avoid generic text such as 'see the changes'. Keep it concise."
-            if timeout 15m opencode run --auto --model "$model" "$prompt"; then
+            if timeout 15m opencode run --auto --format json --model "$model" "$prompt" > "$attempt_log"; then
+              cat "$attempt_log"
+              collect_usage "$model" "$attempt_log"
+              rm -f "$attempt_log"
               if [ ! -s "$summary_file" ] || \
                 ! grep -Fxq '## Problem' "$summary_file" || \
                 ! grep -Fxq '## Cause' "$summary_file" || \
@@ -91,11 +144,19 @@ jobs:
                 echo "Trying the next model after discarding this attempt"
               elif [ "$changed_files" -gt 0 ]; then
                 echo "MAINTENANCE_MODEL=$model" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_INPUT_TOKENS=$total_input" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_OUTPUT_TOKENS=$total_output" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_REASONING_TOKENS=$total_reasoning" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_CACHE_READ_TOKENS=$total_cache_read" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_CACHE_WRITE_TOKENS=$total_cache_write" >> "$GITHUB_ENV"
                 exit 0
               else
                 echo "$model completed without changes; trying next model"
               fi
             else
+              cat "$attempt_log"
+              collect_usage "$model" "$attempt_log"
+              rm -f "$attempt_log"
               echo "$model failed; trying next model"
             fi
           done
@@ -144,4 +205,5 @@ jobs:
             ## Results
             - Validation: `pnpm check` passed.
             - Model: `${{ env.MAINTENANCE_MODEL }}`
+            - OpenCode token usage across fallback attempts: input ${{ env.MAINTENANCE_INPUT_TOKENS }}, output ${{ env.MAINTENANCE_OUTPUT_TOKENS }}, reasoning ${{ env.MAINTENANCE_REASONING_TOKENS }}, cache read ${{ env.MAINTENANCE_CACHE_READ_TOKENS }}, cache write ${{ env.MAINTENANCE_CACHE_WRITE_TOKENS }}. Per-model counts are in the Actions job summary.
           base: ${{ github.event.repository.default_branch }}

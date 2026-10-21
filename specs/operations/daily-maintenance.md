@@ -13,6 +13,7 @@ Automate daily repository maintenance with GitHub Actions and OpenCode free mode
   3. `poolside/laguna-s-2.1:free` — coding-agent model specialized for software engineering.
 - Move to the next model if OpenCode fails, including rate limits, or if it succeeds without producing changes. Do not create a PR if all models fail or produce no valid changes.
 - Free endpoints are rate limited and availability can change. Recheck model IDs and pricing periodically.
+- Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not OpenRouter account quota balances.
 
 ## Schedule and Sessions
 
