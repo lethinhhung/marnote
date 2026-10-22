@@ -5,7 +5,7 @@ export function flattenEntries(entries: Entry[] = []): Entry[] {
 }
 
 export function relativeWorkspaceLink(from: string, target: Entry) {
-  const source = from.split("/").slice(0, -1);
+  const source = from.split("/").filter(Boolean).slice(0, -1);
   const destination = target.path.split("/");
   while (source.length && destination.length && source[0] === destination[0]) {
     source.shift();

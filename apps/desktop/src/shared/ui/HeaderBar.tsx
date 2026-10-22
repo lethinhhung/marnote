@@ -3,11 +3,11 @@ import { Check, ChevronDown, Copy, Eye, FileText, Moon, Search, Sun, PanelLeft }
 import { startWindowDrag } from "../../platform/window";
 import type { Entry, WorkspaceTree } from "../domain/workspace";
 import { SearchPalette } from "./SearchPalette";
-import type { CopyNoteValue } from "./searchActions";
+import type { CopyNoteValue, SearchTargetAction } from "./searchActions";
 import "./header-bar.css";
 
-type Props = { tree: WorkspaceTree | null; path: string; content: string; theme: string; source: boolean; explorerCollapsed: boolean; toggleTheme: () => void; onToggleExplorer: () => void; onToggleSource: () => void; onSelect: (entry: Entry) => void; onCreate: (title: string) => void; onCapture: () => void; onCopy: (value: CopyNoteValue) => void };
-export function HeaderBar({ tree, path, content, theme, source, explorerCollapsed, toggleTheme, onToggleExplorer, onToggleSource, onSelect, onCreate, onCapture, onCopy }: Props) {
+type Props = { tree: WorkspaceTree | null; path: string; content: string; theme: string; source: boolean; explorerCollapsed: boolean; toggleTheme: () => void; onToggleExplorer: () => void; onToggleSource: () => void; onSelect: (entry: Entry) => void; onCreate: (title: string) => void; onCapture: () => void; onCopy: (value: CopyNoteValue) => void; onQuickAction: (entry: Entry, action: SearchTargetAction, content?: string) => boolean | void };
+export function HeaderBar({ tree, path, content, theme, source, explorerCollapsed, toggleTheme, onToggleExplorer, onToggleSource, onSelect, onCreate, onCapture, onCopy, onQuickAction }: Props) {
   const [copied, setCopied] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [pathOverflow, setPathOverflow] = useState(false);
@@ -49,6 +49,6 @@ export function HeaderBar({ tree, path, content, theme, source, explorerCollapse
       <button className={source ? "header-markdown active" : "header-markdown"} type="button" onClick={onToggleSource} disabled={!path} title={path ? "Toggle Markdown source view" : "Open a note to view Markdown"} aria-pressed={source} aria-label="Toggle Markdown source view"><Eye size={14} /><span>Markdown</span></button>
       <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}>{theme === "dark" ? <Moon size={16} /> : <Sun size={16} />}</button>
     </header>
-    {searchOpen && <SearchPalette tree={tree} currentPath={path} currentContent={content} onSelect={onSelect} onCreate={onCreate} onCapture={onCapture} onCopy={onCopy} onClose={() => setSearchOpen(false)} />}
+    {searchOpen && <SearchPalette tree={tree} currentPath={path} currentContent={content} onSelect={onSelect} onCreate={onCreate} onCapture={onCapture} onCopy={onCopy} onQuickAction={onQuickAction} onClose={() => setSearchOpen(false)} />}
   </>;
 }

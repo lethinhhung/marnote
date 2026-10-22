@@ -4,19 +4,22 @@ import type { Entry, WorkspaceTree } from "../domain/workspace";
 import { readFile } from "../../platform/workspace";
 import { flattenEntries, parseSearchQuery, searchWorkspace } from "./searchNotes";
 import { loadSearchIndex, updateSearchIndexContent } from "./searchIndex";
-import type { CopyNoteValue } from "./searchActions";
+import type { CopyNoteValue, SearchTargetAction } from "./searchActions";
+import { SearchActionsMenu } from "./SearchActionsMenu";
 import "./search-palette.css";
 
-type Props = { tree: WorkspaceTree | null; currentPath: string; currentContent: string; onSelect: (entry: Entry) => void; onCreate: (title: string) => void; onCapture: () => void; onCopy: (value: CopyNoteValue) => void; onClose: () => void };
+type Props = { tree: WorkspaceTree | null; currentPath: string; currentContent: string; onSelect: (entry: Entry) => void; onCreate: (title: string) => void; onCapture: () => void; onCopy: (value: CopyNoteValue) => void; onQuickAction: (entry: Entry, action: SearchTargetAction, content?: string) => boolean | void; onClose: () => void };
 type Choice = { id: string; label: string; run: () => void; type: "note" | "folder" | "command" | "tag" | "create"; entry?: Entry; subtitle?: string; excerpt?: string; source?: string; count?: number };
 const commands = ["Quick Capture new note…", "Copy internal link to note", "Copy relative path", "Copy full path"];
 const sameGroup = (left: Choice["type"], right: Choice["type"]) => (left === "note" || left === "folder") ? right === "note" || right === "folder" : left === right;
 
-export function SearchPalette({ tree, currentPath, currentContent, onSelect, onCreate, onCapture, onCopy, onClose }: Props) {
+export function SearchPalette({ tree, currentPath, currentContent, onSelect, onCreate, onCapture, onCopy, onQuickAction, onClose }: Props) {
   const [query, setQuery] = useState("");
   const [contents, setContents] = useState<Record<string, string>>({});
   const [active, setActive] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [quickTarget, setQuickTarget] = useState<Entry | null>(null);
+  const [keyboardNavigation, setKeyboardNavigation] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const results = useRef<HTMLDivElement>(null);
   useEffect(() => { input.current?.focus(); }, []);
@@ -55,23 +58,31 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
   }, [active, choices.length]);
   const choose = (choice: Choice) => { choice.run(); if (choice.type !== "tag") onClose(); };
   const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && choices.length) { event.preventDefault(); setActive(value => (value + choices.length + (event.key === "ArrowDown" ? 1 : -1)) % choices.length); }
+    if ((event.key === "ArrowDown" || event.key === "ArrowUp") && choices.length) { event.preventDefault(); setKeyboardNavigation(true); setActive(value => (value + choices.length + (event.key === "ArrowDown" ? 1 : -1)) % choices.length); }
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && choices[active]?.entry) { event.preventDefault(); setQuickTarget(choices[active].entry!); return; }
     if (event.key === "Enter" && choices[active]) { event.preventDefault(); choose(choices[active]); }
+    if (event.key === "Escape" && quickTarget) { event.preventDefault(); event.stopPropagation(); setQuickTarget(null); input.current?.focus(); }
+  };
+  const runQuickAction = (action: SearchTargetAction) => {
+    if (!quickTarget) return;
+    if (onQuickAction(quickTarget, action, contents[quickTarget.path]) !== false) onClose();
   };
   return <div className="search-palette-backdrop" onMouseDown={event => event.target === event.currentTarget && onClose()}>
-    <section className="search-palette" role="dialog" aria-modal="true" aria-label="Search workspace">
-      <div className="search-palette-input"><Search size={20} /><input ref={input} value={query} onChange={event => setQuery(event.target.value)} onKeyDown={onKeyDown} placeholder="Search notes, files, and actions…" aria-label="Search notes, files, and actions" /><button type="button" onClick={onClose}>ESC</button></div>
-      <div ref={results} className="search-palette-results" role="listbox" aria-label="Search results">
-        {choices.map((choice, index) => <Fragment key={choice.id}>{(index === 0 || !sameGroup(choice.type, choices[index - 1].type)) && <Group title={choice.type === "note" || choice.type === "folder" ? "Notes & Files" : choice.type === "command" ? "Commands & Actions" : choice.type === "tag" ? "Tags" : "Create"} count={choice.type === "note" || choice.type === "folder" ? `${matches.notes.length + matches.folders.length} matches` : ""} />}<button type="button" role="option" aria-selected={active === index} className={`search-choice ${active === index ? "selected" : ""}`} onMouseEnter={() => setActive(index)} onClick={() => choose(choice)}>
+    <section className={`search-palette${keyboardNavigation ? " keyboard-navigation" : ""}`} role="dialog" aria-modal="true" aria-label="Search workspace">
+      <div className="search-palette-input"><Search size={20} /><input ref={input} value={query} onChange={event => { setKeyboardNavigation(true); setQuery(event.target.value); }} onKeyDown={onKeyDown} placeholder="Search notes, files, and actions…" aria-label="Search notes, files, and actions" /><button type="button" onClick={onClose}>ESC</button></div>
+      <div ref={results} className="search-palette-results" role={quickTarget ? undefined : "listbox"} aria-label={quickTarget ? undefined : "Search results"}>
+        {quickTarget ? <SearchActionsMenu entry={quickTarget} onAction={runQuickAction} onBack={() => { setQuickTarget(null); input.current?.focus(); }} /> : <>
+        {choices.map((choice, index) => <Fragment key={choice.id}>{(index === 0 || !sameGroup(choice.type, choices[index - 1].type)) && <Group title={choice.type === "note" || choice.type === "folder" ? "Notes & Files" : choice.type === "command" ? "Commands & Actions" : choice.type === "tag" ? "Tags" : "Create"} count={choice.type === "note" || choice.type === "folder" ? `${matches.notes.length + matches.folders.length} matches` : ""} />}<button type="button" role="option" aria-selected={active === index} className={`search-choice ${active === index ? "selected" : ""}`} onMouseMove={() => { if (keyboardNavigation) setKeyboardNavigation(false); setActive(index); }} onClick={() => choose(choice)}>
           {choice.type === "note" ? <FileText size={16} /> : choice.type === "folder" ? <Folder size={16} /> : choice.type === "command" ? (choice.label.startsWith("Quick") ? <Zap size={16} /> : <Link2 size={16} />) : choice.type === "create" ? <Plus size={16} /> : <span className="search-tag">#</span>}
           <span className="choice-label"><Highlighted text={choice.label} query={parsedQuery.text} />{choice.count !== undefined && <small>{choice.count} notes</small>}{choice.subtitle && <small><Highlighted text={choice.subtitle} query={parsedQuery.text} /></small>}{choice.source && <small className="search-match-source">Matched in {choice.source}</small>}{choice.excerpt && <small className="search-excerpt">“<Highlighted text={choice.excerpt} query={parsedQuery.text} />”</small>}</span>
-          {active === index && <kbd>↵</kbd>}
+          {active === index && <kbd>{choice.entry ? "⌘/Ctrl+↵" : "↵"}</kbd>}
         </button></Fragment>)}
         {loading && <p className="search-palette-empty">Indexing workspace notes…</p>}
         {!loading && trimmed && matches.notes.length + matches.folders.length + matches.tags.length === 0 && <p className="search-palette-empty">No matches{choices.some(choice => choice.type === "create") ? " · Create a note from this search" : ""}</p>}
         {!trimmed && !loading && <p className="search-palette-empty">Search titles, folders, tags, and note content<br />Filter with <code>tag:name</code>, <code>in:folder</code>, or <code>type:note|folder</code></p>}
+        </>}
       </div>
-      <footer className="search-palette-footer"><span><kbd><ArrowUp size={10} /><ArrowDown size={10} /></kbd> Navigate</span><span><kbd>↵</kbd> Open in new tab</span><span><kbd>esc</kbd> Dismiss</span></footer>
+      <footer className="search-palette-footer">{quickTarget ? <span><kbd>esc</kbd> Back to results</span> : <><span><kbd><ArrowUp size={10} /><ArrowDown size={10} /></kbd> Navigate</span><span><kbd>↵</kbd> Open in new tab</span><span><kbd>⌘/Ctrl+↵</kbd> Actions</span><span><kbd>esc</kbd> Dismiss</span></>}</footer>
     </section>
   </div>;
 }
