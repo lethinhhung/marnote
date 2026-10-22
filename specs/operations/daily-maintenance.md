@@ -1,0 +1,87 @@
+# Daily Repository Maintenance
+
+## Goal
+
+Automate daily repository maintenance with GitHub Actions and OpenCode free models.
+
+## Models
+
+- Use OpenRouter's free endpoints through OpenCode with `OPENROUTER_API_KEY` stored as a GitHub Actions secret.
+- Try these models in order, resetting the checkout between attempts:
+  1. `minimax/minimax-m3.1-flash:free` — strong fit for codebase work and agentic coding.
+  2. `nvidia/nemotron-3-ultra-550b-a55b:free` — strong agentic reasoning and tool calling.
+  3. `poolside/laguna-s-2.1:free` — coding-agent model specialized for software engineering.
+- Move to the next model if OpenCode fails, including rate limits, or if it succeeds without producing changes. Do not create a PR if all models fail or produce no valid changes.
+- Free endpoints are rate limited and availability can change. Recheck model IDs and pricing periodically.
+- Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not OpenRouter account quota balances.
+
+## Schedule and Sessions
+
+- Run every day at 23:59 in `Asia/Ho_Chi_Minh` (16:59 UTC; GitHub Actions scheduled workflows use UTC).
+- GitHub starts scheduled workflows from the repository's default branch (`main`), but each maintenance job checks out `develop` and opens its pull request against `develop`.
+- Manual runs may set the optional `maintenance_date` input (`YYYY-MM-DD`) to label maintenance branches and pull requests for a specific date. Scheduled runs use the current UTC date.
+- Run two independent sessions, each starting from `develop`:
+  1. Refactor
+  2. Bug fix
+- Each session uses its own dedicated branch and pull request.
+
+## Refactor Session
+
+- Inspect the project and follow all existing project rules, including `AGENTS.md` and `specs/`.
+- Refactor at most three files.
+- Prioritize work in this order:
+  1. Files over 120 lines.
+  2. Other project-rule violations.
+  3. High complexity or poor separation of concerns.
+  4. Duplicated or poorly structured code.
+- Address the most significant violations first.
+- Preserve existing behavior.
+- Avoid unrelated or cosmetic-only changes.
+
+## Bug Fix Session
+
+- Inspect the repository and identify one concrete bug.
+- Determine the likely root cause before changing code.
+- Implement the smallest safe fix.
+- Add or update a regression test when appropriate.
+- Do not fix speculative issues without reasonable evidence.
+
+## Validation
+
+- Follow the project's existing validation commands.
+- Run relevant tests, lint, and type checks when available.
+- Do not create a pull request if the session produces no valid changes or validation fails.
+
+## Git and Pull Requests
+
+For each successful session:
+
+- Create a dedicated branch from the default branch.
+- Commit and push the changes.
+- Open a pull request against the default branch.
+- Never auto-merge.
+
+Branch formats:
+
+- `agent/refactor-YYYY-MM-DD`
+- `agent/fix-YYYY-MM-DD`
+
+## Pull Request Description
+
+Use this concise format and include relevant validation results:
+
+```md
+## Problem
+...
+
+## Cause
+...
+
+## Fix
+...
+
+## Results
+...
+```
+
+The Problem, Cause, and Fix sections must describe the specific issue and code changes in the pull request. Do not use placeholders such as "See the changes". The workflow rejects a model attempt that does not provide this summary. Exclude generated build and platform schema files from maintenance pull requests.
