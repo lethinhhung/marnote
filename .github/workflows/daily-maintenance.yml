@@ -1,0 +1,226 @@
+name: Daily maintenance
+
+on:
+  schedule:
+    - cron: "59 16 * * *"
+  workflow_dispatch:
+    inputs:
+      maintenance_date:
+        description: Date to use for maintenance PRs (YYYY-MM-DD)
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  maintenance:
+    name: ${{ matrix.session }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - session: refactor
+            prompt: .github/prompts/daily-refactor.md
+            branch_prefix: refactor
+          - session: fix
+            prompt: .github/prompts/daily-fix.md
+            branch_prefix: fix
+    steps:
+      - name: Check out develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install OpenCode
+        run: npm install --global opencode-ai
+
+      - name: Run OpenCode with free model fallbacks
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          PROMPT_FILE: ${{ matrix.prompt }}
+          MAX_FILES: ${{ matrix.session == 'refactor' && '3' || '999' }}
+        run: |
+          set -u
+          if [ -z "$OPENROUTER_API_KEY" ]; then
+            echo "OPENROUTER_API_KEY is not configured" >&2
+            exit 1
+          fi
+          models=(
+            "openrouter/minimax/minimax-m3.1-flash:free"
+            "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
+            "openrouter/poolside/laguna-s-2.1:free"
+          )
+          summary_file=.daily-maintenance-summary.md
+          total_input=0
+          total_output=0
+          total_reasoning=0
+          total_cache_read=0
+          total_cache_write=0
+          declare -A model_input=() model_output=() model_reasoning=() model_cache_read=() model_cache_write=()
+          models_used=()
+          collect_usage() {
+            local model="$1" log="$2" input output reasoning cache_read cache_write
+            read -r input output reasoning cache_read cache_write < <(
+              jq -Rn '[inputs | fromjson? | select(.type == "step_finish") | .part.tokens // {}] |
+                [([.[].input // 0] | add // 0), ([.[].output // 0] | add // 0),
+                 ([.[].reasoning // 0] | add // 0), ([.[].cache.read // 0] | add // 0),
+                 ([.[].cache.write // 0] | add // 0)] | @tsv' "$log"
+            )
+            if [[ -z "${model_input[$model]+x}" ]]; then
+              models_used+=("$model")
+              model_input[$model]=0 model_output[$model]=0 model_reasoning[$model]=0
+              model_cache_read[$model]=0 model_cache_write[$model]=0
+            fi
+            model_input[$model]=$((model_input[$model] + input))
+            model_output[$model]=$((model_output[$model] + output))
+            model_reasoning[$model]=$((model_reasoning[$model] + reasoning))
+            model_cache_read[$model]=$((model_cache_read[$model] + cache_read))
+            model_cache_write[$model]=$((model_cache_write[$model] + cache_write))
+            total_input=$((total_input + input))
+            total_output=$((total_output + output))
+            total_reasoning=$((total_reasoning + reasoning))
+            total_cache_read=$((total_cache_read + cache_read))
+            total_cache_write=$((total_cache_write + cache_write))
+          }
+          write_usage_summary() {
+            {
+              echo "## OpenCode usage"
+              echo "Session: ${{ matrix.session }}"
+              echo "| Model | Input | Output | Reasoning | Cache read | Cache write |"
+              echo "|---|---:|---:|---:|---:|---:|"
+              if ((${#models_used[@]})); then
+                for model in "${models_used[@]}"; do
+                  echo "| $model | ${model_input[$model]} | ${model_output[$model]} | ${model_reasoning[$model]} | ${model_cache_read[$model]} | ${model_cache_write[$model]} |"
+                done
+              else
+                echo "| No completed model steps | 0 | 0 | 0 | 0 | 0 |"
+              fi
+              echo "| **Total** | **$total_input** | **$total_output** | **$total_reasoning** | **$total_cache_read** | **$total_cache_write** |"
+              echo "Token counts are OpenCode-reported totals across completed model steps, including cache tokens."
+            } >> "$GITHUB_STEP_SUMMARY"
+          }
+          trap write_usage_summary EXIT
+          for model in "${models[@]}"; do
+            git reset --hard HEAD
+            git clean -fd
+            rm -f "$summary_file"
+            attempt_log=$(mktemp)
+            echo "Trying $model"
+            prompt="$(cat "$PROMPT_FILE")
+
+          After completing the work, write a specific pull request summary to $summary_file. Use exactly these Markdown headings: ## Problem, ## Cause, and ## Fix. Explain the concrete problem, its likely cause, and the changes you made. Name relevant files or behavior. Avoid generic text such as 'see the changes'. Keep it concise."
+            if timeout 15m opencode run --auto --format json --model "$model" "$prompt" > "$attempt_log"; then
+              cat "$attempt_log"
+              collect_usage "$model" "$attempt_log"
+              rm -f "$attempt_log"
+              if [ ! -s "$summary_file" ] || \
+                ! grep -Fxq '## Problem' "$summary_file" || \
+                ! grep -Fxq '## Cause' "$summary_file" || \
+                ! grep -Fxq '## Fix' "$summary_file" || \
+                grep -Eiq 'see the changes|identified by the automated|see this pull request' "$summary_file"; then
+                echo "$model did not produce a specific Problem/Cause/Fix summary"
+                rm -f "$summary_file"
+                continue
+              fi
+              delimiter="MAINTENANCE_SUMMARY_$(openssl rand -hex 16)"
+              {
+                echo "MAINTENANCE_SUMMARY<<$delimiter"
+                cat "$summary_file"
+                printf '\n%s\n' "$delimiter"
+              } >> "$GITHUB_ENV"
+              rm -f "$summary_file"
+              changed_files=$(git status --porcelain -z | tr -cd '\0' | wc -c)
+              if [ "$changed_files" -gt "$MAX_FILES" ]; then
+                echo "$model changed $changed_files files; limit is $MAX_FILES"
+                echo "Trying the next model after discarding this attempt"
+              elif [ "$changed_files" -gt 0 ]; then
+                echo "MAINTENANCE_MODEL=$model" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_INPUT_TOKENS=$total_input" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_OUTPUT_TOKENS=$total_output" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_REASONING_TOKENS=$total_reasoning" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_CACHE_READ_TOKENS=$total_cache_read" >> "$GITHUB_ENV"
+                echo "MAINTENANCE_CACHE_WRITE_TOKENS=$total_cache_write" >> "$GITHUB_ENV"
+                exit 0
+              else
+                echo "$model completed without changes; trying next model"
+              fi
+            else
+              cat "$attempt_log"
+              collect_usage "$model" "$attempt_log"
+              rm -f "$attempt_log"
+              echo "$model failed; trying next model"
+            fi
+          done
+          echo "All free models failed or produced no changes" >&2
+          exit 1
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            librsvg2-dev \
+            wget
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate changes
+        run: pnpm check
+
+      - name: Remove generated Linux Tauri schema
+        if: always()
+        run: rm -f apps/desktop/src-tauri/gen/schemas/linux-schema.json
+
+      - name: Set maintenance date
+        env:
+          REQUESTED_DATE: ${{ inputs.maintenance_date }}
+        run: |
+          if [ -n "$REQUESTED_DATE" ]; then
+            if ! [[ "$REQUESTED_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] || \
+              [ "$(date -u -d "$REQUESTED_DATE" +%F 2>/dev/null)" != "$REQUESTED_DATE" ]; then
+              echo "maintenance_date must be a valid YYYY-MM-DD date" >&2
+              exit 1
+            fi
+            echo "MAINTENANCE_DATE=$REQUESTED_DATE" >> "$GITHUB_ENV"
+          else
+            echo "MAINTENANCE_DATE=$(date -u +%F)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: agent/${{ matrix.branch_prefix }}-${{ env.MAINTENANCE_DATE }}
+          delete-branch: true
+          title: "chore: daily ${{ matrix.session }} maintenance (${{ env.MAINTENANCE_DATE }})"
+          body: |
+            ${{ env.MAINTENANCE_SUMMARY }}
+
+            ## Results
+            - Validation: `pnpm check` passed.
+            - Model: `${{ env.MAINTENANCE_MODEL }}`
+            - OpenCode token usage across fallback attempts: input ${{ env.MAINTENANCE_INPUT_TOKENS }}, output ${{ env.MAINTENANCE_OUTPUT_TOKENS }}, reasoning ${{ env.MAINTENANCE_REASONING_TOKENS }}, cache read ${{ env.MAINTENANCE_CACHE_READ_TOKENS }}, cache write ${{ env.MAINTENANCE_CACHE_WRITE_TOKENS }}. Per-model counts are in the Actions job summary.
+          base: develop
