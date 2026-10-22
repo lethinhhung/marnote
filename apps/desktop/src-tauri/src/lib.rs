@@ -25,7 +25,11 @@ fn update_entry_metadata(
         metadata.tags = Some(tags);
     }
     if let Some(icon) = icon {
-        metadata.icon = if icon.trim().is_empty() { None } else { Some(icon) };
+        metadata.icon = if icon.trim().is_empty() {
+            None
+        } else {
+            Some(icon)
+        };
     }
     if let Some(favorite) = favorite {
         metadata.favorite = Some(favorite);
@@ -34,10 +38,39 @@ fn update_entry_metadata(
 }
 
 #[tauri::command]
-fn save_workspace_tags(root_path: String, tags: std::collections::HashMap<String, String>) -> Result<(), String> {
+fn save_workspace_tags(
+    root_path: String,
+    tags: std::collections::HashMap<String, String>,
+) -> Result<(), String> {
     let root = workspace::root(&root_path)?;
     let mut store = metadata::read_metadata(&root)?;
-    store.tags = tags.into_iter().filter(|(name, color)| !name.trim().is_empty() && color.starts_with('#')).collect();
+    store.tags = tags
+        .into_iter()
+        .filter(|(name, color)| !name.trim().is_empty() && color.starts_with('#'))
+        .collect();
+    metadata::write_metadata(&root, &store)
+}
+
+#[tauri::command]
+fn save_manual_order(root_path: String, parent: String, paths: Vec<String>) -> Result<(), String> {
+    let root = workspace::root(&root_path)?;
+    if !parent.is_empty() {
+        workspace::target(&root, &parent, true)?;
+    }
+    for path in &paths {
+        workspace::target(&root, path, true)?;
+        if std::path::Path::new(path)
+            .parent()
+            .unwrap_or(std::path::Path::new(""))
+            .to_string_lossy()
+            .replace('\\', "/")
+            != parent
+        {
+            return Err("Items must be siblings".into());
+        }
+    }
+    let mut store = metadata::read_metadata(&root)?;
+    store.manual_order.insert(parent, paths);
     metadata::write_metadata(&root, &store)
 }
 
@@ -55,9 +88,13 @@ pub fn run() {
             files::file_update_markdown,
             files::file_move,
             files::file_delete,
+            files::file_list_trash,
+            files::file_restore_trash,
+            files::file_empty_trash,
             folders::folder_create,
             update_entry_metadata,
             save_workspace_tags,
+            save_manual_order,
             tags::rename_workspace_tag
         ])
         .run(tauri::generate_context!())

@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { WorkspaceTree } from "../shared/domain/workspace";
 import { useNoteTabs } from "./useNoteTabs";
 
@@ -13,6 +13,8 @@ const tree: WorkspaceTree = {
 };
 
 describe("useNoteTabs", () => {
+  beforeEach(() => localStorage.clear());
+
   it("saves the current draft before selecting a tab", async () => {
     const save = vi.fn().mockResolvedValue(true);
     const select = vi.fn();

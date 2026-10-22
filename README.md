@@ -26,6 +26,14 @@ The release workflow builds installers for macOS, Windows, and Linux. Check [Git
 
 The macOS app is ad-hoc signed and not notarized. On first launch, macOS may require approval in **System Settings → Privacy & Security → Open Anyway**.
 
+Project guidance lives in [`AGENTS.md`](./AGENTS.md) and [`specs/`](./specs/):
+
+- [`product/`](./specs/product/): product behavior and requirements.
+- [`ux/`](./specs/ux/): user interface interactions and workflows.
+- [`engineering/architecture.md`](./specs/engineering/architecture.md): architecture and technology constraints.
+- [`design/brand.md`](./specs/design/brand.md): visual identity.
+- [`operations/`](./specs/operations/): release and maintenance procedures.
+
 ## Development
 
 ### Requirements

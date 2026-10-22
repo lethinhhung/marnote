@@ -8,6 +8,10 @@ mod metadata_paths;
 mod move_file;
 #[path = "files/read.rs"]
 mod read;
+#[path = "files/trash.rs"]
+mod trash;
+#[path = "files/trash_mutations.rs"]
+mod trash_mutations;
 #[path = "files/update.rs"]
 mod update;
 
@@ -49,6 +53,21 @@ pub fn file_move(root_path: String, source: String, destination: String) -> Resu
 #[tauri::command]
 pub fn file_delete(root_path: String, path: String) -> Result<String, String> {
     delete(&root_path, &path)
+}
+
+#[tauri::command]
+pub fn file_list_trash(root_path: String) -> Result<Vec<trash::TrashItem>, String> {
+    trash::list(&root_path)
+}
+
+#[tauri::command]
+pub fn file_restore_trash(root_path: String, id: String) -> Result<(), String> {
+    trash_mutations::restore(&root_path, &id)
+}
+
+#[tauri::command]
+pub fn file_empty_trash(root_path: String) -> Result<(), String> {
+    trash_mutations::empty(&root_path)
 }
 
 #[cfg(test)]
