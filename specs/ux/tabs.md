@@ -8,5 +8,6 @@
 - Restore open tabs and drafts after restart. Allow tabs to be reordered.
 - Right-click a tab for **Close**, **Close others**, and **Close all**. Apply normal save safeguards to each action.
 - Keep the tab bar within the window; scroll horizontally when tabs overflow.
+- Scroll overflowing tabs with a mouse wheel as well as touchpad gestures.
 - Show left/right chevrons when tabs are hidden; clicking a chevron scrolls the bar.
 - Keep **+** at the end of the tab sequence so it scrolls with the tabs.
