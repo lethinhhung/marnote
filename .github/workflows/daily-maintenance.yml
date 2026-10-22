@@ -9,6 +9,15 @@ on:
         description: Date to use for maintenance PRs (YYYY-MM-DD)
         required: false
         type: string
+      session:
+        description: Maintenance session to run manually
+        required: true
+        default: both
+        type: choice
+        options:
+          - both
+          - fix
+          - refactor
 
 permissions:
   contents: write
@@ -20,14 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - session: refactor
-            prompt: .github/prompts/daily-refactor.md
-            branch_prefix: refactor
-          - session: fix
-            prompt: .github/prompts/daily-fix.md
-            branch_prefix: fix
+      matrix: ${{ fromJSON(inputs.session == 'fix' && '{"include":[{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || inputs.session == 'refactor' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"}]}' || '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}') }}
     steps:
       - name: Check out develop
         uses: actions/checkout@v4
@@ -123,7 +125,7 @@ jobs:
             prompt="$(cat "$PROMPT_FILE")
 
           After completing the work, write a specific pull request summary to $summary_file. Use exactly these Markdown headings: ## Problem, ## Cause, and ## Fix. Explain the concrete problem, its likely cause, and the changes you made. Name relevant files or behavior. Avoid generic text such as 'see the changes'. Keep it concise."
-            if timeout 15m opencode run --auto --format json --model "$model" "$prompt" > "$attempt_log"; then
+            if timeout 30m opencode run --auto --format json --model "$model" "$prompt" > "$attempt_log"; then
               cat "$attempt_log"
               collect_usage "$model" "$attempt_log"
               rm -f "$attempt_log"
