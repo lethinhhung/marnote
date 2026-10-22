@@ -18,7 +18,9 @@ Automate daily repository maintenance with GitHub Actions and OpenCode free mode
 ## Schedule and Sessions
 
 - Run every day at 23:59 in `Asia/Ho_Chi_Minh` (16:59 UTC; GitHub Actions scheduled workflows use UTC).
-- GitHub starts scheduled workflows from the repository's default branch (`main`), but each maintenance job checks out `develop` and opens its pull request against `develop`.
+- The workflow is stored on `main`; scheduled runs start there, then each maintenance job checks out `develop` and opens its pull request against `develop`.
+- Manual runs may select `both`, `fix`, or `refactor`. Scheduled runs execute both sessions.
+- Bug-fix runs select a focus area: `editor`, `workspace`, or `search`. Manual runs may choose one; scheduled and `auto` runs rotate by UTC day of year.
 - Run two independent sessions, each starting from `develop`:
   1. Refactor
   2. Bug fix
@@ -39,25 +41,27 @@ Automate daily repository maintenance with GitHub Actions and OpenCode free mode
 
 ## Bug Fix Session
 
-- Inspect the repository and identify one concrete bug.
+- Inspect only the selected focus area and its directly related tests; inspect no more than eight implementation/test files.
+- The focus areas are `apps/desktop/src/features/editor/`; `apps/desktop/src/features/workspace/`, `apps/desktop/src/platform/workspace.ts`, and directly related Tauri workspace/files modules; and `apps/desktop/src/shared/ui/searchNotes.ts` with its tests and `HeaderBar.tsx` when needed.
+- If there is no evidence-backed bug in the selected area, leave the repository unchanged.
 - Determine the likely root cause before changing code.
 - Implement the smallest safe fix.
 - Add or update a regression test when appropriate.
 - Do not fix speculative issues without reasonable evidence.
+- Do not install dependencies or run tests; the workflow runs `pnpm check` after edits.
 
 ## Validation
 
-- Follow the project's existing validation commands.
-- Run relevant tests, lint, and type checks when available.
+- The workflow runs `pnpm check` after edits.
 - Do not create a pull request if the session produces no valid changes or validation fails.
 
 ## Git and Pull Requests
 
 For each successful session:
 
-- Create a dedicated branch from the default branch.
+- Create a dedicated branch from `develop`.
 - Commit and push the changes.
-- Open a pull request against the default branch.
+- Open a pull request against `develop`.
 - Never auto-merge.
 
 Branch formats:
