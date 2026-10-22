@@ -18,6 +18,16 @@ on:
           - both
           - fix
           - refactor
+      focus_area:
+        description: Code area for the fix session (auto rotates daily)
+        required: true
+        default: auto
+        type: choice
+        options:
+          - auto
+          - editor
+          - workspace
+          - search
 
 permissions:
   contents: write
@@ -55,12 +65,22 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           PROMPT_FILE: ${{ matrix.prompt }}
           MAX_FILES: ${{ matrix.session == 'refactor' && '3' || '999' }}
+          REQUESTED_FOCUS_AREA: ${{ inputs.focus_area }}
         run: |
           set -u
           if [ -z "$OPENROUTER_API_KEY" ]; then
             echo "OPENROUTER_API_KEY is not configured" >&2
             exit 1
           fi
+          focus_areas=(editor workspace search)
+          focus_area="${REQUESTED_FOCUS_AREA:-auto}"
+          if [ "$focus_area" = "auto" ]; then
+            day_of_year=$(date -u +%j)
+            focus_index=$((10#$day_of_year % ${#focus_areas[@]}))
+            focus_area="${focus_areas[$focus_index]}"
+          fi
+          echo "MAINTENANCE_FOCUS_AREA=$focus_area" >> "$GITHUB_ENV"
+          echo "Focus area: $focus_area" >> "$GITHUB_STEP_SUMMARY"
           models=(
             "openrouter/minimax/minimax-m3.1-flash:free"
             "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
@@ -123,6 +143,9 @@ jobs:
             attempt_log=$(mktemp)
             echo "Trying $model"
             prompt="$(cat "$PROMPT_FILE")
+
+          Focus area for this run: $focus_area.
+          Treat that area as a strict scope boundary and follow the focus-specific paths in the prompt.
 
           After completing the work, write a specific pull request summary to $summary_file. Use exactly these Markdown headings: ## Problem, ## Cause, and ## Fix. Explain the concrete problem, its likely cause, and the changes you made. Name relevant files or behavior. Avoid generic text such as 'see the changes'. Keep it concise."
             if timeout 30m opencode run --auto --format json --model "$model" "$prompt" > "$attempt_log"; then
@@ -222,6 +245,7 @@ jobs:
             ${{ env.MAINTENANCE_SUMMARY }}
 
             ## Results
+            - Focus area: `${{ env.MAINTENANCE_FOCUS_AREA }}`
             - Validation: `pnpm check` passed.
             - Model: `${{ env.MAINTENANCE_MODEL }}`
             - OpenCode token usage across fallback attempts: input ${{ env.MAINTENANCE_INPUT_TOKENS }}, output ${{ env.MAINTENANCE_OUTPUT_TOKENS }}, reasoning ${{ env.MAINTENANCE_REASONING_TOKENS }}, cache read ${{ env.MAINTENANCE_CACHE_READ_TOKENS }}, cache write ${{ env.MAINTENANCE_CACHE_WRITE_TOKENS }}. Per-model counts are in the Actions job summary.
