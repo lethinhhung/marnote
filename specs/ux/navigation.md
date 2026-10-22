@@ -3,7 +3,8 @@
 ## Workspace
 
 - Startup opens the latest workspace or falls back to **My Notes**. Use **Open workspace…** or recent workspaces to switch.
-- The header shows the workspace name or active note path. The tree opens notes and focuses folders.
+- The header shows the workspace name or active note path. When a note is open, show a copy menu beside its path with actions for an internal link, workspace-relative path, and full path.
+- Make folder segments in the active note path clickable; selecting one focuses that folder in the Explorer.
 
 ## Notes
 
