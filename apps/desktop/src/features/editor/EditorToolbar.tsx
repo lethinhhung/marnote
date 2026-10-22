@@ -1,13 +1,13 @@
 import { useEditorState, type Editor } from "@tiptap/react";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type SyntheticEvent } from "react";
-import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal, AlignLeft, AlignCenter, AlignRight, ChevronDown, MoreHorizontal } from "lucide-react";
+import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Pilcrow, Table2, MoveHorizontal, AlignLeft, AlignCenter, AlignRight, ChevronDown, MoreHorizontal, Save } from "lucide-react";
 import "./toolbar-responsive.css";
 import { normalizeLinkUrl } from "./linkUrl";
 import { setColumnAlignment } from "./tableAlignment";
 import type { Entry } from "../../shared/domain/workspace";
 import { flattenEntries, relativeWorkspaceLink } from "./workspaceLinks";
 
-type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; path: string; entries: Entry[] };
+type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[] };
 type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
 
 const actions: Action[] = [
@@ -29,7 +29,7 @@ const actions: Action[] = [
 const actionGroups = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11, 12, 13]];
 const moreActions = [8, 9, 10, 11, 12, 13];
 
-export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, path, entries }: Props) {
+export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, path, entries }: Props) {
   const activeActions = useEditorState({ editor, selector: ({ editor: current }) => actions.map(action => !!current && !!action.active?.(current)) });
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
@@ -97,6 +97,7 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     <span className="toolbar-spacer" />
     <div className="toolbar-utility">
       {!source && supportsWideContent && <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>}
+      <button type="button" className="tool toolbar-save" onClick={onSave} disabled={!dirty || saving} title="Save note (⌘S / Ctrl+S)" aria-label="Save note"><Save size={14} /><span>Save</span></button>
     </div>
   </div>;
 }

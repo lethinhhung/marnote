@@ -15,9 +15,10 @@
 - In Automatic mode, save after a brief pause following a user edit.
 - In Manual mode, retain edits as drafts until the user saves explicitly or a navigation or close safeguard requires a save attempt.
 - Both modes use the same save status, external-change protection, and failure safeguards.
+- A successful save updates the note's **Updated** timestamp while preserving **Created**.
 
 ## Implemented
 
 - Automatic and Manual modes are available through an app-wide footer control; the selection persists across restarts.
-- Manual mode supports **Save now** and `⌘S` / `Ctrl+S`; navigation and close safeguards also save pending drafts.
+- A **Save** button in the editor toolbar and `⌘S` / `Ctrl+S` save immediately in either mode; navigation and close safeguards also save pending drafts.
 - Open tabs, tab order, recent selection order, active note, and drafts are restored per workspace from local app storage.

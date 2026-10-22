@@ -132,7 +132,8 @@
 :root[data-theme="dark"] .save-mode-control { border-color: #333a33; background: #161816; }
 :root[data-theme="dark"] .save-mode-control button { color: #a2ada0; }
 :root[data-theme="dark"] .save-mode-control button[aria-pressed="true"] { background: #29352d; color: #e2e5de; }
-:root[data-theme="dark"] .note-save-now { border-color: #384339; background: #202320; color: #a2c6a6; }
+:root[data-theme="dark"] .editor-frame .toolbar-save { border-color: #384339; color: #a2c6a6; }
+:root[data-theme="dark"] .editor-frame .toolbar-save:hover:not(:disabled) { background: #202c22; }
 :root[data-theme="dark"] .theme-toggle { border-color: #292d29; color: #a2ada0; }
 :root[data-theme="dark"] .theme-toggle:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .address { color: #a2ada0; }
