@@ -58,10 +58,19 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
     else selected.scrollIntoView({ block: "nearest" });
   }, [active, choices.length]);
   const choose = (choice: Choice) => { choice.run(); if (choice.type !== "tag") onClose(); };
+  const openQuickActions = (entry: Entry, point?: { x: number; y: number }) => {
+    const target = results.current?.querySelector<HTMLElement>('[aria-selected="true"]');
+    const bounds = point ? null : target?.getBoundingClientRect();
+    const menuWidth = 220;
+    const left = point ? point.x : (bounds?.right ?? 8) + 8;
+    const top = point ? point.y : bounds?.top ?? 8;
+    setQuickPosition({ top: Math.max(8, Math.min(top, window.innerHeight - 230)), left: Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8)) });
+    setQuickTarget(entry);
+  };
   const onKeyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if ((event.target as HTMLElement).closest('[role="menu"]')) return;
     if ((event.key === "ArrowDown" || event.key === "ArrowUp") && choices.length) { event.preventDefault(); setKeyboardNavigation(true); setActive(value => (value + choices.length + (event.key === "ArrowDown" ? 1 : -1)) % choices.length); }
-    if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && choices[active]?.entry) { event.preventDefault(); const target = results.current?.querySelector<HTMLElement>('[aria-selected="true"]'); if (target) { const bounds = target.getBoundingClientRect(); const menuWidth = 220; const right = bounds.right + 8; const left = Math.max(8, Math.min(right, window.innerWidth - menuWidth - 8)); setQuickPosition({ top: Math.max(8, Math.min(bounds.top, window.innerHeight - 230)), left }); } setQuickTarget(choices[active].entry!); return; }
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey) && choices[active]?.entry) { event.preventDefault(); openQuickActions(choices[active].entry); return; }
     if (event.key === "Enter" && choices[active]) { event.preventDefault(); choose(choices[active]); }
     if (event.key === "Escape" && quickTarget) { event.preventDefault(); event.stopPropagation(); setQuickTarget(null); input.current?.focus(); }
   };
@@ -74,7 +83,7 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
       <div className="search-palette-input"><Search size={20} /><input ref={input} value={query} onChange={event => { setKeyboardNavigation(true); setQuery(event.target.value); }} placeholder="Search notes, files, and actions…" aria-label="Search notes, files, and actions" /><button type="button" onClick={onClose}>ESC</button></div>
       <div ref={results} className="search-palette-results" role="listbox" aria-label="Search results">
         <>
-        {choices.map((choice, index) => <Fragment key={choice.id}>{(index === 0 || !sameGroup(choice.type, choices[index - 1].type)) && <Group title={choice.type === "note" || choice.type === "folder" ? "Notes & Files" : choice.type === "command" ? "Commands & Actions" : choice.type === "tag" ? "Tags" : "Create"} count={choice.type === "note" || choice.type === "folder" ? `${matches.notes.length + matches.folders.length} matches` : ""} />}<button type="button" role="option" aria-selected={active === index} className={`search-choice ${active === index ? "selected" : ""}`} onMouseMove={() => { if (keyboardNavigation) setKeyboardNavigation(false); setActive(index); }} onClick={() => choose(choice)}>
+        {choices.map((choice, index) => <Fragment key={choice.id}>{(index === 0 || !sameGroup(choice.type, choices[index - 1].type)) && <Group title={choice.type === "note" || choice.type === "folder" ? "Notes & Files" : choice.type === "command" ? "Commands & Actions" : choice.type === "tag" ? "Tags" : "Create"} count={choice.type === "note" || choice.type === "folder" ? `${matches.notes.length + matches.folders.length} matches` : ""} />}<button type="button" role="option" aria-selected={active === index} className={`search-choice ${active === index ? "selected" : ""}`} onMouseMove={() => { if (keyboardNavigation) setKeyboardNavigation(false); setActive(index); }} onContextMenu={event => { if (!choice.entry) return; event.preventDefault(); setActive(index); setKeyboardNavigation(false); openQuickActions(choice.entry, { x: event.clientX, y: event.clientY }); }} onClick={() => choose(choice)}>
           {choice.type === "note" ? <FileText size={16} /> : choice.type === "folder" ? <Folder size={16} /> : choice.type === "command" ? (choice.label.startsWith("Quick") ? <Zap size={16} /> : <Link2 size={16} />) : choice.type === "create" ? <Plus size={16} /> : <span className="search-tag">#</span>}
           <span className="choice-label"><Highlighted text={choice.label} query={parsedQuery.text} />{choice.count !== undefined && <small>{choice.count} notes</small>}{choice.subtitle && <small><Highlighted text={choice.subtitle} query={parsedQuery.text} /></small>}{choice.source && <small className="search-match-source">Matched in {choice.source}</small>}{choice.excerpt && <small className="search-excerpt">“<Highlighted text={choice.excerpt} query={parsedQuery.text} />”</small>}</span>
           {active === index && <kbd>{choice.entry ? "⌘/Ctrl+↵" : "↵"}</kbd>}
