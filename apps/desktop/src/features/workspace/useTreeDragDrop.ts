@@ -60,9 +60,8 @@ export function useTreeDragDrop({ entries, sort, setExpanded, onMove, onReorder 
         }
       }
       const folder = kind === "directory" ? path : parentPath(path);
-      const name = active.path.split("/").pop() || "";
-      const destination = [folder, name].filter(Boolean).join("/");
-      if (destination && destination !== active.path && path !== active.path && !folder.startsWith(`${active.path}/`)) {
+      const destination = path ? dropDestination(active.path, path, kind) : active.path.split("/").pop() || "";
+      if (destination && destination !== active.path) {
         if (folder) setExpanded(current => new Set(current).add(folder));
         if (await onMove(active.path, destination)) moveHistory.current.push({ source: active.path, destination });
       }
