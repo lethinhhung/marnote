@@ -2,11 +2,12 @@
 
 ## Search
 
-- Search offline across titles, paths, folders, and note content.
-- Show grouped note/file, command, and tag results, ranked by relevance. Include locations, matching excerpts, and tag note counts where relevant.
-- Support creating a note from the query, capturing a note, copying an internal link, and opening a result in a new tab.
-- Hide empty groups. Arrow keys select results, Enter opens or runs the selection, and Escape closes the palette.
-- Enter selects the first result by default; offer note creation when the query is a valid title.
+- Search offline across titles, paths, folders, tags, and note content using a reusable local index.
+- Show ranked, grouped results with locations, highlighted matches, and match source; hide empty groups.
+- Selecting a tag filters notes by that tag. Support `tag:`, `in:`, and `type:` filters.
+- Support note creation, quick capture, and copying an internal link. Search results open in new tabs.
+- Arrow keys navigate; Enter selects the first result or runs an action; Escape closes the palette.
+- Show clear loading and no-match states, with note creation available for valid titles.
 
 ## Links
 
