@@ -5,7 +5,9 @@ description: Prepare or publish a versioned Marnote desktop release using the re
 
 # Publish a Marnote release
 
-Follow [`specs/release.md`](../../../specs/release.md). For promoting integrated work from `develop` to `main`, use [`marnote-release-from-develop`](../marnote-release-from-develop/SKILL.md) first; do not bypass its Strata state safeguards.
+Follow [`specs/operations/release.md`](../../../specs/operations/release.md). For promoting integrated work from `develop` to `main`, use [`marnote-release-from-develop`](../marnote-release-from-develop/SKILL.md) first.
+
+Strata state is local to each workspace. `.strata.toml`, `docs/temps/`, `memory/`, and `prompt/` are ignored by Git; preserve local copies, and never add, stage, or publish these paths as part of a release.
 
 ## Prepare a release
 
