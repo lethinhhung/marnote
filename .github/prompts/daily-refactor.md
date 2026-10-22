@@ -1,0 +1,3 @@
+Inspect the repository and follow AGENTS.md and every relevant file in specs/.
+
+Change at most three files total, counting every modified, added, or deleted file, including tests and supporting modules. Choose one high impact refactor that fits this limit; do not split several oversized files into new modules during one session. Prioritize files over 120 lines, then other project-rule violations, high complexity or weak separation of concerns, and duplicated or poorly structured code. Preserve behavior and avoid unrelated or cosmetic-only edits. Do not run the full validation suite; the workflow runs `pnpm check` after your edits. If no safe refactor fits the three-file total, leave the repository unchanged. Do not commit or push.
