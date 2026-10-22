@@ -77,4 +77,22 @@ describe("FileTree drag and drop", () => {
 
     expect(onMove).toHaveBeenCalledWith("Folder/Active.md", "Deep/Active.md");
   });
+
+  it("moves a folder into another folder when dropped on it", () => {
+    const onMove = vi.fn().mockResolvedValue(true);
+    renderTree(onMove);
+
+    dragOnto("Deep", "Folder");
+
+    expect(onMove).toHaveBeenCalledWith("Deep", "Folder/Deep");
+  });
+
+  it("rejects dropping a folder onto a note inside that folder", () => {
+    const onMove = vi.fn().mockResolvedValue(true);
+    renderTree(onMove);
+
+    dragOnto("Folder", "Folder/Active.md");
+
+    expect(onMove).not.toHaveBeenCalled();
+  });
 });
