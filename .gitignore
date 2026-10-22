@@ -9,3 +9,8 @@ prompt/
 apps/desktop/src-tauri/target/
 apps/desktop/src-tauri/gen/schemas/linux-schema.json
 .DS_Store
+
+# Local Strata configuration and generated run state
+.strata.toml
+docs/temps/
+memory/
