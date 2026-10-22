@@ -16,4 +16,4 @@
 
 ## Gaps
 
-- Slash only inserts editor content. Tab and draft restoration is specified in [Saving](saving.md) but is not yet implemented.
+- Slash only inserts editor content.

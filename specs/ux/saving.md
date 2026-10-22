@@ -14,8 +14,7 @@
 
 ## Recovery
 
-- Restore open tabs and their unsaved drafts after restart.
-- Until restoration is implemented, communicate that unsaved drafts may not survive app restart.
+- Restore open tabs, their order, the active note, and their drafts for each workspace after restart.
 
 ## Save modes
 
