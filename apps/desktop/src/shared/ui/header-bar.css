@@ -5,13 +5,18 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
 .app-shell .topbar input { -webkit-user-select: text; user-select: text; }
 .app-shell .topbar.mac-titlebar { padding-left: 88px; }
 .app-shell .address { min-width: 0; flex: 1 1 auto; gap: 8px; overflow: visible; font-size: 13px; }
-.app-shell .address-location { min-width: 0; display: flex; align-items: center; gap: 8px; overflow: hidden; }
+.app-shell .address-path-region { position: relative; min-width: 0; flex: 0 1 auto; overflow: visible; }
+.app-shell .address-location { width: max-content; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: visible; white-space: nowrap; }
+.app-shell .address-workspace-location { max-width: 100%; overflow: hidden; }
 .app-shell .address-brand { display: inline-flex; align-items: center; gap: 6px; padding-right: 10px; border-right: 1px solid #e5e2dc; color: #3c443d; font-size: 13.5px; font-weight: 700; letter-spacing: -.03em; }
-.app-shell .address-path-collapsed { display: none; position: relative; min-width: 0; flex: 0 1 auto; }
-.app-shell .address-path-collapsed summary { max-width: 180px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 5px 7px; border-radius: 5px; color: #64685f; list-style: none; cursor: pointer; }
+.app-shell .address-path-collapsed { display: none; position: absolute; z-index: 2; top: 50%; left: 0; max-width: 100%; transform: translateY(-50%); }
+.app-shell .address-path-collapsed summary { max-width: 160px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 5px 7px; border-radius: 5px; color: #64685f; list-style: none; cursor: pointer; }
 .app-shell .address-path-collapsed summary::-webkit-details-marker { display: none; }
 .app-shell .address-path-collapsed summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .app-shell .address-path-collapsed summary:hover, .app-shell .address-path-collapsed[open] summary { background: #fffdf9; color: #292c27; }
+.app-shell .address-part { flex: 0 0 auto; }
+.app-shell .address-path-overflow .address-location { visibility: hidden; }
+.app-shell .address-path-overflow .address-path-collapsed { display: block; }
 .app-shell .address-path-options { position: absolute; z-index: 20; top: calc(100% + 5px); left: 0; width: max-content; min-width: 172px; max-width: min(280px, 70vw); padding: 4px; border: 1px solid #e5e2dc; border-radius: 7px; background: #fffdf9; box-shadow: 0 8px 24px #292c2725; }
 .app-shell .address-path-options button, .app-shell .address-path-current { width: 100%; display: block; overflow: hidden; padding: 7px 9px; border: 0; border-radius: 4px; background: transparent; color: #292c27; text-align: left; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
 .app-shell .address-path-options button { cursor: pointer; }
@@ -40,20 +45,19 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
 .app-shell .topbar button:focus-visible { outline: 2px solid #526b58; outline-offset: 2px; }
 @media (max-width: 900px) {
   html body { padding: 0; }
-  main.app-shell { width: 100%; height: 100%; border-radius: 0; grid-template-rows: 46px minmax(0,1fr) 32px; }
-  .app-shell .topbar { height: 46px; min-height: 46px; gap: 8px; padding-right: 10px; }
+  main.app-shell { width: 100%; height: 100%; border-radius: 0; grid-template-rows: 48px minmax(0,1fr) 32px; }
+  .app-shell .topbar { height: 48px; min-height: 48px; gap: 8px; padding-right: 10px; }
   .app-shell .topbar.mac-titlebar { padding-left: 88px; }
+  .app-shell .address-brand { gap: 0; padding-right: 0; border-right: 0; }
+  .app-shell .address-brand b { display: none; }
   .app-shell .global-search { flex-basis: 240px; min-width: 140px; }
 }
 @media (max-width: 760px) {
-  .app-shell .address-brand { gap: 0; padding-right: 0; border-right: 0; }
-  .app-shell .address-brand b, .app-shell .address-location:not(.address-workspace-location) { display: none; }
   .app-shell .address-workspace-location { display: flex; }
-  .app-shell .address-path-collapsed { display: block; }
 }
 @media (max-width: 640px) {
   html body { padding: 0; }
-  main.app-shell { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; grid-template-rows: 44px minmax(0,1fr) 32px; }
+  main.app-shell { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; grid-template-rows: 48px minmax(0,1fr) 32px; }
   .app-shell .topbar { gap: 6px; padding: 0 8px; }
   .app-shell .topbar.mac-titlebar { padding-left: 88px; }
   .app-shell .address { flex: 0 1 auto; gap: 5px; font-size: 11px; }

@@ -4,7 +4,8 @@
 
 - Startup opens the latest workspace or falls back to **My Notes**. Use **Open workspace…** or recent workspaces to switch.
 - The header shows the workspace name or active note path. When a note is open, show a copy menu beside its path with actions for an internal link, workspace-relative path, and full path.
-- Make folder segments in the active note path clickable; selecting one focuses that folder in the Explorer.
+- Keep the breadcrumb inline while its full path fits. Collapse it into a path menu when the actual segment names and count overflow the available header space; the menu lists each folder and focuses it in Explorer when selected.
+- On narrow windows, show only the Marnote logo. Keep the note path and copy actions available.
 
 ## Notes
 
