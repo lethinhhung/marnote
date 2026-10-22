@@ -75,7 +75,7 @@ jobs:
           collect_usage() {
             local model="$1" log="$2" input output reasoning cache_read cache_write
             read -r input output reasoning cache_read cache_write < <(
-              jq -Rn '[inputs | fromjson? | select(.type == "step_finish") | .part.tokens // {}] |
+              jq -rRn '[inputs | fromjson? | select(.type == "step_finish") | .part.tokens // {}] |
                 [([.[].input // 0] | add // 0), ([.[].output // 0] | add // 0),
                  ([.[].reasoning // 0] | add // 0), ([.[].cache.read // 0] | add // 0),
                  ([.[].cache.write // 0] | add // 0)] | @tsv' "$log"
