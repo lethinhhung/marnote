@@ -4,7 +4,7 @@
 .editor-frame .toolbar-expanded-controls { min-width: 0; flex-wrap: wrap; gap: 4px; }
 .editor-frame .toolbar-control-group, .editor-frame .toolbar-expanded-controls > .tool { flex-shrink: 0; }
 .editor-frame .toolbar-utility { margin-left: auto; }
-.editor-frame .toolbar-save { gap: 5px; padding: 0 9px; border: 1px solid #dce4d9; border-radius: 5px; color: #526b58; font-weight: 600; }
+.editor-frame .toolbar-save { width: auto; min-width: 0; height: 26px; flex: 0 0 auto; gap: 5px; padding: 0 9px; border: 1px solid #dce4d9; border-radius: 5px; color: #526b58; font-weight: 600; white-space: nowrap; }
 .editor-frame .toolbar-save:hover:not(:disabled) { background: #eff3ed; }
 .editor-frame .toolbar-save:disabled { opacity: .48; cursor: default; }
 .toolbar-action-menu summary, .table-actions-menu summary { white-space: nowrap; }
