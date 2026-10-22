@@ -56,7 +56,12 @@ export function NoteTabs({ paths, icons = {}, dirtyPath, activePath, onSelect, o
   };
   const showMenu = (path: string, x: number, y: number) => { setMenu({ path, x: Math.max(8, Math.min(x, window.innerWidth - 190)), y: Math.max(8, Math.min(y, window.innerHeight - 120)) }); };
   return <nav className="note-tabs" aria-label="Open notes" onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}>
-    <div className="note-tabs-list" ref={list} role="tablist">
+    <div className="note-tabs-list" ref={list} role="tablist" onWheel={event => {
+      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+        event.currentTarget.scrollLeft += event.deltaY;
+        event.preventDefault();
+      }
+    }}>
       {paths.map(path => {
         const title = path.split("/").pop() || path;
         const active = path === activePath;

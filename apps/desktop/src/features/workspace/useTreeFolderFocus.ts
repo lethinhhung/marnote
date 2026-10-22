@@ -26,6 +26,8 @@ export function useTreeFolderFocus(setExpanded: Dispatch<SetStateAction<Set<stri
     if (!focusPath) return;
     const row = [...document.querySelectorAll<HTMLButtonElement>(".tree-item")].find(item => item.dataset.path === focusPath);
     row?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    const timeout = window.setTimeout(() => setFocusPath(""), 4000);
+    return () => window.clearTimeout(timeout);
   }, [focusPath]);
 
   return focusPath;

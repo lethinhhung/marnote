@@ -7,6 +7,7 @@ import type { Entry, WorkspaceTree } from "./workspaceTypes";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 import { uniqueCreatePath } from "./uniqueCreatePath";
+import { useSearchExplorerActions } from "./useSearchExplorerActions";
 import { MoveEntryDialog } from "./MoveEntryDialog";
 import { TrashDialog } from "./TrashDialog";
 import type { TrashItem } from "../../platform/workspace";
@@ -68,11 +69,8 @@ export function WorkspaceSidebar(props: Props) {
     document.addEventListener("marnote-create-note", createNote);
     return () => document.removeEventListener("marnote-create-note", createNote);
   }, [noteParent]);
-  const beginRename = (path = actionPath, folder = folderFocused) => {
-    if (!path) return;
-    const name = path.split("/").pop() || path;
-    setEdit({ kind: folder ? "rename-folder" : "rename-note", path, value: name });
-  };
+  const beginRename = (path = actionPath, folder = folderFocused) => { if (path) setEdit({ kind: folder ? "rename-folder" : "rename-note", path, value: path.split("/").pop() || path }); };
+  useSearchExplorerActions({ setEdit, setSelectedFolder, setTreeFocus, setHideFolders: setHideFoldersWithoutNotes, selected: props.selected, selectedFolder, onDelete: props.onDelete, onTargetChange: props.onTargetChange });
   const saveEdit = (name: string) => {
     if (!edit) return;
     if (edit.kind.startsWith("rename")) {
