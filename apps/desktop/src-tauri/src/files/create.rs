@@ -49,6 +49,7 @@ pub fn create_markdown(root_path: &str, path: &str, content: &str) -> Result<Str
     };
     metadata::update_metadata(&r, &created_path, meta)
         .map_err(|e| format!("Metadata write failed: {}", e))?;
+    metadata::append_manual_order(&r, &created_path)?;
 
     Ok(created_path)
 }

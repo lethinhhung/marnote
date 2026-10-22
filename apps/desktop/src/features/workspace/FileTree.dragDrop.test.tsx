@@ -16,6 +16,8 @@ const entries: Entry[] = [
 function renderTree(onMove: (source: string, destination: string) => Promise<boolean>) {
   return render(<FileTree
     entries={entries}
+    manualOrder={{}}
+    sort="name"
     selected=""
     selectedFolder=""
     focus="note"
@@ -27,6 +29,7 @@ function renderTree(onMove: (source: string, destination: string) => Promise<boo
     onFolderSelect={vi.fn()}
     onEntryContext={vi.fn()}
     onMove={onMove}
+    onReorder={vi.fn()}
   />);
 }
 
@@ -73,5 +76,23 @@ describe("FileTree drag and drop", () => {
     dragOnto("Folder/Active.md", "Deep/Nested.md");
 
     expect(onMove).toHaveBeenCalledWith("Folder/Active.md", "Deep/Active.md");
+  });
+
+  it("moves a folder into another folder when dropped on it", () => {
+    const onMove = vi.fn().mockResolvedValue(true);
+    renderTree(onMove);
+
+    dragOnto("Deep", "Folder");
+
+    expect(onMove).toHaveBeenCalledWith("Deep", "Folder/Deep");
+  });
+
+  it("rejects dropping a folder onto a note inside that folder", () => {
+    const onMove = vi.fn().mockResolvedValue(true);
+    renderTree(onMove);
+
+    dragOnto("Folder", "Folder/Active.md");
+
+    expect(onMove).not.toHaveBeenCalled();
   });
 });

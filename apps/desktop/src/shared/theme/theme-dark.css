@@ -1,6 +1,20 @@
 :root[data-theme="dark"] { color-scheme: dark; color: #e2e5de; background: #121316; }
 :root[data-theme="dark"] .app-shell { background: #1a1c1a; }
 :root[data-theme="dark"] .sidebar { border-color: #292d29; background: #161816; color: #a2ada0; }
+:root[data-theme="dark"] .explorer-splitter::after { background: #292d29; }
+:root[data-theme="dark"] .explorer-dock.is-collapsed { border-color: #292d29; box-shadow: 2px 0 7px #0005; }
+:root[data-theme="dark"] .explorer-splitter:hover::after, :root[data-theme="dark"] .explorer-splitter:focus-visible::after { background: #6f9b78; }
+:root[data-theme="dark"] .explorer-collapsed-icon { color: #a0a79d; }
+:root[data-theme="dark"] .explorer-collapsed-icon:hover, :root[data-theme="dark"] .explorer-collapsed-icon:focus-visible { background: #292d29; color: #e2e5de; }
+:root[data-theme="dark"] .sidebar.explorer-peek { box-shadow: 8px 0 24px #0008; }
+:root[data-theme="dark"] .header-explorer-toggle { color: #8d948b; }
+:root[data-theme="dark"] .header-explorer-toggle:hover { background: #202320; color: #e2e5de; }
+:root[data-theme="dark"] .move-dialog, :root[data-theme="dark"] .trash-dialog { border-color: #333a33; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .move-dialog select, :root[data-theme="dark"] .move-dialog button, :root[data-theme="dark"] .trash-dialog button { border-color: #333a33; background: #242824; color: #e2e5de; }
+:root[data-theme="dark"] .move-dialog button:last-child { border-color: #526b58; background: #526b58; }
+:root[data-theme="dark"] .move-dialog p, :root[data-theme="dark"] .trash-row span, :root[data-theme="dark"] .trash-list > p { color: #adb3aa; }
+:root[data-theme="dark"] .trash-row { border-color: #292d29; }
+:root[data-theme="dark"] .trash-dialog > footer .danger { border-color: #a04436; background: #a04436; }
 :root[data-theme="dark"] .workspace-open { border-color: #292d29; }
 :root[data-theme="dark"] .workspace-open input, :root[data-theme="dark"] .open-workspace { border-color: #292d29; background: #1c1e1c; color: #e2e5de; }
 :root[data-theme="dark"] .tree-item { color: #a2ada0; }

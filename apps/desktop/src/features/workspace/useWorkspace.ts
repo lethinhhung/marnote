@@ -1,10 +1,11 @@
 import { useCallback, useState } from "react";
-import { createFile, createFolder, deleteFile, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../platform/workspace";
+import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../platform/workspace";
 import type { UpdateEntryMetadataInput } from "../../platform/workspace";
 import type { Entry, WorkspaceTree } from "./workspaceTypes";
 import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspaces";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
+import type { TrashItem } from "../../platform/workspace";
 
 function updateEntryEmptiness(entries: Entry[], path: string, isEmpty: boolean): Entry[] {
   return entries.map(entry => entry.path === path ? { ...entry, isEmpty } : { ...entry, children: entry.children ? updateEntryEmptiness(entry.children, path, isEmpty) : undefined });
@@ -15,6 +16,7 @@ export function useWorkspace() {
   const [note, setNote] = useState<{ path: string; content: string } | null>(null);
   const [error, setError] = useState("");
   const [recent, setRecent] = useState<string[]>(loadRecentWorkspaces);
+  const [trash, setTrash] = useState<TrashItem[]>([]);
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
   const remember = (path: string) => setRecent(current => rememberRecentWorkspace(current, path));
   const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); remember(path); });
@@ -74,6 +76,9 @@ export function useWorkspace() {
     return true;
   };
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); dropNote(p); });
+  const refreshTrash = useCallback(async () => { setTrash([]); if (tree) try { setTrash(await listTrash(tree.path)); } catch (e) { setError(String(e)); } }, [tree?.path]);
+  const restore = async (id: string) => { if (!tree) return; try { await restoreTrash(tree.path, id); await refresh(); await refreshTrash(); } catch (e) { setError(String(e)); } };
+  const empty = async () => { if (!tree) return; try { await emptyTrashApi(tree.path); setTrash([]); } catch (e) { setError(String(e)); } };
   const create = (path: string) => run(async () => {
     if (!tree) return;
     const createdPath = await createFile(tree.path, path);
@@ -100,6 +105,14 @@ export function useWorkspace() {
   const editTag = (oldName: string, newName: string, color: string) => mutate(async () => {
     if (tree) await renameWorkspaceTag(tree.path, oldName, newName, color);
   });
+  const reorder = async (parent: string, paths: string[]) => {
+    if (!tree) return false;
+    try {
+      await saveManualOrder(tree.path, parent, paths);
+      setTree(await listWorkspace(tree.path));
+      return true;
+    } catch (e) { setError(String(e)); return false; }
+  };
   const clearNote = () => setNote(null);
-  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, remove };
+  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, reorder, remove, trash, refreshTrash, restore, empty };
 }

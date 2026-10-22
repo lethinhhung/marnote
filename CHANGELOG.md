@@ -4,6 +4,20 @@ Notable user-facing changes are recorded here for each release. Add a dated vers
 
 ## Unreleased
 
+## [0.2.0] - 2026-10-22
+
+### Added
+
+- Search notes by title, folder, tags, and content, with quick capture and contextual actions.
+- Open notes in tabs, reorder Explorer items, resize the sidebar, and focus folders from the path bar.
+- Copy note links and paths, and paste copied note links as formatted Markdown links.
+- Move files and folders to the system trash and restore a more reliable autosave flow.
+
+### Improved
+
+- Refine the editor toolbar and header for narrow windows and long folder paths.
+- Improve Explorer drag and drop, folder navigation, and search result actions.
+
 ## [0.1.0] - 2026-10-21
 
 ### Added

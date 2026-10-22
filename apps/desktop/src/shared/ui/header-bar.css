@@ -4,13 +4,37 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
 .app-shell .topbar { height: 48px; min-height: 48px; gap: 12px; padding: 0 16px; background: #f8f7f4; border-color: #e5e2dc; -webkit-user-select: none; user-select: none; }
 .app-shell .topbar input { -webkit-user-select: text; user-select: text; }
 .app-shell .topbar.mac-titlebar { padding-left: 88px; }
-.app-shell .address { min-width: 0; flex: 1 1 auto; gap: 8px; overflow: hidden; font-size: 13px; }
+.app-shell .address { min-width: 0; flex: 1 1 auto; gap: 8px; overflow: visible; font-size: 13px; }
+.app-shell .address-path-region { position: relative; min-width: 0; flex: 0 1 auto; overflow: visible; }
+.app-shell .address-location { width: max-content; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: visible; white-space: nowrap; }
+.app-shell .address-workspace-location { max-width: 100%; overflow: hidden; }
 .app-shell .address-brand { display: inline-flex; align-items: center; gap: 6px; padding-right: 10px; border-right: 1px solid #e5e2dc; color: #3c443d; font-size: 13.5px; font-weight: 700; letter-spacing: -.03em; }
+.app-shell .address-path-collapsed { display: none; position: absolute; z-index: 2; top: 50%; left: 0; max-width: 100%; transform: translateY(-50%); }
+.app-shell .address-path-collapsed summary { max-width: 160px; display: flex; align-items: center; gap: 5px; overflow: hidden; padding: 5px 7px; border-radius: 5px; color: #64685f; list-style: none; cursor: pointer; }
+.app-shell .address-path-collapsed summary::-webkit-details-marker { display: none; }
+.app-shell .address-path-collapsed summary span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-shell .address-path-collapsed summary:hover, .app-shell .address-path-collapsed[open] summary { background: #fffdf9; color: #292c27; }
+.app-shell .address-part { flex: 0 0 auto; }
+.app-shell .address-path-overflow .address-location { visibility: hidden; }
+.app-shell .address-path-overflow .address-path-collapsed { display: block; }
+.app-shell .address-path-options { position: absolute; z-index: 20; top: calc(100% + 5px); left: 0; width: max-content; min-width: 172px; max-width: min(280px, 70vw); padding: 4px; border: 1px solid #e5e2dc; border-radius: 7px; background: #fffdf9; box-shadow: 0 8px 24px #292c2725; }
+.app-shell .address-path-options button, .app-shell .address-path-current { width: 100%; display: block; overflow: hidden; padding: 7px 9px; border: 0; border-radius: 4px; background: transparent; color: #292c27; text-align: left; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
+.app-shell .address-path-options button { cursor: pointer; }
+.app-shell .address-path-options button:hover, .app-shell .address-path-options button:focus-visible { background: #eef3f0; outline: 0; }
 .app-shell .address-brand svg { width: 20px; height: 20px; flex: 0 0 auto; border-radius: 5px; }
 .app-shell .address-brand svg text { fill: #fffdf9; font: italic 700 30px Georgia,serif; }
 .app-shell .address-part { gap: 8px; }
 .app-shell .address-separator { color: #bcbeb7; }
 .app-shell .address-current { gap: 5px; }
+.app-shell .address-folder { overflow: hidden; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-overflow: ellipsis; cursor: pointer; }
+.app-shell .address-folder:hover { color: #526b58; text-decoration: underline; }
+.app-shell .header-path-menu { position: relative; flex: 0 0 auto; }
+.app-shell .header-path-menu summary { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 5px; color: #92948c; list-style: none; cursor: pointer; }
+.app-shell .header-path-menu summary::-webkit-details-marker { display: none; }
+.app-shell .header-path-menu summary:hover, .app-shell .header-path-menu[open] summary { background: #fffdf9; color: #292c27; }
+.app-shell .header-path-options { position: absolute; z-index: 20; top: calc(100% + 5px); left: 0; width: max-content; min-width: 172px; padding: 4px; border: 1px solid #e5e2dc; border-radius: 7px; background: #fffdf9; box-shadow: 0 8px 24px #292c2725; }
+.app-shell .header-path-options button { width: 100%; display: block; padding: 7px 9px; border: 0; border-radius: 4px; background: transparent; color: #292c27; text-align: left; font-size: 12px; cursor: pointer; }
+.app-shell .header-path-options button:hover, .app-shell .header-path-options button:focus-visible { background: #eef3f0; outline: 0; }
 .app-shell .global-search { height: 28px; flex: 0 1 320px; min-width: 180px; max-width: 320px; margin-left: auto; border-color: #e5e2dc; border-radius: 6px; background: rgba(255,253,249,.9); }
 .app-shell .global-search input { font-size: 12px; }
 .app-shell .global-search kbd { border-radius: 4px; font-size: 10px; }
@@ -21,18 +45,23 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
 .app-shell .topbar button:focus-visible { outline: 2px solid #526b58; outline-offset: 2px; }
 @media (max-width: 900px) {
   html body { padding: 0; }
-  main.app-shell { width: 100%; height: 100%; border-radius: 0; grid-template-rows: 46px minmax(0,1fr) 32px; }
-  .app-shell .topbar { height: 46px; min-height: 46px; gap: 8px; padding-right: 10px; }
+  main.app-shell { width: 100%; height: 100%; border-radius: 0; grid-template-rows: 48px minmax(0,1fr) 32px; }
+  .app-shell .topbar { height: 48px; min-height: 48px; gap: 8px; padding-right: 10px; }
   .app-shell .topbar.mac-titlebar { padding-left: 88px; }
+  .app-shell .address-brand { gap: 0; padding-right: 0; border-right: 0; }
+  .app-shell .address-brand b { display: none; }
   .app-shell .global-search { flex-basis: 240px; min-width: 140px; }
+}
+@media (max-width: 760px) {
+  .app-shell .address-workspace-location { display: flex; }
 }
 @media (max-width: 640px) {
   html body { padding: 0; }
-  main.app-shell { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; grid-template-rows: 44px minmax(0,1fr) 32px; }
+  main.app-shell { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; grid-template-rows: 48px minmax(0,1fr) 32px; }
   .app-shell .topbar { gap: 6px; padding: 0 8px; }
   .app-shell .topbar.mac-titlebar { padding-left: 88px; }
   .app-shell .address { flex: 0 1 auto; gap: 5px; font-size: 11px; }
-  .app-shell .address-brand { gap: 4px; padding-right: 6px; font-size: 11px; }
+  .app-shell .address-brand { gap: 0; padding-right: 0; font-size: 11px; }
   .app-shell .address-brand svg { width: 17px; height: 17px; }
   .app-shell .global-search { flex: 1 1 110px; min-width: 0; height: 26px; padding: 0 5px; gap: 5px; }
   .app-shell .global-search input { font-size: 10px; }
@@ -45,3 +74,9 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
   main.app-shell { height: 100dvh; border-radius: 0; }
 }
 :root[data-theme="dark"] body { background: #1a1c1a; }
+:root[data-theme="dark"] .app-shell .header-path-options { border-color: #333a33; background: #1c1e1c; }
+:root[data-theme="dark"] .app-shell .header-path-options button { color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .header-path-options button:hover, :root[data-theme="dark"] .app-shell .header-path-options button:focus-visible { background: #242824; }
+:root[data-theme="dark"] .app-shell .address-path-options { border-color: #333a33; background: #1c1e1c; }
+:root[data-theme="dark"] .app-shell .address-path-options button, :root[data-theme="dark"] .app-shell .address-path-current { color: #e2e5de; }
+:root[data-theme="dark"] .app-shell .address-path-options button:hover, :root[data-theme="dark"] .app-shell .address-path-options button:focus-visible, :root[data-theme="dark"] .app-shell .address-path-collapsed summary:hover, :root[data-theme="dark"] .app-shell .address-path-collapsed[open] summary { background: #242824; }

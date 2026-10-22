@@ -18,19 +18,13 @@
 }
 @container editor-frame (max-width: 1100px) {
   .editor-frame .toolbar-more-controls { display: flex; }
-  .editor-frame .toolbar .action-item-13 { display: none; }
+  .editor-frame .toolbar-control-group.toolbar-block-desktop { display: none; }
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-8,
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-9,
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-10,
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-11,
+  .editor-frame .toolbar-action-menu-panel .compact-tool-action-12,
   .editor-frame .toolbar-action-menu-panel .compact-tool-action-13 { display: flex; }
-  .editor-frame .toolbar-action-menu-panel .compact-tool-action-8,
-  .editor-frame .toolbar-action-menu-panel .compact-tool-action-10 { display: none; }
-}
-@container editor-frame (max-width: 1000px) {
-  .editor-frame .toolbar .action-item-12 { display: none; }
-  .editor-frame .toolbar-action-menu-panel .compact-tool-action-12 { display: flex; }
-}
-@container editor-frame (max-width: 900px) {
-  .editor-frame .toolbar .action-item-8, .editor-frame .toolbar .action-item-10 { display: none; }
-  .editor-frame .toolbar-action-menu-panel .compact-tool-action-8,
-  .editor-frame .toolbar-action-menu-panel .compact-tool-action-10 { display: flex; }
 }
 @container editor-frame (max-width: 800px) {
   .toolbar-expanded-controls .toolbar-style-desktop { display: none; }
@@ -117,6 +111,15 @@
 @container editor-frame (max-width: 700px) {
   .editor-frame .toolbar .toolbar-text-menu { display: block; }
 }
+
+/* Keep control spacing steady as toolbar groups collapse. */
+.editor-frame .toolbar.toolbar { gap: 4px; }
+.editor-frame .toolbar .toolbar-actions,
+.editor-frame .toolbar .toolbar-expanded-controls,
+.editor-frame .toolbar .toolbar-control-group,
+.editor-frame .toolbar .toolbar-utility { gap: 4px; }
+.editor-frame .toolbar .toolbar-group-divider { margin-right: 4px; margin-left: 4px; }
+.editor-frame .toolbar .toolbar-spacer { display: none; }
 
 /* Keep the toolbar on one line while the note pane narrows beside the sidebar. */
 .editor-frame .toolbar.toolbar { flex-wrap: nowrap; }
