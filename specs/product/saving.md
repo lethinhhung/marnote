@@ -11,9 +11,13 @@
 
 ## Modes
 
-- Autosave is the supported editing mode.
-- A user-selectable manual-save mode is not part of the current product requirements. Add one only with an explicit product decision covering save commands, dirty indicators, navigation and close behavior, and preference scope.
+- Support **Automatic** and **Manual** save modes. Persist the selected mode app-wide across restarts and workspace switches.
+- In Automatic mode, save after a brief pause following a user edit.
+- In Manual mode, retain edits as drafts until the user saves explicitly or a navigation or close safeguard requires a save attempt.
+- Both modes use the same save status, external-change protection, and failure safeguards.
 
 ## Implemented
 
+- Automatic and Manual modes are available through an app-wide footer control; the selection persists across restarts.
+- Manual mode supports **Save now** and `⌘S` / `Ctrl+S`; navigation and close safeguards also save pending drafts.
 - Open tabs, tab order, recent selection order, active note, and drafts are restored per workspace from local app storage.

@@ -1,10 +1,19 @@
 # Saving
 
-## Autosave
+## Save modes
 
-- After a user edits a note, wait briefly for typing to pause, then save the draft automatically.
+- Show an **Automatic / Manual** segmented control beside the save status in the note footer. The selection applies across workspaces and restarts.
+- In **Automatic**, save after a user pauses editing.
+- Switching from Manual to Automatic schedules any pending draft for autosave.
+- In **Manual**, edits stay as drafts until **Save now**, `⌘S` / `Ctrl+S`, or a save safeguard before navigation or closing.
+- Show **Save now** in Manual mode. Disable it when there are no unsaved changes or while a save is in progress.
+- The unsaved status and tab indicator remain visible in Manual mode.
+
+## Save status
+
+- In Automatic mode, wait briefly for typing to pause, then save the draft automatically.
 - Show **Saving…**, **Saved**, or **Save failed** in the note footer. Mark the active tab as unsaved while its draft differs from disk or a save is in progress or has failed.
-- A newly opened or externally synchronized note is not dirty solely because the editor normalized its representation. Autosave starts only after a user edit.
+- A newly opened or externally synchronized note is not dirty solely because the editor normalized its representation. Automatic saving starts only after a user edit.
 
 ## Save safeguards
 
@@ -15,7 +24,3 @@
 ## Recovery
 
 - Restore open tabs, their order, the active note, and their drafts for each workspace after restart.
-
-## Save modes
-
-- Autosave is the available mode; there is no manual-save toggle or user-facing save command.

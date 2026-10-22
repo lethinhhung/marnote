@@ -305,6 +305,11 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .note-footer-save.saving i { background: #c4a64b; animation: save-pulse 1s ease-in-out infinite alternate; }
 .note-footer-save.error { color: #b44f47; }
 .note-footer-save.error i { background: #c95e55; }
+.save-mode-control { display: inline-flex; align-items: center; padding: 1px; border: 1px solid #e3e3dc; border-radius: 5px; background: #f1f1ec; }
+.save-mode-control button { padding: 2px 6px; border: 0; border-radius: 4px; background: transparent; color: #777b73; font: inherit; cursor: pointer; }
+.save-mode-control button[aria-pressed="true"] { background: #fff; color: #3f5543; box-shadow: 0 1px 2px #00000012; }
+.note-save-now { padding: 3px 7px; border: 1px solid #dce4d9; border-radius: 4px; background: #fff; color: #526b58; font: inherit; cursor: pointer; }
+.note-save-now:disabled { opacity: .5; cursor: default; }
 @keyframes save-pulse { to { opacity: .35; } }
 .note-footer b { color: #c3c5bd; font-weight: 400; }
 .note-footer-path { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
