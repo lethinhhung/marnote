@@ -10,6 +10,7 @@
 ## Notes
 
 - Tree items, tabs, and workspace links navigate to notes; folder links focus the folder.
+- Focusing a folder from the path scrolls it into view and briefly highlights it; clicking in the editor clears the highlight.
 - Closing the active tab selects the most recent remaining tab. Closing the last shows the empty-note prompt.
 - `⌘K` / `Ctrl+K` opens a global palette with grouped note/file, command, and tag results. Note results show their location and matching excerpt, and open in new tabs.
 - Arrow keys select results and keep the active result visible, scrolling fully to the top for the first result and the bottom for the last. Enter opens or runs the selection; Escape closes the palette. Enter defaults to the first result or note creation.
