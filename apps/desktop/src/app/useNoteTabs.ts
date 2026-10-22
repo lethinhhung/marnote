@@ -28,6 +28,7 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear }
   const drafts = useRef<Record<string, string>>({});
   const restored = useRef("");
   const lastActive = useRef("");
+  const hydratingDraft = useRef<{ path: string; value: string } | null>(null);
   const path = note?.path || "";
   useEffect(() => {
     if (!tree) return;
@@ -53,12 +54,19 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear }
     if (path && note) {
       setTabs(current => current.includes(path) ? current : [...current, path]);
       recent.current = [...recent.current.filter(item => item !== path), path];
-      if (drafts.current[path] === undefined) drafts.current[path] = note.content;
-      setDraft(drafts.current[path]);
+      const value = drafts.current[path] ?? note.content;
+      drafts.current[path] = value;
+      hydratingDraft.current = { path, value };
+      setDraft(value);
     }
   }, [tree, path, note, loadedRoot]);
   useEffect(() => {
     if (!tree || loadedRoot !== tree.path || restored.current !== tree.path) return;
+    const hydration = hydratingDraft.current;
+    if (path && hydration?.path === path) {
+      if (draft !== hydration.value) return;
+      hydratingDraft.current = null;
+    }
     if (path) drafts.current[path] = draft;
     localStorage.setItem(storageKey(tree.path), JSON.stringify({ tabs, recent: recent.current, active: path || lastActive.current, drafts: drafts.current } satisfies SavedTabs));
   }, [tree?.path, loadedRoot, tabs, path, draft]);

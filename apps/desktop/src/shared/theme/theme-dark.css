@@ -129,6 +129,11 @@
 :root[data-theme="dark"] .note-footer { border-color: #292d29; background: #1c1e1c; color: #8d948b; }
 :root[data-theme="dark"] .note-footer-divider { color: #292d29; }
 :root[data-theme="dark"] .note-footer b { color: #5e655c; }
+:root[data-theme="dark"] .save-mode-control { border-color: #333a33; background: #161816; }
+:root[data-theme="dark"] .save-mode-control button { color: #a2ada0; }
+:root[data-theme="dark"] .save-mode-control button[aria-pressed="true"] { background: #29352d; color: #e2e5de; }
+:root[data-theme="dark"] .editor-frame .toolbar-save { border-color: #384339; color: #a2c6a6; }
+:root[data-theme="dark"] .editor-frame .toolbar-save:hover:not(:disabled) { background: #202c22; }
 :root[data-theme="dark"] .theme-toggle { border-color: #292d29; color: #a2ada0; }
 :root[data-theme="dark"] .theme-toggle:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .address { color: #a2ada0; }

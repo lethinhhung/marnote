@@ -4,7 +4,7 @@
 
 - Notes open in tabs; closing the active tab saves and selects the most recent remaining tab.
 - Edit the title in place; Enter or blur commits. `.md` is shown separately.
-- **Markdown** toggles source view; **Copy MD** copies the draft. Drafts autosave with status in the footer.
+- **Markdown** toggles source view; **Copy MD** copies the draft. Saving behavior is defined in [Saving](saving.md).
 - External edits show **Load external version** and **Keep mine** options.
 
 ## Blocks and links
@@ -16,4 +16,4 @@
 
 ## Gaps
 
-- Slash only inserts editor content. Tabs and drafts are not restored after restart.
+- Slash only inserts editor content.

@@ -10,6 +10,7 @@ import { NoteFooter } from "../features/editor/NoteFooter";
 import { useWideContent } from "../features/editor/useWideContent";
 import { isExternalConflict } from "./workspaceConflict";
 import { useAutosave } from "./useAutosave";
+import { useSaveMode } from "./useSaveMode";
 import type { Entry, WorkspaceEntryMetadata } from "../shared/domain/workspace";
 import { NoteTabs } from "../shared/ui/NoteTabs";
 import { useNoteTabs } from "./useNoteTabs";
@@ -54,6 +55,7 @@ export function App() {
   const [source, setSource] = useState(false);
   const [footerTarget, setFooterTarget] = useState<{ path: string; kind: "note" | "folder" }>({ path: "", kind: "note" });
   const [draft, setDraft] = useState("");
+  const { mode: saveMode, setMode: setSaveMode } = useSaveMode();
   const [external, setExternal] = useState<string | null>(null);
   const titleInput = useRef<HTMLSpanElement>(null);
   const path = workspace.note?.path || "";
@@ -65,6 +67,7 @@ export function App() {
     draft,
     noteContent: workspace.note?.content,
     save: workspace.save,
+    enabled: saveMode === "automatic",
   });
   const noteTabs = useNoteTabs({ tree: workspace.tree, note: workspace.note, draft, setDraft, save: saveNow, select: workspace.select, clear: workspace.clearNote });
   const toggleExplorer = () => {
@@ -102,6 +105,16 @@ export function App() {
   );
   const tagUsageCounts = useMemo(() => countTagUsage(workspace.tree?.entries), [workspace.tree]);
   const searchActions = createSearchActions(workspace.tree, path, name, noteTabs.saveCurrent, workspace.create);
+  useEffect(() => {
+    const saveShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        void saveNow();
+      }
+    };
+    window.addEventListener("keydown", saveShortcut);
+    return () => window.removeEventListener("keydown", saveShortcut);
+  }, [saveNow]);
   return <main className="app-shell">
     <HeaderBar tree={workspace.tree} path={path} content={draft} theme={theme} source={source} explorerCollapsed={explorer.collapsed} onToggleExplorer={toggleExplorer} toggleTheme={toggleTheme} onToggleSource={() => setSource(value => !value)} onSelect={entry => { if (entry.kind === "directory") document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: entry.path })); else void noteTabs.selectTab(entry.path); }} onCreate={title => { void searchActions.createNote(title); }} onCapture={() => { void noteTabs.create(); }} onCopy={value => { void searchActions.copy(value); }} onQuickAction={(entry, action, content) => {
       if (action === "link" || action === "relative-path" || action === "full-path" || action === "content") { void searchActions.copyTarget(entry, action, content); return; }
@@ -112,9 +125,9 @@ export function App() {
       <section className="workspace" onPointerDown={event => { if (workspace.note && (event.target as HTMLElement).closest(".editor-canvas")) document.dispatchEvent(new CustomEvent("marnote-focus-note")); }}>
         {noteTabs.tabs.length > 0 && <NoteTabs paths={noteTabs.tabs} icons={tabIcons} dirtyPath={path && (saveStatus !== "saved" || draft !== workspace.note?.content) ? path : ""} activePath={path} canCreate={!!workspace.tree} onSelect={target => { void noteTabs.selectTab(target); }} onClose={target => { void noteTabs.closeTab(target); }} onCloseOthers={target => { void noteTabs.closeOthers(target); }} onCloseAll={() => { void noteTabs.closeAll(); }} onCreate={() => { void noteTabs.create(); }} onReorder={noteTabs.reorder} />}
         {workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}{external !== null && <div className="status-banner conflict" role="status">This file changed outside Marnote. <button onClick={() => { workspace.acceptExternal(path, external); noteTabs.updateDraft(external); setExternal(null); }}>Load external version</button><button onClick={() => { workspace.acceptExternal(path, external); setExternal(null); }}>Keep mine</button></div>}
-        {workspace.note ? <NoteEditor key={path} path={path} entries={workspace.tree?.entries ?? []} onNavigate={(target, kind) => { if (kind === "file") void noteTabs.selectTab(target); else document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: target })); }} updateMetadata={workspace.updateMetadata} value={draft} onChange={noteTabs.updateDraft} source={source} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} tagColors={workspace.tree?.tags} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
+        {workspace.note ? <NoteEditor key={path} path={path} entries={workspace.tree?.entries ?? []} onNavigate={(target, kind) => { if (kind === "file") void noteTabs.selectTab(target); else document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: target })); }} updateMetadata={workspace.updateMetadata} value={draft} onChange={noteTabs.updateDraft} source={source} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} onSave={() => { void saveNow(); }} dirty={draft !== workspace.note.content} saving={saveStatus === "saving"} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} tagColors={workspace.tree?.tags} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
       </section>
     </div>
-    <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
+    <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} saveMode={saveMode} dirty={!!path && draft !== workspace.note?.content} onSaveModeChange={setSaveMode} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
   </main>;
 }
