@@ -4,7 +4,7 @@
 
 - Edit Markdown with paragraph, heading, list, task, quote, code, table, and divider blocks.
 - Preserve Markdown as the source of truth; avoid destructive round-trip changes and saving editor normalization.
-- Support portable links to workspace notes and folders, plus external web URLs. Resolve workspace links from the current note; moves do not rewrite links. Detect external edits before replacing content.
+- Support separate portable workspace item links to notes/folders and external web address links. Resolve workspace links from the current note; moves do not rewrite links. Detect external edits before replacing content.
 - Keep note content independent of app metadata or a database.
 
 ## Implemented

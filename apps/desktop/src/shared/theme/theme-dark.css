@@ -96,7 +96,7 @@
 :root[data-theme="dark"] *::-webkit-scrollbar-thumb { background: #3b423b; }
 :root[data-theme="dark"] .link-popover { border-color: #292d29; background: #1c1e1c; box-shadow: 0 10px 28px rgba(0,0,0,.4); }
 :root[data-theme="dark"] .link-popover label { color: #8d948b; }
-:root[data-theme="dark"] .link-popover input, :root[data-theme="dark"] .link-popover select, :root[data-theme="dark"] .link-popover button { border-color: #292d29; background: #161816; color: #e2e5de; }
+:root[data-theme="dark"] .link-popover input, :root[data-theme="dark"] .link-popover button { border-color: #292d29; background: #161816; color: #e2e5de; }
 :root[data-theme="dark"] .link-popover button[type="submit"] { border-color: #294334; background: #294334; color: #fff; }
 :root[data-theme="dark"] .editor-link-preview { border-color: #292d29; background: #1c1e1c; color: #e2e5de; box-shadow: 0 5px 16px rgba(0,0,0,.4); }
 :root[data-theme="dark"] .editor-link-preview button, :root[data-theme="dark"] .editor-link-preview a { border-color: #292d29; background: #161816; color: #a2ada0; }
