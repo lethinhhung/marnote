@@ -119,7 +119,8 @@ button, input { font: inherit; }
 .editor-frame { position: relative; display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; background: #fff; container: editor-frame / inline-size; }
 .toolbar { position: relative; width: 100%; min-width: 0; min-height: 40px; display: flex; flex: 0 0 40px; align-items: center; gap: 8px; padding: 4px clamp(16px, 4vw, 56px); border-bottom: 1px solid #efeee9; background: #fdfdfc; }
 .link-popover { position: absolute; z-index: 30; top: calc(100% + 6px); left: clamp(16px, 4vw, 56px); width: min(300px, calc(100vw - 32px)); display: grid; gap: 8px; padding: 12px; border: 1px solid #e9e8e3; border-radius: 8px; background: #fff; box-shadow: 0 10px 28px rgba(32,37,30,.14); }
-.slash-link-popover { position: fixed; z-index: 60; max-height: calc(100vh - 24px); overflow-y: auto; }
+.slash-link-anchor { position: fixed; z-index: 60; width: min(300px, calc(100vw - 32px)); max-height: calc(100vh - 24px); overflow-y: auto; }
+.slash-link-anchor .link-popover { position: static; width: auto; max-height: none; }
 .link-popover label { color: #858a80; font-size: 11px; font-weight: 600; }
 .link-popover input { min-width: 0; padding: 8px; border: 1px solid #e8e8e1; border-radius: 5px; outline-color: #8a9c85; color: #454b43; font-size: 12px; }
 .link-popover select { min-width: 0; max-width: 100%; padding: 8px; border: 1px solid #e8e8e1; border-radius: 5px; background: #fff; color: #454b43; font-size: 12px; }
