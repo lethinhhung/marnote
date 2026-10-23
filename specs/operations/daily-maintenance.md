@@ -8,9 +8,9 @@ Automate daily repository maintenance with GitHub Actions and OpenCode free mode
 
 - Use OpenRouter's free endpoints through OpenCode with `OPENROUTER_API_KEY` stored as a GitHub Actions secret.
 - Try these models in order, resetting the checkout between attempts:
-  1. `minimax/minimax-m3.1-flash:free` — strong fit for codebase work and agentic coding.
-  2. `nvidia/nemotron-3-ultra-550b-a55b:free` — strong agentic reasoning and tool calling.
-  3. `poolside/laguna-s-2.1:free` — coding-agent model specialized for software engineering.
+  1. `cohere/north-mini-code:free` — coding-agent model optimized for software engineering and terminal tasks.
+  2. `nvidia/nemotron-3.5-lightning:free` — newer, high-throughput model for agentic workloads with tool support.
+  3. `poolside/laguna-xs-2.1:free` — newer coding-agent model specialized for software engineering.
 - Move to the next model if OpenCode fails, including rate limits, or if it succeeds without producing changes. Do not create a PR if all models fail or produce no valid changes.
 - Free endpoints are rate limited and availability can change. Recheck model IDs and pricing periodically.
 - Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not OpenRouter account quota balances.

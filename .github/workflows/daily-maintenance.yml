@@ -82,9 +82,9 @@ jobs:
           echo "MAINTENANCE_FOCUS_AREA=$focus_area" >> "$GITHUB_ENV"
           echo "Focus area: $focus_area" >> "$GITHUB_STEP_SUMMARY"
           models=(
-            "openrouter/minimax/minimax-m3.1-flash:free"
-            "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
-            "openrouter/poolside/laguna-s-2.1:free"
+            "openrouter/cohere/north-mini-code:free"
+            "openrouter/nvidia/nemotron-3.5-lightning:free"
+            "openrouter/poolside/laguna-xs-2.1:free"
           )
           summary_file=.daily-maintenance-summary.md
           total_input=0
