@@ -2,18 +2,18 @@
 
 ## Goal
 
-Automate daily repository maintenance with GitHub Actions and OpenCode free models.
+Automate daily repository maintenance with GitHub Actions and OpenCode using NVIDIA NIM free API endpoints.
 
 ## Models
 
-- Use OpenRouter's free endpoints through OpenCode with `OPENROUTER_API_KEY` stored as a GitHub Actions secret.
+- Use OpenCode's built-in NVIDIA provider with `NVIDIA_API_KEY` stored as a GitHub Actions secret. NVIDIA's hosted free endpoints are for prototyping and are rate limited.
 - Try these models in order, resetting the checkout between attempts:
-  1. `minimax/minimax-m3.1-flash:free` — strong fit for codebase work and agentic coding.
-  2. `nvidia/nemotron-3-ultra-550b-a55b:free` — strong agentic reasoning and tool calling.
-  3. `poolside/laguna-s-2.1:free` — coding-agent model specialized for software engineering.
+  1. `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` — newest NVIDIA endpoint focused on agentic coding and tool use.
+  2. `nvidia/nvidia/nemotron-3-ultra-550b-a55b` — widely used reasoning model for coding, planning, and long-running agents.
+  3. `nvidia/poolside/laguna-xs-2.1` — coding-agent model specialized for terminal tasks.
 - Move to the next model if OpenCode fails, including rate limits, or if it succeeds without producing changes. Do not create a PR if all models fail or produce no valid changes.
-- Free endpoints are rate limited and availability can change. Recheck model IDs and pricing periodically.
-- Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not OpenRouter account quota balances.
+- Free endpoints are rate limited and availability can change. Recheck model IDs and access periodically.
+- Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not provider quota balances.
 
 ## Schedule and Sessions
 
