@@ -1,4 +1,4 @@
-import type { Entry } from "../domain/workspace";
+import { isMarkdown, type Entry } from "../domain/workspace";
 
 export type MatchSource = "Title" | "Folder" | "Tag" | "Content";
 export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
@@ -42,7 +42,6 @@ function makeExcerpt(content: string, query: string): string {
   return `${start ? "…" : ""}${content.slice(start, end).replace(/\s+/g, " ").trim()}${end < content.length ? "…" : ""}`;
 }
 
-const isMarkdown = (entry: Entry) => entry.kind === "file" && entry.path.toLocaleLowerCase().endsWith(".md");
 const hasWords = (value: string, words: string[]) => words.every(word => value.includes(word));
 
 export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
