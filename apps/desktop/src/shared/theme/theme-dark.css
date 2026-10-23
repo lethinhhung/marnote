@@ -119,6 +119,7 @@
 :root[data-theme="dark"] .slash-menu-heading { color: #8d948b; }
 :root[data-theme="dark"] .slash-option { color: #e2e5de; }
 :root[data-theme="dark"] .slash-option:hover, :root[data-theme="dark"] .slash-option.selected { background: #202320; }
+:root[data-theme="dark"] .slash-menu.keyboard-navigation .slash-option:hover:not(.selected) { background: transparent; }
 :root[data-theme="dark"] .slash-icon { border-color: #292d29; color: #a2ada0; }
 :root[data-theme="dark"] .slash-label small { color: #8d948b; }
 :root[data-theme="dark"] .block-drag-handle button { background: #202320; color: #a2ada0; }

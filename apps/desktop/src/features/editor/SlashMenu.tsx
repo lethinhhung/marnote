@@ -19,18 +19,18 @@ const choices = [
 ];
 export const matchingSlashIds = (query: string) => choices.filter(item => `${item.label} ${item.detail}`.toLowerCase().includes(query.toLowerCase())).map(item => item.id);
 
-type Props = { query: string; selected: number; position: { top: number; left: number; maxHeight: number }; onSelect: (id: string) => void };
+type Props = { query: string; selected: number; keyboardNavigation: boolean; position: { top: number; left: number; maxHeight: number }; onSelect: (id: string) => void; onHover: (index: number) => void; onScroll: () => void };
 
-export function SlashMenu({ query, selected, position, onSelect }: Props) {
+export function SlashMenu({ query, selected, keyboardNavigation, position, onSelect, onHover, onScroll }: Props) {
   const menu = useRef<HTMLDivElement>(null);
   const items = useMemo(() => choices.filter(item => `${item.label} ${item.detail}`.toLowerCase().includes(query.toLowerCase())), [query]);
   useEffect(() => {
     menu.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
   }, [query, selected, items.length]);
   if (!items.length) return null;
-  return createPortal(<div ref={menu} className="slash-menu" role="listbox" aria-label="Insert a block" style={position}>
+  return createPortal(<div ref={menu} className={`slash-menu${keyboardNavigation ? " keyboard-navigation" : ""}`} role="listbox" aria-label="Insert a block" style={position} onScroll={onScroll}>
     <div className="slash-menu-heading">INSERT CONTENT</div>
-    {items.map(({ id, label, detail, icon: Icon }, index) => <button key={id} type="button" role="option" aria-selected={index === selected} className={index === selected ? "slash-option selected" : "slash-option"} onMouseDown={event => event.preventDefault()} onClick={() => onSelect(id)}>
+    {items.map(({ id, label, detail, icon: Icon }, index) => <button key={id} type="button" role="option" aria-selected={index === selected} className={index === selected ? "slash-option selected" : "slash-option"} onMouseMove={event => { if (event.movementX || event.movementY) onHover(index); }} onMouseDown={event => event.preventDefault()} onClick={() => onSelect(id)}>
       <span className="slash-icon"><Icon size={16} /></span><span className="slash-label">{label}<small>{detail}</small></span>
     </button>)}
   </div>, document.body);

@@ -225,6 +225,7 @@ button, input { font: inherit; }
 .slash-menu-heading { padding: 8px 9px 6px; color: #a0a198; font-size: 9px; font-weight: 700; letter-spacing: .12em; }
 .slash-option { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px; border: 0; border-radius: 7px; background: transparent; color: #464b43; text-align: left; cursor: pointer; }
 .slash-option:hover, .slash-option.selected { background: #f3f4ef; }
+.slash-menu.keyboard-navigation .slash-option:hover:not(.selected) { background: transparent; }
 .slash-icon { width: 29px; height: 29px; display: grid; place-items: center; border: 1px solid #eeede8; border-radius: 6px; color: #737c6f; }
 .slash-label { font-size: 12px; font-weight: 600; }
 .slash-label small { display: block; margin-top: 2px; color: #999b92; font-size: 10px; font-weight: 400; }
