@@ -20,7 +20,7 @@ describe("useNoteTabs", () => {
     const select = vi.fn();
     const { result } = renderHook(() => useNoteTabs({
       tree, note: { path: "First.md", content: "original" }, draft: "edited",
-      setDraft: vi.fn(), save, select, clear: vi.fn(),
+      setDraft: vi.fn(), save, select, clear: vi.fn(), manual: false, askUnsaved: vi.fn(),
     }));
     await act(async () => { await result.current.selectTab("Folder/Second.md"); });
     expect(save).toHaveBeenCalledWith("First.md", "edited", "original");
@@ -32,7 +32,7 @@ describe("useNoteTabs", () => {
     const select = vi.fn();
     const { result } = renderHook(() => useNoteTabs({
       tree, note: { path: "First.md", content: "original" }, draft: "edited",
-      setDraft: vi.fn(), save, select, clear: vi.fn(),
+      setDraft: vi.fn(), save, select, clear: vi.fn(), manual: false, askUnsaved: vi.fn(),
     }));
     await act(async () => { await result.current.selectTab("Folder/Second.md"); });
     expect(select).not.toHaveBeenCalled();
