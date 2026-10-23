@@ -1,4 +1,4 @@
-import type { Entry, WorkspaceTree } from "../domain/workspace";
+import { isMarkdown, type WorkspaceTree } from "../domain/workspace";
 import type { ReadResult } from "../../platform/workspace";
 import { flattenEntries } from "./searchNotes";
 
@@ -28,8 +28,4 @@ export async function loadSearchIndex(tree: WorkspaceTree, read: (root: string, 
   const paths = new Set(notes.map(entry => entry.path));
   for (const path of index.keys()) if (!paths.has(path)) index.delete(path);
   return Object.fromEntries([...index].map(([path, note]) => [path, note.content]));
-}
-
-function isMarkdown(entry: Entry) {
-  return entry.kind === "file" && entry.path.toLocaleLowerCase().endsWith(".md");
 }
