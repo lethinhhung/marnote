@@ -82,9 +82,9 @@ jobs:
           echo "MAINTENANCE_FOCUS_AREA=$focus_area" >> "$GITHUB_ENV"
           echo "Focus area: $focus_area" >> "$GITHUB_STEP_SUMMARY"
           models=(
-            "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b"
-            "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
             "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b"
+            "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+            "nvidia/poolside/laguna-xs-2.1"
           )
           summary_file=.daily-maintenance-summary.md
           total_input=0
