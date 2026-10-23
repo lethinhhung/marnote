@@ -14,7 +14,15 @@ export function WorkspaceLinkPalette({ entries, onClose, onSelect }: Props) {
   const choices = useMemo(() => flattenEntries(entries).filter(entry => `${entry.name} ${entry.path}`.toLowerCase().includes(query.toLowerCase())), [entries, query]);
   useEffect(() => { input.current?.focus(); }, []);
   useEffect(() => { setActive(0); setKeyboardNavigation(true); }, [query]);
-  useEffect(() => { results.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" }); }, [active]);
+  useEffect(() => {
+    const panel = results.current;
+    const selected = panel?.querySelector<HTMLElement>('[aria-selected="true"]');
+    if (!panel || !selected) return;
+    const top = selected.offsetTop;
+    const bottom = top + selected.offsetHeight;
+    if (top < panel.scrollTop) panel.scrollTop = top;
+    else if (bottom > panel.scrollTop + panel.clientHeight) panel.scrollTop = bottom - panel.clientHeight;
+  }, [active, query]);
   const choose = (entry = choices[active]) => { if (entry) onSelect(entry); };
   const keys = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape") { event.preventDefault(); onClose(); }
