@@ -36,6 +36,7 @@
 .editor-frame .editor-prose h3 { font-size: 20px; }
 .editor-frame .editor-prose h2 + p { margin-top: 16px; font-family: Newsreader, Georgia, serif; font-size: 20px; line-height: 1.65; }
 .editor-frame .editor-prose p + h2, .editor-frame .editor-prose p + h3, .editor-frame .editor-prose ul + h3, .editor-frame .editor-prose blockquote + p { margin-top: 22px; }
+.editor-frame .editor-prose blockquote + h1, .editor-frame .editor-prose blockquote + h2, .editor-frame .editor-prose blockquote + h3 { margin-top: 22px; }
 .editor-frame .editor-prose ul + h2, .editor-frame .editor-prose ol + h2 { margin-top: 22px; }
 .editor-frame .editor-prose h2 + ul, .editor-frame .editor-prose h2 + ol { margin-top: 12px; }
 .editor-frame .editor-prose h3 + ul, .editor-frame .editor-prose h3 + blockquote { margin-top: 12px; }
