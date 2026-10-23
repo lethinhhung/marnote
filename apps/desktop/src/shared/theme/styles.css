@@ -34,6 +34,23 @@ button, input { font: inherit; }
 .move-dialog button { padding: 7px 12px; border: 1px solid #e5e2dc; border-radius: 5px; background: #fff; cursor: pointer; }
 .move-dialog button:last-child { border-color: #526b58; background: #526b58; color: white; }
 .move-dialog button:disabled { opacity: .5; cursor: default; }
+.unsaved-backdrop { z-index: 100; }
+.unsaved-dialog footer { justify-content: flex-end; }
+.unsaved-note-list { display: grid; gap: 6px; max-height: 220px; overflow: auto; margin: -6px 0 14px; padding: 0; list-style: none; color: #596858; font-size: 12px; line-height: 1.5; }
+.unsaved-note-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; padding: 7px; border: 1px solid #e5e2dc; border-radius: 6px; }
+.unsaved-note-list li > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.unsaved-note-actions { display: flex; flex: 0 0 auto; gap: 4px; }
+.unsaved-note-actions button { padding: 4px 7px; font-size: 11px; }
+.unsaved-note-actions button:first-child { border-color: #e5e2dc; background: #fff; color: #292c27; }
+.unsaved-note-actions button:first-child:hover { background: #f3f2ed; }
+.unsaved-note-actions button:last-child { border-color: #526b58; background: #526b58; color: white; }
+.unsaved-note-actions button:last-child:hover { background: #435b48; }
+.unsaved-error { margin: 0 0 10px !important; color: #a04436 !important; font-size: 12px; white-space: normal !important; }
+.unsaved-dialog footer { display: flex; justify-content: space-between; gap: 8px; }
+.unsaved-footer-actions { display: flex; gap: 8px; }
+.unsaved-dialog footer button:last-child { border-color: #526b58; background: #526b58; color: white; }
+.unsaved-dialog footer button:last-child:hover { background: #435b48; }
+.unsaved-dialog footer button:disabled, .unsaved-note-actions button:disabled { opacity: .55; cursor: default; }
 .trash-dialog { width: min(520px, calc(100vw - 32px)); max-height: min(620px, calc(100vh - 32px)); display: flex; flex-direction: column; padding: 16px; border: 1px solid #e5e2dc; border-radius: 10px; background: #fffdf9; box-shadow: 0 14px 40px #0003; color: #292c27; }
 .trash-dialog > header, .trash-dialog > footer, .trash-row { display: flex; align-items: center; gap: 8px; }
 .trash-dialog > header { justify-content: space-between; }

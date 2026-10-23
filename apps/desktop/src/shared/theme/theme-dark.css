@@ -10,8 +10,16 @@
 :root[data-theme="dark"] .header-explorer-toggle { color: #8d948b; }
 :root[data-theme="dark"] .header-explorer-toggle:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .move-dialog, :root[data-theme="dark"] .trash-dialog { border-color: #333a33; background: #1c1e1c; color: #e2e5de; }
+:root[data-theme="dark"] .unsaved-dialog footer button:last-child { border-color: #526b58; background: #526b58; }
+:root[data-theme="dark"] .unsaved-note-list { color: #a2ada0; }
+:root[data-theme="dark"] .unsaved-note-list li { border-color: #333a33; }
+:root[data-theme="dark"] .unsaved-note-actions button:first-child { border-color: #333a33; background: #242824; color: #e2e5de; }
+:root[data-theme="dark"] .unsaved-note-actions button:first-child:hover { background: #2b302b; }
+:root[data-theme="dark"] .unsaved-error { color: #ed9a89 !important; }
 :root[data-theme="dark"] .move-dialog select, :root[data-theme="dark"] .move-dialog button, :root[data-theme="dark"] .trash-dialog button { border-color: #333a33; background: #242824; color: #e2e5de; }
 :root[data-theme="dark"] .move-dialog button:last-child { border-color: #526b58; background: #526b58; }
+:root[data-theme="dark"] .unsaved-dialog .unsaved-note-actions button:last-child { border-color: #526b58; background: #526b58; color: #fff; }
+:root[data-theme="dark"] .unsaved-dialog .unsaved-note-actions button:last-child:hover { background: #435b48; }
 :root[data-theme="dark"] .move-dialog p, :root[data-theme="dark"] .trash-row span, :root[data-theme="dark"] .trash-list > p { color: #adb3aa; }
 :root[data-theme="dark"] .trash-row { border-color: #292d29; }
 :root[data-theme="dark"] .trash-dialog > footer .danger { border-color: #a04436; background: #a04436; }

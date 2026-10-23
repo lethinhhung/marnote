@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { File, FileText } from "lucide-react";
 import { useTheme } from "../shared/theme/useTheme";
 import { useWorkspace } from "../features/workspace/useWorkspace";
@@ -18,6 +18,9 @@ import { NoNoteOpened } from "./NoNoteOpened";
 import { useExplorerLayout } from "../features/workspace/useExplorerLayout";
 import { ExplorerSplitter } from "../features/workspace/ExplorerSplitter";
 import { createSearchActions } from "../shared/ui/searchActions";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { isTauri } from "@tauri-apps/api/core";
+import { useUnsavedChangesPrompt } from "./useUnsavedChangesPrompt";
 
 function findEntry(entries: Entry[] | undefined, path: string): Entry | undefined {
   if (!entries) return undefined;
@@ -56,6 +59,7 @@ export function App() {
   const [footerTarget, setFooterTarget] = useState<{ path: string; kind: "note" | "folder" }>({ path: "", kind: "note" });
   const [draft, setDraft] = useState("");
   const { mode: saveMode, setMode: setSaveMode } = useSaveMode();
+  const unsavedPrompt = useUnsavedChangesPrompt();
   const [external, setExternal] = useState<string | null>(null);
   const titleInput = useRef<HTMLSpanElement>(null);
   const path = workspace.note?.path || "";
@@ -69,7 +73,21 @@ export function App() {
     save: workspace.save,
     enabled: saveMode === "automatic",
   });
-  const noteTabs = useNoteTabs({ tree: workspace.tree, note: workspace.note, draft, setDraft, save: saveNow, select: workspace.select, clear: workspace.clearNote });
+  const saveDraft = useCallback((target: string, content: string, original: string) => target === path ? saveNow() : workspace.save(target, content, original), [path, saveNow, workspace.save]);
+  const noteTabs = useNoteTabs({ tree: workspace.tree, note: workspace.note, draft, setDraft, save: saveDraft, select: workspace.select, clear: workspace.clearNote, manual: saveMode === "manual", askUnsaved: unsavedPrompt.ask });
+  const closePermit = useRef(false);
+  const closeCurrent = useRef(noteTabs.saveCurrent);
+  closeCurrent.current = noteTabs.saveCurrent;
+  useEffect(() => {
+    if (!isTauri()) return;
+    let unlisten: (() => void) | undefined;
+    void getCurrentWindow().onCloseRequested(async event => {
+      if (closePermit.current) { closePermit.current = false; return; }
+      event.preventDefault();
+      if (await closeCurrent.current()) { closePermit.current = true; await getCurrentWindow().close(); }
+    }).then(dispose => { unlisten = dispose; });
+    return () => unlisten?.();
+  }, []);
   const toggleExplorer = () => {
     setExplorerPeek(false);
     if (!explorer.collapsed && document.querySelector("#workspace-explorer")?.contains(document.activeElement)) {
@@ -128,6 +146,7 @@ export function App() {
         {workspace.note ? <NoteEditor key={path} path={path} entries={workspace.tree?.entries ?? []} onNavigate={(target, kind) => { if (kind === "file") void noteTabs.selectTab(target); else document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: target })); }} updateMetadata={workspace.updateMetadata} value={draft} onChange={noteTabs.updateDraft} source={source} horizontalScroll={wideContent.horizontalScroll} onToggleHorizontalScroll={wideContent.toggleHorizontalScroll} onSave={() => { void saveNow(); }} dirty={draft !== workspace.note.content} saving={saveStatus === "saving"} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} metadata={noteMetadata} tagColors={workspace.tree?.tags} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
       </section>
     </div>
+    {unsavedPrompt.dialog}
     <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} saveMode={saveMode} dirty={!!path && draft !== workspace.note?.content} onSaveModeChange={setSaveMode} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
   </main>;
 }
