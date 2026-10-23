@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Entry, WorkspaceTree } from "../shared/domain/workspace";
-import { findEntry, notePaths, persistTabs, readSaved, storageKey } from "./noteTabStorage";
+import { findEntry, notePaths, persistTabs, readSaved } from "./noteTabStorage";
 import { resolveDrafts } from "./resolveDrafts";
 type Note = { path: string; content: string } | null;
 type Props = { tree: WorkspaceTree | null; note: Note; draft: string; setDraft: (value: string) => void; save: (path: string, draft: string, original: string) => Promise<boolean>; select: (entry: Entry) => void; clear: () => void; manual: boolean; askUnsaved: (names: string[], onAction: (name: string, action: "save" | "discard") => Promise<boolean>) => Promise<boolean> };
@@ -69,7 +69,8 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
     if (path) {
       drafts.current[path] = value;
       if (note) originals.current[path] ??= note.content;
-      value === note?.content ? dirtyDrafts.current.delete(path) : dirtyDrafts.current.add(path);
+      if (value === note?.content) dirtyDrafts.current.delete(path);
+      else dirtyDrafts.current.add(path);
     }
     setDraft(value);
   }, [path, note, setDraft]);
@@ -77,7 +78,8 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
     if (path && note) {
       drafts.current[path] = draft;
       originals.current[path] ??= note.content;
-      draft === note.content ? dirtyDrafts.current.delete(path) : dirtyDrafts.current.add(path);
+      if (draft === note.content) dirtyDrafts.current.delete(path);
+      else dirtyDrafts.current.add(path);
     }
     const pending = [...dirtyDrafts.current];
     if (!pending.length) return true;
@@ -93,7 +95,8 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
     if (path) {
       drafts.current[path] = draft;
       if (note) originals.current[path] ??= note.content;
-      draft === note?.content ? dirtyDrafts.current.delete(path) : dirtyDrafts.current.add(path);
+      if (draft === note?.content) dirtyDrafts.current.delete(path);
+      else dirtyDrafts.current.add(path);
     }
     recent.current = [...recent.current.filter(item => item !== target), target];
     lastActive.current = target;

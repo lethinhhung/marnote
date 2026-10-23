@@ -7,7 +7,7 @@ import { LinkDialog } from "./LinkDialog";
 import { setColumnAlignment } from "./tableAlignment";
 import type { Entry } from "../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
-import { findWorkspaceLink, relativeWorkspaceLink } from "./workspaceLinks";
+import { relativeWorkspaceLink } from "./workspaceLinks";
 
 type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[] };
 type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
