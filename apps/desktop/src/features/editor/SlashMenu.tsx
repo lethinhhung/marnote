@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Braces, Folder, Heading1, Heading2, Heading3, Link2, List, ListChecks, ListOrdered, Minus, Pilcrow, Quote, Table2 } from "lucide-react";
 
+export type SlashState = { query: string; from: number; to: number; top: number; left: number; maxHeight: number };
+
 const choices = [
   { id: "paragraph", label: "Text", detail: "Plain paragraph", icon: Pilcrow },
   { id: "heading1", label: "Heading 1", detail: "Large section heading", icon: Heading1 },
