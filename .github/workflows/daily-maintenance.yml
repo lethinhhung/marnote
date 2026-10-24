@@ -60,16 +60,16 @@ jobs:
       - name: Install OpenCode
         run: npm install --global opencode-ai
 
-      - name: Run OpenCode with free model fallbacks
+      - name: Run OpenCode with NVIDIA NIM free model fallbacks
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           PROMPT_FILE: ${{ matrix.prompt }}
           MAX_FILES: ${{ matrix.session == 'refactor' && '3' || '999' }}
           REQUESTED_FOCUS_AREA: ${{ inputs.focus_area }}
         run: |
           set -u
-          if [ -z "$OPENROUTER_API_KEY" ]; then
-            echo "OPENROUTER_API_KEY is not configured" >&2
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "NVIDIA_API_KEY is not configured" >&2
             exit 1
           fi
           focus_areas=(editor workspace search)
@@ -81,10 +81,11 @@ jobs:
           fi
           echo "MAINTENANCE_FOCUS_AREA=$focus_area" >> "$GITHUB_ENV"
           echo "Focus area: $focus_area" >> "$GITHUB_STEP_SUMMARY"
+          # OpenCode model IDs are provider/model; NVIDIA's API model IDs start with nvidia/.
           models=(
-            "openrouter/minimax/minimax-m3.1-flash:free"
-            "openrouter/nvidia/nemotron-3-ultra-550b-a55b:free"
-            "openrouter/poolside/laguna-s-2.1:free"
+            "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b"
+            "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
+            "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b"
           )
           summary_file=.daily-maintenance-summary.md
           total_input=0
@@ -137,6 +138,10 @@ jobs:
           }
           trap write_usage_summary EXIT
           for model in "${models[@]}"; do
+            if [[ "$model" != nvidia/nvidia/* ]]; then
+              echo "Refusing to use a non-NVIDIA model: $model" >&2
+              exit 1
+            fi
             git reset --hard HEAD
             git clean -fd
             rm -f "$summary_file"
@@ -190,7 +195,7 @@ jobs:
               echo "$model failed; trying next model"
             fi
           done
-          echo "All free models failed or produced no changes" >&2
+          echo "All NVIDIA free models failed or produced no changes" >&2
           exit 1
 
       - name: Set up Rust
