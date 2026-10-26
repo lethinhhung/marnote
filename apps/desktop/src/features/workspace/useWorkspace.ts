@@ -6,16 +6,7 @@ import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspace
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../platform/workspace";
-
-function updateSavedEntry(entries: Entry[], path: string, isEmpty: boolean, updatedMs: number): Entry[] {
-  return entries.map(entry => entry.path === path
-    ? { ...entry, isEmpty, metadata: { ...entry.metadata, createdMs: entry.metadata?.createdMs ?? updatedMs, updatedMs } }
-    : { ...entry, children: entry.children ? updateSavedEntry(entry.children, path, isEmpty, updatedMs) : undefined });
-}
-
-function updateEntryEmptiness(entries: Entry[], path: string, isEmpty: boolean): Entry[] {
-  return entries.map(entry => entry.path === path ? { ...entry, isEmpty } : { ...entry, children: entry.children ? updateEntryEmptiness(entry.children, path, isEmpty) : undefined });
-}
+import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
