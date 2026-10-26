@@ -1,0 +1,3 @@
+interface:
+  display_name: "Marnote Release"
+  short_description: "Prepare, promote, and publish Marnote releases"
