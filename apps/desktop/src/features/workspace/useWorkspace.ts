@@ -6,10 +6,7 @@ import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspace
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../platform/workspace";
-
-function updateEntryEmptiness(entries: Entry[], path: string, isEmpty: boolean): Entry[] {
-  return entries.map(entry => entry.path === path ? { ...entry, isEmpty } : { ...entry, children: entry.children ? updateEntryEmptiness(entry.children, path, isEmpty) : undefined });
-}
+import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
@@ -48,7 +45,7 @@ export function useWorkspace() {
       setError("");
       const result = await saveWorkspace(writeFile, tree.path, path, content, expected);
       if (!result.ok) { setError(String(result.error)); return false; }
-      setTree(current => current ? { ...current, entries: updateEntryEmptiness(current.entries, path, content.length === 0) } : current);
+      setTree(current => current ? { ...current, entries: updateSavedEntry(current.entries, path, content.length === 0, Date.now()) } : current);
       setNote(current => current?.path === path ? { path, content } : current);
       return true;
     } catch (e) { setError(String(e)); return false; }
@@ -107,11 +104,10 @@ export function useWorkspace() {
   });
   const reorder = async (parent: string, paths: string[]) => {
     if (!tree) return false;
-    try {
-      await saveManualOrder(tree.path, parent, paths);
-      setTree(await listWorkspace(tree.path));
-      return true;
-    } catch (e) { setError(String(e)); return false; }
+    try { await saveManualOrder(tree.path, parent, paths); }
+    catch (e) { setError(String(e)); return false; }
+    try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); }
+    return true;
   };
   const clearNote = () => setNote(null);
   return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, reorder, remove, trash, refreshTrash, restore, empty };

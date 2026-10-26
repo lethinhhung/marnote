@@ -81,11 +81,10 @@ jobs:
           fi
           echo "MAINTENANCE_FOCUS_AREA=$focus_area" >> "$GITHUB_ENV"
           echo "Focus area: $focus_area" >> "$GITHUB_STEP_SUMMARY"
-          # OpenCode model IDs are provider/model; NVIDIA's API model IDs start with nvidia/.
           models=(
             "nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b"
             "nvidia/nvidia/nemotron-3-ultra-550b-a55b"
-            "nvidia/nvidia/nemotron-3.5-lightning-30b-a3b"
+            "nvidia/poolside/laguna-xs-2.1"
           )
           summary_file=.daily-maintenance-summary.md
           total_input=0
@@ -138,7 +137,7 @@ jobs:
           }
           trap write_usage_summary EXIT
           for model in "${models[@]}"; do
-            if [[ "$model" != nvidia/nvidia/* ]]; then
+            if [[ "$model" != nvidia/* ]]; then
               echo "Refusing to use a non-NVIDIA model: $model" >&2
               exit 1
             fi

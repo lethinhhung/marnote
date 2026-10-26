@@ -36,6 +36,7 @@
 .editor-frame .editor-prose h3 { font-size: 20px; }
 .editor-frame .editor-prose h2 + p { margin-top: 16px; font-family: Newsreader, Georgia, serif; font-size: 20px; line-height: 1.65; }
 .editor-frame .editor-prose p + h2, .editor-frame .editor-prose p + h3, .editor-frame .editor-prose ul + h3, .editor-frame .editor-prose blockquote + p { margin-top: 22px; }
+.editor-frame .editor-prose blockquote + h1, .editor-frame .editor-prose blockquote + h2, .editor-frame .editor-prose blockquote + h3 { margin-top: 22px; }
 .editor-frame .editor-prose ul + h2, .editor-frame .editor-prose ol + h2 { margin-top: 22px; }
 .editor-frame .editor-prose h2 + ul, .editor-frame .editor-prose h2 + ol { margin-top: 12px; }
 .editor-frame .editor-prose h3 + ul, .editor-frame .editor-prose h3 + blockquote { margin-top: 12px; }
@@ -53,7 +54,7 @@
 .note-footer-tag-group, .note-footer-icon-group { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; white-space: nowrap; }
 .note-footer-tag-group .tag-picker-wrap::before, .note-footer-save::before, .note-footer-path::before { content: none; }
 .note-footer-icon-group .emoji-picker { display: inline-flex; align-items: center; line-height: 1; }
-.note-footer-icon-group .emoji-picker > button { flex: 0 0 auto; width: auto; min-width: 0; height: 20px; padding: 0; font-size: 12px; }
+.note-footer-icon-group .emoji-picker > button { flex: 0 0 20px; width: 20px; min-width: 20px; height: 20px; padding: 0; font-size: 12px; }
 .note-footer-left > .note-footer-save, .note-footer-left > .note-footer-path { order: 0; }
 .note-footer-save, .note-footer-path, .note-footer-stats { order: 0; }
 .note-footer-stats { flex: 0 0 auto; gap: 8px; margin-left: 0; font-weight: 500; }

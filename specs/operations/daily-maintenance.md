@@ -8,12 +8,12 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 
 - Use OpenCode's built-in NVIDIA provider with `NVIDIA_API_KEY` stored as a GitHub Actions secret. NVIDIA's hosted free endpoints are for prototyping and are rate limited.
 - Try these models in order, resetting the checkout between attempts:
-  1. `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` — newest NVIDIA model for agentic coding and tool use, with a free endpoint.
-  2. `nvidia/nvidia/nemotron-3-ultra-550b-a55b` — large model for coding, planning, and tool use, with a free endpoint.
-  3. `nvidia/nvidia/nemotron-3.5-lightning-30b-a3b` — fast model for long-running agentic tasks, with a free endpoint.
+  1. `nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b` — newest NVIDIA endpoint focused on agentic coding and tool use.
+  2. `nvidia/nvidia/nemotron-3-ultra-550b-a55b` — widely used reasoning model for coding, planning, and long-running agents.
+  3. `nvidia/poolside/laguna-xs-2.1` — coding-agent model specialized for terminal tasks.
 - Move to the next model if OpenCode fails, including rate limits, or if it succeeds without producing changes. Do not create a PR if all models fail or produce no valid changes.
-- Keep all fallback IDs on OpenCode's built-in NVIDIA provider; do not route through OpenRouter or another provider. Free endpoints are rate limited and availability can change. Recheck model IDs and availability periodically.
-- Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not NVIDIA API quota balances.
+- Free endpoints are rate limited and availability can change. Recheck model IDs and access periodically.
+- Run OpenCode with JSON event output and sum reported input, output, reasoning, and cache token counts for each model attempt. Include per-model totals in the Actions job summary and total usage in successful pull request descriptions. These are OpenCode-reported token counts, not provider quota balances.
 
 ## Schedule and Sessions
 

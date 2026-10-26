@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface AutosaveOptions {
   path: string;
   draft: string;
   noteContent: string | undefined;
+  enabled?: boolean;
   save: (path: string, draft: string, originalContent: string) => Promise<boolean>;
   onStatusChange?: (status: "saved" | "saving" | "error") => void;
 }
@@ -12,6 +13,7 @@ export function useAutosave({
   path,
   draft,
   noteContent,
+  enabled = true,
   save,
   onStatusChange,
 }: AutosaveOptions) {
@@ -29,7 +31,7 @@ export function useAutosave({
   }, [path]);
 
   useEffect(() => {
-    if (!path || noteContent === undefined) return;
+    if (!enabled || !path || noteContent === undefined) return;
     if (draft === noteContent) return;
     if (savingNow.current) return;
 
@@ -48,9 +50,9 @@ export function useAutosave({
     }, 650);
     timer.current = scheduled;
     return () => window.clearTimeout(scheduled);
-  }, [draft, path, noteContent]);
+  }, [draft, path, noteContent, enabled]);
 
-  const saveNow = async () => {
+  const saveNow = useCallback(async () => {
     const value = current.current;
     if (!value.path || value.noteContent === undefined || value.draft === value.noteContent) return true;
     if (timer.current !== null) window.clearTimeout(timer.current);
@@ -70,6 +72,6 @@ export function useAutosave({
     } finally {
       savingNow.current = false;
     }
-  };
+  }, []);
   return { status, saveSequence, saveNow };
 }

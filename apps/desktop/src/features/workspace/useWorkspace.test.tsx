@@ -7,6 +7,7 @@ const workspaceOps = vi.hoisted(() => ({
   listWorkspace: vi.fn(),
   updateEntryMetadata: vi.fn(),
   saveWorkspaceTags: vi.fn(),
+  saveManualOrder: vi.fn(),
 }));
 
 vi.mock("../../platform/workspace", () => ({
@@ -14,6 +15,7 @@ vi.mock("../../platform/workspace", () => ({
   listWorkspace: workspaceOps.listWorkspace,
   updateEntryMetadata: workspaceOps.updateEntryMetadata,
   saveWorkspaceTags: workspaceOps.saveWorkspaceTags,
+  saveManualOrder: workspaceOps.saveManualOrder,
 }));
 
 describe("useWorkspace metadata updates", () => {
@@ -46,5 +48,31 @@ describe("useWorkspace metadata updates", () => {
     expect(workspaceOps.listWorkspace).toHaveBeenCalledTimes(1);
     expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
     expect(result.current.tree?.entries[0].metadata).toEqual(refreshedTree.entries[0].metadata);
+  });
+});
+
+describe("useWorkspace reorder", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("returns true when backend succeeds even if tree refresh fails", async () => {
+    const initialTree = { name: "Notes", path: "/workspace", entries: [
+      { name: "A.md", path: "A.md", kind: "file" as const },
+      { name: "B.md", path: "B.md", kind: "file" as const },
+    ] };
+    workspaceOps.openWorkspace.mockResolvedValue(initialTree);
+    workspaceOps.saveManualOrder.mockResolvedValue(undefined);
+    workspaceOps.listWorkspace.mockRejectedValue(new Error("refresh failed"));
+
+    const { result } = renderHook(() => useWorkspace());
+    await act(async () => { await result.current.open("/workspace"); });
+
+    const success = await act(async () => await result.current.reorder("", ["B.md", "A.md"]));
+
+    expect(workspaceOps.saveManualOrder).toHaveBeenCalledWith("/workspace", "", ["B.md", "A.md"]);
+    expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
+    expect(success).toBe(true);
   });
 });

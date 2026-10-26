@@ -30,7 +30,8 @@ export function FileTree(props: Props) {
   useEffect(() => {
     if (!props.selectedFolder) return;
     const parts = props.selectedFolder.split("/").filter(Boolean);
-    setExpanded(current => { const next = new Set(current); parts.forEach((_, index) => next.add(parts.slice(0, index + 1).join("/"))); return next; });
+    const ancestors = parts.slice(0, -1);
+    setExpanded(current => { const next = new Set(current); ancestors.forEach((_, index) => next.add(ancestors.slice(0, index + 1).join("/"))); return next; });
   }, [props.selectedFolder]);
   const click = (entry: Entry) => {
     if (consumeSkipClick()) return;

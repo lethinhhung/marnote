@@ -14,3 +14,7 @@ pub(crate) fn with_suffix(path: &str, suffix: u32, markdown: bool) -> String {
         format!("{parent}/{filename}")
     }
 }
+
+#[cfg(test)]
+#[path = "create_name_tests.rs"]
+mod tests;
