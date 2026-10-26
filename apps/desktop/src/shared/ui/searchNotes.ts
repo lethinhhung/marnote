@@ -66,8 +66,10 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
   const tagNames = entry.metadata?.tags ?? [];
   const tagText = tagNames.join(" ").toLocaleLowerCase();
   if (filter.tag && !tagNames.some(tag => tag.toLocaleLowerCase() === filter.tag)) return null;
-  const source: MatchSource = hasWords(title, words) ? "Title" : hasWords(path, words) ? "Folder" : hasWords(tagText, words) ? "Tag" : "Content";
-  if (!hasWords(`${title} ${path} ${tagText} ${content}`.toLocaleLowerCase(), words)) return null;
+  const source: MatchSource = words.length
+    ? hasWords(title, words) ? "Title" : hasWords(path, words) ? "Folder" : hasWords(tagText, words) ? "Tag" : "Content"
+    : filter.tag ? "Tag" : filter.folder ? "Folder" : "Content";
+  if (words.length && !hasWords(`${title} ${path} ${tagText} ${content}`.toLocaleLowerCase(), words)) return null;
   const score = source === "Title" ? 100 : source === "Folder" ? 70 : source === "Tag" ? 50 : 20;
   return { entry, excerpt: makeExcerpt(content, filter.text), score, source };
 }
