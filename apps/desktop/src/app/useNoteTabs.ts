@@ -1,33 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Entry, WorkspaceTree } from "../shared/domain/workspace";
-
+import { findEntry, notePaths, persistTabs, readSaved } from "./noteTabStorage";
+import { resolveDrafts } from "./resolveDrafts";
 type Note = { path: string; content: string } | null;
-type SavedTabs = { tabs: string[]; recent: string[]; active: string; drafts: Record<string, string> };
-type Props = { tree: WorkspaceTree | null; note: Note; draft: string; setDraft: (value: string) => void; save: (path: string, draft: string, original: string) => Promise<boolean>; select: (entry: Entry) => void; clear: () => void };
-const storageKey = (root: string) => `marnote-tabs:${root}`;
-
-function findEntry(entries: Entry[] = [], path: string): Entry | undefined {
-  for (const entry of entries) {
-    if (entry.path === path) return entry;
-    const found = entry.children && findEntry(entry.children, path);
-    if (found) return found;
-  }
-}
-function notePaths(entries?: Entry[]): string[] { return (entries ?? []).flatMap(entry => entry.kind === "file" ? [entry.path] : notePaths(entry.children)); }
-function readSaved(root: string): SavedTabs {
-  try {
-    const saved = JSON.parse(localStorage.getItem(storageKey(root)) || "{}");
-    return { tabs: Array.isArray(saved.tabs) ? saved.tabs : [], recent: Array.isArray(saved.recent) ? saved.recent : [], active: typeof saved.active === "string" ? saved.active : "", drafts: saved.drafts && typeof saved.drafts === "object" ? saved.drafts : {} };
-  } catch { return { tabs: [], recent: [], active: "", drafts: {} }; }
-}
-
-export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear }: Props) {
+type Props = { tree: WorkspaceTree | null; note: Note; draft: string; setDraft: (value: string) => void; save: (path: string, draft: string, original: string) => Promise<boolean>; select: (entry: Entry) => void; clear: () => void; manual: boolean; askUnsaved: (names: string[], onAction: (name: string, action: "save" | "discard") => Promise<boolean>) => Promise<boolean> };
+export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, manual, askUnsaved }: Props) {
   const [tabs, setTabs] = useState<string[]>([]);
   const [loadedRoot, setLoadedRoot] = useState("");
   const recent = useRef<string[]>([]);
   const drafts = useRef<Record<string, string>>({});
+  const originals = useRef<Record<string, string>>({});
+  const dirtyDrafts = useRef<Set<string>>(new Set());
   const restored = useRef("");
   const lastActive = useRef("");
+  const hydratingDraft = useRef<{ path: string; value: string } | null>(null);
   const path = note?.path || "";
   useEffect(() => {
     if (!tree) return;
@@ -35,6 +21,8 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear }
     const saved = readSaved(tree.path);
     const valid = saved.tabs.filter(tab => available.has(tab));
     drafts.current = Object.fromEntries(Object.entries(saved.drafts ?? {}).filter(([key]) => available.has(key)));
+    originals.current = Object.fromEntries(Object.entries(saved.originals ?? {}).filter(([key]) => available.has(key)));
+    dirtyDrafts.current = new Set((saved.dirty ?? []).filter(key => available.has(key)));
     recent.current = (saved.recent ?? []).filter(tab => valid.includes(tab));
     lastActive.current = saved.active || "";
     setTabs(valid);
@@ -53,27 +41,69 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear }
     if (path && note) {
       setTabs(current => current.includes(path) ? current : [...current, path]);
       recent.current = [...recent.current.filter(item => item !== path), path];
-      if (drafts.current[path] === undefined) drafts.current[path] = note.content;
-      setDraft(drafts.current[path]);
+      const value = drafts.current[path] ?? note.content;
+      drafts.current[path] = value;
+      originals.current[path] ??= note.content;
+      if (value === note.content) { dirtyDrafts.current.delete(path); originals.current[path] = note.content; }
+      else { dirtyDrafts.current.add(path); originals.current[path] ??= note.content; }
+      hydratingDraft.current = { path, value };
+      setDraft(value);
     }
   }, [tree, path, note, loadedRoot]);
   useEffect(() => {
     if (!tree || loadedRoot !== tree.path || restored.current !== tree.path) return;
-    if (path) drafts.current[path] = draft;
-    localStorage.setItem(storageKey(tree.path), JSON.stringify({ tabs, recent: recent.current, active: path || lastActive.current, drafts: drafts.current } satisfies SavedTabs));
+    const hydration = hydratingDraft.current;
+    if (path && hydration?.path === path) {
+      if (draft !== hydration.value) return;
+      hydratingDraft.current = null;
+    }
+    if (path) {
+      drafts.current[path] = draft;
+      if (draft === note?.content) { dirtyDrafts.current.delete(path); if (note) originals.current[path] = note.content; }
+      else dirtyDrafts.current.add(path);
+      if (note) originals.current[path] ??= note.content;
+    }
+    persistTabs(tree.path, tabs, path || lastActive.current, drafts.current, originals.current, dirtyDrafts.current, recent.current);
   }, [tree?.path, loadedRoot, tabs, path, draft]);
-  const updateDraft = useCallback((value: string) => { if (path) drafts.current[path] = value; setDraft(value); }, [path, setDraft]);
-  const saveCurrent = useCallback(async () => !path || !note || draft === note.content || save(path, draft, note.content), [path, note, draft, save]);
+  const updateDraft = useCallback((value: string) => {
+    if (path) {
+      drafts.current[path] = value;
+      if (note) originals.current[path] ??= note.content;
+      if (value === note?.content) dirtyDrafts.current.delete(path);
+      else dirtyDrafts.current.add(path);
+    }
+    setDraft(value);
+  }, [path, note, setDraft]);
+  const saveCurrent = useCallback(async () => {
+    if (path && note) {
+      drafts.current[path] = draft;
+      originals.current[path] ??= note.content;
+      if (draft === note.content) dirtyDrafts.current.delete(path);
+      else dirtyDrafts.current.add(path);
+    }
+    const pending = [...dirtyDrafts.current];
+    if (!pending.length) return true;
+    const resolve = (name: string, action: "save" | "discard") => resolveDrafts({ paths: [name], actions: { [name]: action }, treePath: tree?.path, tabs, active: path, drafts: drafts.current, originals: originals.current, dirty: dirtyDrafts.current, recent: recent.current, save, setDraft });
+    if (manual) return askUnsaved(pending, resolve);
+    for (const item of pending) if (!await resolve(item, "save")) return false;
+    return true;
+  }, [path, note, draft, manual, askUnsaved, save, setDraft, tree, tabs]);
   const selectTab = useCallback(async (target: string) => {
     const entry = findEntry(tree?.entries, target);
-    if (!entry || entry.kind !== "file" || !await saveCurrent()) return;
-    if (path) drafts.current[path] = draft;
+    if (!entry || entry.kind !== "file") return;
+    if (!manual && !await saveCurrent()) return;
+    if (path) {
+      drafts.current[path] = draft;
+      if (note) originals.current[path] ??= note.content;
+      if (draft === note?.content) dirtyDrafts.current.delete(path);
+      else dirtyDrafts.current.add(path);
+    }
     recent.current = [...recent.current.filter(item => item !== target), target];
     lastActive.current = target;
     select(entry);
-  }, [tree, saveCurrent, path, draft, select]);
+  }, [tree, saveCurrent, manual, path, note, draft, select]);
   const closeTabs = useCallback(async (targets: string[]) => {
-    if (targets.includes(path) && !await saveCurrent()) return;
+    if (!await saveCurrent()) return;
     const closing = new Set(targets);
     const remaining = tabs.filter(tab => !closing.has(tab));
     setTabs(remaining);

@@ -3,6 +3,8 @@ mod files;
 mod folders;
 mod metadata;
 mod tags;
+#[cfg(test)]
+mod tags_tests;
 mod tree;
 mod workspace;
 

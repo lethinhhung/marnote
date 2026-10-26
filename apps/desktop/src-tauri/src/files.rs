@@ -73,3 +73,31 @@ pub fn file_empty_trash(root_path: String) -> Result<(), String> {
 #[cfg(test)]
 #[path = "files/metadata_paths_tests.rs"]
 mod metadata_paths_tests;
+
+#[cfg(test)]
+#[path = "files/create_tests.rs"]
+mod create_tests;
+
+#[cfg(test)]
+#[path = "files/read_tests.rs"]
+mod read_tests;
+
+#[cfg(test)]
+#[path = "files/update_tests.rs"]
+mod update_tests;
+
+#[cfg(test)]
+#[path = "files/move_file_tests.rs"]
+mod move_file_tests;
+
+#[cfg(test)]
+#[path = "files/delete_tests.rs"]
+mod delete_tests;
+
+#[cfg(test)]
+#[path = "files/trash_tests.rs"]
+mod trash_tests;
+
+#[cfg(test)]
+#[path = "files/trash_mutations_tests.rs"]
+mod trash_mutations_tests;

@@ -1,6 +1,6 @@
 [package]
 name = "marnote"
-version = "0.2.0"
+version = "0.3.0"
 description = "A local-first Markdown workspace"
 authors = ["Marnote"]
 edition = "2021"

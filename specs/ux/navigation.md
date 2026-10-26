@@ -16,7 +16,4 @@
 - Arrow keys select results and keep the active result visible, scrolling fully to the top for the first result and the bottom for the last. Enter opens or runs the selection; Escape closes the palette. Enter defaults to the first result or note creation.
 - Header controls toggle theme and Markdown source view.
 
-## Saving
-
-- Switching notes/workspaces and closing the active tab attempts to save first. A failed save prevents the switch and shows an error.
-- External-change prompts let users load the disk version or keep their draft.
+Saving safeguards and external-change choices are defined in [Saving](saving.md).
