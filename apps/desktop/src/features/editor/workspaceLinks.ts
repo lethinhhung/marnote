@@ -1,8 +1,5 @@
-import type { Entry } from "../../shared/domain/workspace";
-
-export function flattenEntries(entries: Entry[] = []): Entry[] {
-  return entries.flatMap(entry => [entry, ...flattenEntries(entry.children)]);
-}
+import { flattenEntries, type Entry } from "../../shared/domain/workspace";
+export { flattenEntries };
 
 export function relativeWorkspaceLink(from: string, target: Entry) {
   const source = from.split("/").filter(Boolean).slice(0, -1);
