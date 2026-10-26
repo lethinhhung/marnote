@@ -104,11 +104,10 @@ export function useWorkspace() {
   });
   const reorder = async (parent: string, paths: string[]) => {
     if (!tree) return false;
-    try {
-      await saveManualOrder(tree.path, parent, paths);
-      setTree(await listWorkspace(tree.path));
-      return true;
-    } catch (e) { setError(String(e)); return false; }
+    try { await saveManualOrder(tree.path, parent, paths); }
+    catch (e) { setError(String(e)); return false; }
+    try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); }
+    return true;
   };
   const clearNote = () => setNote(null);
   return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, reorder, remove, trash, refreshTrash, restore, empty };
