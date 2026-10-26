@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import { File, FileText } from "lucide-react";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { CodeBlockWithCopy } from "./CodeBlockWithCopy";
 import TaskList from "@tiptap/extension-task-list";
@@ -27,11 +27,24 @@ import { normalizeLinkUrl, openExternalLink } from "./linkUrl";
 import { LinkDialog } from "./LinkDialog";
 import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
 import { useSlashMenu } from "./useSlashMenu";
+import { useSlashLink } from "./useSlashLink";
 import "./editor-reference.css";
 
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, heading, metadata, updateMetadata, path, tagColors = {}, entries, onNavigate }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; tagColors?: Record<string, string>; entries: Entry[]; onNavigate: (path: string, kind: "file" | "directory") => void }) {
+  const editorRef = useRef<Editor | null>(null);
+
   const {
     slash,
+    selected,
+    setSelected,
+    slashKeyboardNavigation,
+    setSlashKeyboardNavigation,
+    insert,
+    keys,
+    handleEditorUpdate,
+  } = useSlashMenu({ editorRef });
+
+  const {
     slashLink,
     setSlashLink,
     workspaceLink,
@@ -39,19 +52,11 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     linkForm,
     linkText,
     linkHref,
-    selected,
-    setSelected,
-    slashKeyboardNavigation,
-    setSlashKeyboardNavigation,
-    insert,
     applySlashLink,
     cancelSlashLink,
     cancelWorkspaceLink,
     applyWorkspaceLink,
-    keys,
-    handleEditorUpdate,
-    setEditor,
-  } = useSlashMenu({ entries, path, onNavigate });
+  } = useSlashLink({ entries, path, onNavigate, editorRef });
 
   const editor = useEditor({ extensions: [StarterKit.configure({ codeBlock: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
     onChange(current.getMarkdown());
@@ -59,8 +64,8 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
   } });
 
   useEffect(() => {
-    setEditor(editor);
-  }, [editor, setEditor]);
+    editorRef.current = editor;
+  }, [editor]);
 
   useEffect(() => {
     const suppressEditorLinkClick = (event: MouseEvent) => {
