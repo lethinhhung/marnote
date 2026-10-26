@@ -4,6 +4,23 @@ Notable user-facing changes are recorded here for each release. Add a dated vers
 
 ## Unreleased
 
+## [0.3.0] - 2026-10-26
+
+### Added
+
+- Choose Automatic or Manual saving, restore open note tabs and drafts per workspace, and resolve unsaved notes before closing tabs or switching workspaces.
+- Search notes by content and metadata, open workspace links to notes or folders, and use quick actions from search results.
+- Reorder and resize the Explorer, focus folders from the path bar, and create notes and folders with safer duplicate-name handling.
+
+### Improved
+
+- Protect drafts from external file changes and editor normalization, with clearer save status and recovery behavior.
+- Improve Markdown editing, table controls, link previews, and keyboard navigation across the editor and workspace.
+
+### Compatibility
+
+- Workspaces remain folders of Markdown files; no workspace migration is required. macOS builds are ad-hoc signed and not notarized, so first launch may require approval in Privacy & Security settings.
+
 ## [0.2.0] - 2026-10-22
 
 ### Added
