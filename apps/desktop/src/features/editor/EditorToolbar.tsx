@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { AlignLeft, AlignCenter, AlignRight, Bold, ChevronDown, Folder, Link2, MoveHorizontal, MoreHorizontal, Pilcrow, Save, Table2 } from "lucide-react";
 import "./toolbar-responsive.css";
 import { LinkDialog } from "./LinkDialog";
-import { setColumnAlignment } from "./tableAlignment";
+import { setColumnAlignment } from "./table-controls/tableAlignment";
 import { actions, actionGroups, moreActions, toolbarGlyph } from "./toolbarActions";
 import type { Entry } from "../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
