@@ -1,4 +1,4 @@
-import { flattenEntries, type Entry } from "../../shared/domain/workspace";
+import { flattenEntries, type Entry } from "../../../shared/domain/workspace";
 export { flattenEntries };
 
 export function relativeWorkspaceLink(from: string, target: Entry) {

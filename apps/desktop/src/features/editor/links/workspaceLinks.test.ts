@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Entry } from "../../shared/domain/workspace";
+import type { Entry } from "../../../shared/domain/workspace";
 import {
   findWorkspaceLink,
   flattenEntries,

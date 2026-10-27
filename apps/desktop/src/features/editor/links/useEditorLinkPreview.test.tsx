@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Editor } from "@tiptap/react";
-import type { Entry } from "../../shared/domain/workspace";
+import type { Entry } from "../../../shared/domain/workspace";
 import { useEditorLinkPreview } from "./useEditorLinkPreview";
 
 function TestWrapper({ editor, entries, path, goTo, children }: { editor: Editor | null; entries: Entry[]; path: string; goTo: (href: string) => void; children: React.ReactNode }) {

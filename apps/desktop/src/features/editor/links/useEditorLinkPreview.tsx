@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import type { FocusEvent, MouseEvent } from "react";
 import { Check, Copy, ExternalLink } from "lucide-react";
 import type { Editor } from "@tiptap/react";
-import type { Entry } from "../../shared/domain/workspace";
+import type { Entry } from "../../../shared/domain/workspace";
 import { normalizeLinkUrl } from "./linkUrl";
 import { findWorkspaceLink, resolveWorkspaceLink } from "./workspaceLinks";
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type { Editor } from "@tiptap/react";
-import type { Entry } from "../../shared/domain/workspace";
+import type { Entry } from "../../../shared/domain/workspace";
 import { relativeWorkspaceLink } from "./workspaceLinks";
 
 export type SlashLinkState = { from: number; to: number; top: number; bottom: number; left: number };

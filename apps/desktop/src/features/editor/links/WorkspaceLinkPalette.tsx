@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { FileText, Folder, Search } from "lucide-react";
-import type { Entry } from "../../shared/domain/workspace";
+import type { Entry } from "../../../shared/domain/workspace";
 import { flattenEntries } from "./workspaceLinks";
 
 type Props = { entries: Entry[]; onClose: () => void; onSelect: (entry: Entry) => void };

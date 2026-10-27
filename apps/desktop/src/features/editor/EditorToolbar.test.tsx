@@ -9,10 +9,10 @@ const { setParagraph, toggleBold, insertTable, setTextSelection } = vi.hoisted((
 vi.mock("@tiptap/react", () => ({
   useEditorState: ({ editor, selector }: { editor: unknown; selector: (state: { editor: unknown }) => unknown }) => selector({ editor }),
 }));
-vi.mock("./LinkDialog", () => ({
+vi.mock("./links/LinkDialog", () => ({
   LinkDialog: ({ initialHref }: { initialHref: string }) => <div role="dialog">Link dialog: {initialHref}</div>,
 }));
-vi.mock("./WorkspaceLinkPalette", () => ({ WorkspaceLinkPalette: () => <div role="dialog">Workspace links</div> }));
+vi.mock("./links/WorkspaceLinkPalette", () => ({ WorkspaceLinkPalette: () => <div role="dialog">Workspace links</div> }));
 
 import { EditorToolbar } from "./EditorToolbar";
 

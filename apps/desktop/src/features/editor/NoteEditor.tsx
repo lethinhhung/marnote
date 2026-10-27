@@ -22,12 +22,12 @@ import type { Entry, WorkspaceEntryMetadata } from "../../shared/domain/workspac
 import { tagStyle } from "../../shared/ui/tagStyle";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
-import { useEditorLinkPreview } from "./useEditorLinkPreview";
-import { normalizeLinkUrl, openExternalLink } from "./linkUrl";
-import { LinkDialog } from "./LinkDialog";
-import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
+import { useEditorLinkPreview } from "./links/useEditorLinkPreview";
+import { normalizeLinkUrl, openExternalLink } from "./links/linkUrl";
+import { LinkDialog } from "./links/LinkDialog";
+import { WorkspaceLinkPalette } from "./links/WorkspaceLinkPalette";
 import { useSlashMenu } from "./slash-menu/useSlashMenu";
-import { useSlashLink } from "./useSlashLink";
+import { useSlashLink } from "./links/useSlashLink";
 import "./editor-reference.css";
 
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, heading, metadata, updateMetadata, path, tagColors = {}, entries, onNavigate }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; tagColors?: Record<string, string>; entries: Entry[]; onNavigate: (path: string, kind: "file" | "directory") => void }) {
