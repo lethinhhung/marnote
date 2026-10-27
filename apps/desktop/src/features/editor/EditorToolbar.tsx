@@ -1,35 +1,16 @@
 import { useEditorState, type Editor } from "@tiptap/react";
 import { useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
-import { Bold, Italic, Strikethrough, Code, Braces, Heading1, Heading2, Heading3, List, ListOrdered, ListChecks, Quote, Minus, Link2, Folder, Pilcrow, Table2, MoveHorizontal, AlignLeft, AlignCenter, AlignRight, ChevronDown, MoreHorizontal, Save } from "lucide-react";
+import { AlignLeft, AlignCenter, AlignRight, Bold, ChevronDown, Folder, Link2, MoveHorizontal, MoreHorizontal, Pilcrow, Save, Table2 } from "lucide-react";
 import "./toolbar-responsive.css";
 import { LinkDialog } from "./LinkDialog";
 import { setColumnAlignment } from "./tableAlignment";
+import { actions, actionGroups, moreActions, toolbarGlyph } from "./toolbarActions";
 import type { Entry } from "../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
 import { relativeWorkspaceLink } from "./workspaceLinks";
 
 type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[] };
-type Action = { label: string; icon: typeof Bold; run: (editor: Editor) => void; active?: (editor: Editor) => boolean };
-
-const actions: Action[] = [
-  { label: "Paragraph", icon: Pilcrow, run: e => e.chain().focus().setParagraph().run(), active: e => e.isActive("paragraph") },
-  { label: "Heading 1", icon: Heading1, run: e => e.chain().focus().toggleHeading({ level: 1 }).run(), active: e => e.isActive("heading", { level: 1 }) },
-  { label: "Heading 2", icon: Heading2, run: e => e.chain().focus().toggleHeading({ level: 2 }).run(), active: e => e.isActive("heading", { level: 2 }) },
-  { label: "Heading 3", icon: Heading3, run: e => e.chain().focus().toggleHeading({ level: 3 }).run(), active: e => e.isActive("heading", { level: 3 }) },
-  { label: "Bold", icon: Bold, run: e => e.chain().focus().toggleBold().run(), active: e => e.isActive("bold") },
-  { label: "Italic", icon: Italic, run: e => e.chain().focus().toggleItalic().run(), active: e => e.isActive("italic") },
-  { label: "Strikethrough", icon: Strikethrough, run: e => e.chain().focus().toggleStrike().run(), active: e => e.isActive("strike") },
-  { label: "Inline code", icon: Code, run: e => e.chain().focus().toggleCode().run(), active: e => e.isActive("code") },
-  { label: "Code block", icon: Braces, run: e => e.chain().focus().toggleCodeBlock().run(), active: e => e.isActive("codeBlock") },
-  { label: "Bullet list", icon: List, run: e => e.chain().focus().toggleBulletList().run(), active: e => e.isActive("bulletList") },
-  { label: "Numbered list", icon: ListOrdered, run: e => e.chain().focus().toggleOrderedList().run(), active: e => e.isActive("orderedList") },
-  { label: "Task list", icon: ListChecks, run: e => e.chain().focus().toggleTaskList().run(), active: e => e.isActive("taskList") },
-  { label: "Quote", icon: Quote, run: e => e.chain().focus().toggleBlockquote().run(), active: e => e.isActive("blockquote") },
-  { label: "Divider", icon: Minus, run: e => e.chain().focus().setHorizontalRule().run() },
-];
-const actionGroups = [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11, 12, 13]];
-const moreActions = [8, 9, 10, 11, 12, 13];
 
 export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, path, entries }: Props) {
   const activeActions = useEditorState({ editor, selector: ({ editor: current }) => actions.map(action => !!current && !!action.active?.(current)) });
@@ -118,7 +99,3 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
 }
 
 function keepEditorSelection(event: MouseEvent<HTMLButtonElement>) { event.preventDefault(); }
-
-function toolbarGlyph(index: number) {
-  return ["¶", "H1", "H2", "H3", "B", "I", "S", "<>", "{}", "", "", "", "”", "—"][index];
-}
