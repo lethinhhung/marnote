@@ -15,7 +15,7 @@ import { insertMarkdownPaste } from "./MarkdownPaste";
 import { EditorToolbar } from "./EditorToolbar";
 import { initialMarkdown } from "./initialMarkdown";
 import { SlashMenu } from "./SlashMenu";
-import { BlockDragHandle } from "./BlockDragHandle";
+import { BlockDragHandle } from "./block-dnd/BlockDragHandle";
 import { TableEdgeControls } from "./TableEdgeControls";
 import { clearColumnWidths } from "./tableResize";
 import type { Entry, WorkspaceEntryMetadata } from "../../shared/domain/workspace";
