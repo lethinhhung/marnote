@@ -3,12 +3,12 @@ import { useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } fro
 import { createPortal } from "react-dom";
 import { AlignLeft, AlignCenter, AlignRight, Bold, ChevronDown, Folder, Link2, MoveHorizontal, MoreHorizontal, Pilcrow, Save, Table2 } from "lucide-react";
 import "./toolbar-responsive.css";
-import { LinkDialog } from "./links/LinkDialog";
-import { setColumnAlignment } from "./table-controls/tableAlignment";
+import { LinkDialog } from "./dialogs/LinkDialog";
+import { setColumnAlignment } from "../table-controls/tableAlignment";
 import { actions, actionGroups, moreActions, toolbarGlyph } from "./toolbarActions";
-import type { Entry } from "../../shared/domain/workspace";
-import { WorkspaceLinkPalette } from "./links/WorkspaceLinkPalette";
-import { relativeWorkspaceLink } from "./links/workspaceLinks";
+import type { Entry } from "../../../shared/domain/workspace";
+import { WorkspaceLinkPalette } from "./dialogs/WorkspaceLinkPalette";
+import { relativeWorkspaceLink } from "../links/workspaceLinks";
 
 type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[] };
 

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import type { Entry } from "../../../shared/domain/workspace";
+import type { Entry } from "../../../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
 
 const entry = (name: string, path: string, kind: Entry["kind"] = "file"): Entry => ({

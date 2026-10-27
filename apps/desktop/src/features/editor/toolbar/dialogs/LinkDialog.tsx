@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent, type KeyboardEvent } from "react";
-import { normalizeLinkUrl } from "./linkUrl";
+import { normalizeLinkUrl } from "../../links/linkUrl";
 
 type Props = { initialText: string; initialHref: string; onCancel: () => void; onDismiss?: () => void; onApply: (text: string, href: string) => void };
 
