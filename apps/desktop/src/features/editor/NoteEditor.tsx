@@ -14,7 +14,7 @@ import { Markdown } from "@tiptap/markdown";
 import { insertMarkdownPaste } from "./MarkdownPaste";
 import { EditorToolbar } from "./EditorToolbar";
 import { initialMarkdown } from "./initialMarkdown";
-import { SlashMenu } from "./SlashMenu";
+import { SlashMenu } from "./slash-menu/SlashMenu";
 import { BlockDragHandle } from "./block-dnd/BlockDragHandle";
 import { TableEdgeControls } from "./TableEdgeControls";
 import { clearColumnWidths } from "./tableResize";
@@ -26,7 +26,7 @@ import { useEditorLinkPreview } from "./useEditorLinkPreview";
 import { normalizeLinkUrl, openExternalLink } from "./linkUrl";
 import { LinkDialog } from "./LinkDialog";
 import { WorkspaceLinkPalette } from "./WorkspaceLinkPalette";
-import { useSlashMenu } from "./useSlashMenu";
+import { useSlashMenu } from "./slash-menu/useSlashMenu";
 import { useSlashLink } from "./useSlashLink";
 import "./editor-reference.css";
 
