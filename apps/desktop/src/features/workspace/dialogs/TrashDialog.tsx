@@ -1,6 +1,6 @@
 import { useEffect, type KeyboardEvent } from "react";
 import { RefreshCw, RotateCcw, Trash2, X } from "lucide-react";
-import type { TrashItem } from "../../platform/workspace";
+import type { TrashItem } from "../../../platform/workspace";
 
 type Props = { items: TrashItem[]; load: () => void; restore: (id: string) => void; empty: () => void; close: () => void };
 

@@ -1,6 +1,6 @@
 import { useMemo, useState, type KeyboardEvent } from "react";
 import { FolderInput } from "lucide-react";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 type Props = { entries: Entry[]; path: string; folder: boolean; onMove: (source: string, destination: string) => Promise<boolean>; onClose: () => void };
 

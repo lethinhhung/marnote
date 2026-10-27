@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TrashDialog } from "./TrashDialog";
-import type { TrashItem } from "../../platform/workspace";
+import type { TrashItem } from "../../../platform/workspace";
 
 const items: TrashItem[] = [
   { id: "note-id", path: "notes/old.md", kind: "file", restorable: true },

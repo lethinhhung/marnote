@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { MoveEntryDialog } from "./MoveEntryDialog";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 const entries: Entry[] = [
   { name: "Source", path: "Source", kind: "directory", children: [
