@@ -1,7 +1,7 @@
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileTree } from "./FileTree";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 const entries: Entry[] = [
   { name: "Folder", path: "Folder", kind: "directory", children: [

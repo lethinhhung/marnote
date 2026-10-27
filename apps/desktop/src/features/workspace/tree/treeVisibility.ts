@@ -1,4 +1,4 @@
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 export function containsNote(entry: Entry): boolean {
   return entry.kind === "file" ? entry.path.toLowerCase().endsWith(".md") : (entry.children || []).some(containsNote);

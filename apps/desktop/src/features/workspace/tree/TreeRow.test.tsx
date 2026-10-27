@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TreeRow } from "./TreeRow";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 const note: Entry = { name: "Note.md", path: "Note.md", kind: "file", metadata: { icon: "✨", tags: ["work"], favorite: true } };
 const child: Entry = { name: "Child.md", path: "Folder/Child.md", kind: "file" };

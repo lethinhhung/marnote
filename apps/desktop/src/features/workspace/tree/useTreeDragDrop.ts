@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
-import type { Entry } from "./workspaceTypes";
-import { parentPath } from "./state/workspacePaths";
+import type { Entry } from "../workspaceTypes";
+import { parentPath } from "../state/workspacePaths";
 import { dropDestination } from "./treeDrop";
-import { reorderedPaths, siblingPaths, type ExplorerSort } from "./sortEntries";
+import { reorderedPaths, siblingPaths, type ExplorerSort } from "../sortEntries";
 
 /** Drop target marker used while a drag hovers blank space inside the tree. */
 export const BLANK_DROP_TARGET = "__blank__";

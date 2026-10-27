@@ -1,7 +1,7 @@
 import { render, screen, cleanup, within } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { FileTree } from "./FileTree";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 const mockProps = {
   entries: [] as Entry[],

@@ -1,10 +1,10 @@
 import type { PointerEvent } from "react";
 import { ChevronDown, ChevronRight, File, FileText, Folder, FolderOpen, Star } from "lucide-react";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 import type { TreeEdit } from "./FileTree";
 import { TreeEditor } from "./TreeEditor";
-import { tagStyle } from "../../shared/ui/tagStyle";
-import { requestTagEdit } from "../../shared/ui/tagEditRequest";
+import { tagStyle } from "../../../shared/ui/tagStyle";
+import { requestTagEdit } from "../../../shared/ui/tagEditRequest";
 
 type Props = { entry: Entry; selected: string; selectedFolder: string; focus: "note" | "folder" | "none"; dragging: string; dropTarget: string; focusPath: string; expanded: Set<string>; onExpanded: (update: (current: Set<string>) => Set<string>) => void; depth: number; onStart: (path: string, event: PointerEvent<HTMLButtonElement>) => void; onClick: (entry: Entry) => void; onEntryContext: (path: string, kind: "note" | "folder" | "root", x: number, y: number) => void; edit: TreeEdit | null; onEditSubmit: (name: string) => void; onEditCancel: () => void; tagColors: Record<string, string> };
 

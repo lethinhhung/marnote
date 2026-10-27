@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useTreeDragDrop } from "./useTreeDragDrop";
-import type { ExplorerSort } from "./sortEntries";
-import type { Entry } from "./workspaceTypes";
+import type { ExplorerSort } from "../sortEntries";
+import type { Entry } from "../workspaceTypes";
 
 class FakePointerEvent extends MouseEvent {}
 (globalThis as { PointerEvent?: unknown }).PointerEvent = FakePointerEvent;

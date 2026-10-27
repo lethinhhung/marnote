@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 import { containsNote, visibleEntries } from "./treeVisibility";
 
 const file = (name: string): Entry => ({ name, path: name, kind: "file" });

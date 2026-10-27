@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 import { TreeEditor } from "./TreeEditor";
 import { TreeRow } from "./TreeRow";
 import { visibleEntries } from "./treeVisibility";
 import { useTreeFolderFocus } from "./useTreeFolderFocus";
-import { sortEntries, type ExplorerSort } from "./sortEntries";
+import { sortEntries, type ExplorerSort } from "../sortEntries";
 import { BLANK_DROP_TARGET, useTreeDragDrop } from "./useTreeDragDrop";
 
 export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };
