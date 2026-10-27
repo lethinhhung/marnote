@@ -10,7 +10,7 @@ const workspaceOps = vi.hoisted(() => ({
   saveManualOrder: vi.fn(),
 }));
 
-vi.mock("../../platform/workspace", () => ({
+vi.mock("../../../platform/workspace", () => ({
   openWorkspace: workspaceOps.openWorkspace,
   listWorkspace: workspaceOps.listWorkspace,
   updateEntryMetadata: workspaceOps.updateEntryMetadata,

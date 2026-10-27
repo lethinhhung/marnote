@@ -1,4 +1,4 @@
-import { parentPath } from "./workspacePaths";
+import { parentPath } from "./state/workspacePaths";
 
 export function dropDestination(source: string, targetPath: string, kind?: string) {
   if (!targetPath || targetPath === source) return null;

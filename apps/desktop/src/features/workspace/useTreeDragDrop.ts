@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { Entry } from "./workspaceTypes";
-import { parentPath } from "./workspacePaths";
+import { parentPath } from "./state/workspacePaths";
 import { dropDestination } from "./treeDrop";
 import { reorderedPaths, siblingPaths, type ExplorerSort } from "./sortEntries";
 

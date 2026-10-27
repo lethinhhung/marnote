@@ -1,4 +1,4 @@
-import type { Entry } from "./workspaceTypes";
+import type { Entry } from "../workspaceTypes";
 
 function updateEntries(entries: Entry[], path: string, mutate: (entry: Entry) => Entry): Entry[] {
   return entries.map((entry) =>

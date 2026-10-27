@@ -1,11 +1,11 @@
 import { useCallback, useState } from "react";
-import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../platform/workspace";
-import type { UpdateEntryMetadataInput } from "../../platform/workspace";
-import type { Entry, WorkspaceTree } from "./workspaceTypes";
+import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../../platform/workspace";
+import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
+import type { Entry, WorkspaceTree } from "../workspaceTypes";
 import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspaces";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
-import type { TrashItem } from "../../platform/workspace";
+import type { TrashItem } from "../../../platform/workspace";
 import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
 
 export function useWorkspace() {
