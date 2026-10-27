@@ -1,6 +1,6 @@
 import { useEffect, type Dispatch, type SetStateAction } from "react";
 import type { Entry } from "../../../shared/domain/workspace";
-import type { TreeEdit } from "./FileTree";
+import type { TreeEdit } from "../tree/FileTree";
 
 type Props = { setEdit: Dispatch<SetStateAction<TreeEdit | null>>; setSelectedFolder: Dispatch<SetStateAction<string>>; setTreeFocus: Dispatch<SetStateAction<"note" | "folder" | "none">>; setHideFolders: Dispatch<SetStateAction<boolean>>; selected: string; selectedFolder: string; onDelete: (path: string) => void; onTargetChange?: (path: string, kind: "note" | "folder") => void };
 

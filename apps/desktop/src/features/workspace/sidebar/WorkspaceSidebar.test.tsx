@@ -2,10 +2,10 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { WorkspaceSidebar } from "./WorkspaceSidebar";
-import type { Entry, WorkspaceTree } from "./workspaceTypes";
+import type { Entry, WorkspaceTree } from "../workspaceTypes";
 
 const { isDesktop, openWorkspaceFolder } = vi.hoisted(() => ({ isDesktop: vi.fn(), openWorkspaceFolder: vi.fn() }));
-vi.mock("../../platform/dialog", () => ({ isDesktop, openWorkspaceFolder }));
+vi.mock("../../../platform/dialog", () => ({ isDesktop, openWorkspaceFolder }));
 
 const entry: Entry = { name: "Note.md", path: "Note.md", kind: "file" };
 const tree: WorkspaceTree = { name: "My workspace", path: "/workspace", entries: [entry] };

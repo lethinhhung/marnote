@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { File, FileText } from "lucide-react";
 import { useTheme } from "../shared/theme/useTheme";
 import { useWorkspace } from "../features/workspace/state/useWorkspace";
-import { WorkspaceSidebar } from "../features/workspace/WorkspaceSidebar";
+import { WorkspaceSidebar } from "../features/workspace/sidebar/WorkspaceSidebar";
 import { NoteEditor } from "../features/editor/NoteEditor";
 import { readFile } from "../platform/workspace";
 import { HeaderBar } from "../shared/ui/HeaderBar";
