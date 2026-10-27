@@ -13,3 +13,8 @@ export type WorkspaceTag = { name: string; color: string };
 export function isMarkdown(entry: Entry): boolean {
   return entry.kind === "file" && entry.path.toLocaleLowerCase().endsWith(".md");
 }
+
+/** Returns every entry in depth-first, tree order. */
+export function flattenEntries(entries: Entry[] = []): Entry[] {
+  return entries.flatMap(entry => [entry, ...flattenEntries(entry.children)]);
+}

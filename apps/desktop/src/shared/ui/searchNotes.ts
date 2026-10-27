@@ -1,13 +1,10 @@
-import { isMarkdown, type Entry } from "../domain/workspace";
+import { flattenEntries, isMarkdown, type Entry } from "../domain/workspace";
+export { flattenEntries };
 
 export type MatchSource = "Title" | "Folder" | "Tag" | "Content";
 export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
 export type SearchResults = { notes: NoteMatch[]; folders: Entry[]; tags: { name: string; count: number }[] };
 export type SearchFilter = { text: string; tag: string; folder: string; type: string };
-
-export function flattenEntries(entries: Entry[] = []): Entry[] {
-  return entries.flatMap(entry => [entry, ...flattenEntries(entry.children)]);
-}
 
 export function parseSearchQuery(query: string): SearchFilter {
   const filter: SearchFilter = { text: "", tag: "", folder: "", type: "" };
