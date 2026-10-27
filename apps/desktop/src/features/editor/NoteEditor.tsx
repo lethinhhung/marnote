@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { File, FileText } from "lucide-react";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { CodeBlockWithCopy } from "./CodeBlockWithCopy";
+import { CodeBlockWithCopy } from "./code-block-copy/CodeBlockWithCopy";
 import TaskList from "@tiptap/extension-task-list";
 import TaskItem from "@tiptap/extension-task-item";
 import Link from "@tiptap/extension-link";
