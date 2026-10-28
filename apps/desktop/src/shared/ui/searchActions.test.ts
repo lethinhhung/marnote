@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createSearchActions } from "./searchActions";
 import type { Entry, WorkspaceTree } from "../domain/workspace";
-import { relativeWorkspaceLink } from "../../features/editor/workspaceLinks";
+import { relativeWorkspaceLink } from "../../features/editor/links/workspaceLinks";
 import { uniqueCreatePath } from "../../features/workspace/uniqueCreatePath";
 
-vi.mock("../../features/editor/workspaceLinks", () => ({
+vi.mock("../../features/editor/links/workspaceLinks", () => ({
   relativeWorkspaceLink: vi.fn(() => "../Target.md"),
 }));
 vi.mock("../../features/workspace/uniqueCreatePath", () => ({
