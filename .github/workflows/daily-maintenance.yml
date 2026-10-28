@@ -118,6 +118,7 @@ jobs:
             total_cache_read=$((total_cache_read + cache_read))
             total_cache_write=$((total_cache_write + cache_write))
           }
+          # shellcheck disable=SC2329
           write_usage_summary() {
             {
               echo "## OpenCode usage"
@@ -173,12 +174,14 @@ jobs:
                 echo "$model changed $changed_files files; limit is $MAX_FILES"
                 echo "Trying the next model after discarding this attempt"
               elif [ "$changed_files" -gt 0 ]; then
-                echo "MAINTENANCE_MODEL=$model" >> "$GITHUB_ENV"
-                echo "MAINTENANCE_INPUT_TOKENS=$total_input" >> "$GITHUB_ENV"
-                echo "MAINTENANCE_OUTPUT_TOKENS=$total_output" >> "$GITHUB_ENV"
-                echo "MAINTENANCE_REASONING_TOKENS=$total_reasoning" >> "$GITHUB_ENV"
-                echo "MAINTENANCE_CACHE_READ_TOKENS=$total_cache_read" >> "$GITHUB_ENV"
-                echo "MAINTENANCE_CACHE_WRITE_TOKENS=$total_cache_write" >> "$GITHUB_ENV"
+                {
+                  echo "MAINTENANCE_MODEL=$model"
+                  echo "MAINTENANCE_INPUT_TOKENS=$total_input"
+                  echo "MAINTENANCE_OUTPUT_TOKENS=$total_output"
+                  echo "MAINTENANCE_REASONING_TOKENS=$total_reasoning"
+                  echo "MAINTENANCE_CACHE_READ_TOKENS=$total_cache_read"
+                  echo "MAINTENANCE_CACHE_WRITE_TOKENS=$total_cache_write"
+                } >> "$GITHUB_ENV"
                 exit 0
               else
                 echo "$model completed without changes; trying next model"
@@ -213,8 +216,97 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Validate changes
-        run: pnpm check
+      - name: Validate changes and repair failures
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          PROMPT_FILE: ${{ matrix.prompt }}
+          MAX_FILES: ${{ matrix.session == 'refactor' && '3' || '999' }}
+        run: |
+          set -u
+          check_log=$(mktemp)
+          repair_log=$(mktemp)
+          summary_file=.daily-maintenance-summary.md
+          total_input=${MAINTENANCE_INPUT_TOKENS:-0}
+          total_output=${MAINTENANCE_OUTPUT_TOKENS:-0}
+          total_reasoning=${MAINTENANCE_REASONING_TOKENS:-0}
+          total_cache_read=${MAINTENANCE_CACHE_READ_TOKENS:-0}
+          total_cache_write=${MAINTENANCE_CACHE_WRITE_TOKENS:-0}
+          trap 'rm -f "$check_log" "$repair_log"' EXIT
+          max_repairs=2
+          attempt=1
+          while true; do
+            if pnpm check > "$check_log" 2>&1; then
+              cat "$check_log"
+              echo "Validation passed on attempt $attempt" >> "$GITHUB_STEP_SUMMARY"
+              break
+            else
+              check_status=$?
+            fi
+
+            cat "$check_log"
+            if [ "$attempt" -gt "$max_repairs" ]; then
+              echo "Validation still fails after $max_repairs repair attempts" >&2
+              exit "$check_status"
+            fi
+            if [ -z "${MAINTENANCE_MODEL:-}" ]; then
+              echo "MAINTENANCE_MODEL is missing; cannot ask OpenCode to repair validation failures" >&2
+              exit "$check_status"
+            fi
+
+            echo "Validation failed; asking $MAINTENANCE_MODEL to repair (attempt $attempt/$max_repairs)"
+            prompt="$(cat "$PROMPT_FILE")
+
+          Focus area for this run: ${MAINTENANCE_FOCUS_AREA:-unspecified}. Treat it as a strict scope boundary. Preserve the original session scope and limit the final changed files to $MAX_FILES. The code you produced failed the workflow's required validation. Read the failure report below, identify the concrete cause, and fix it in the current worktree. Do not discard the existing work. After fixing it, update $summary_file with the actual final changes using exactly ## Problem, ## Cause, and ## Fix headings. The workflow will run pnpm check again, so do not claim validation passed yourself.
+
+          Validation failure report (last 500 lines):
+          $(tail -n 500 "$check_log")"
+            if ! timeout 20m opencode run --auto --format json --model "$MAINTENANCE_MODEL" "$prompt" > "$repair_log"; then
+              cat "$repair_log"
+              echo "OpenCode could not repair the validation failure" >&2
+              exit 1
+            fi
+            cat "$repair_log"
+            read -r repair_input repair_output repair_reasoning repair_cache_read repair_cache_write < <(
+              jq -rRn '[inputs | fromjson? | select(.type == "step_finish") | .part.tokens // {}] |
+                [([.[].input // 0] | add // 0), ([.[].output // 0] | add // 0),
+                 ([.[].reasoning // 0] | add // 0), ([.[].cache.read // 0] | add // 0),
+                 ([.[].cache.write // 0] | add // 0)] | @tsv' "$repair_log"
+            )
+            total_input=$((total_input + repair_input))
+            total_output=$((total_output + repair_output))
+            total_reasoning=$((total_reasoning + repair_reasoning))
+            total_cache_read=$((total_cache_read + repair_cache_read))
+            total_cache_write=$((total_cache_write + repair_cache_write))
+            {
+              echo "MAINTENANCE_INPUT_TOKENS=$total_input"
+              echo "MAINTENANCE_OUTPUT_TOKENS=$total_output"
+              echo "MAINTENANCE_REASONING_TOKENS=$total_reasoning"
+              echo "MAINTENANCE_CACHE_READ_TOKENS=$total_cache_read"
+              echo "MAINTENANCE_CACHE_WRITE_TOKENS=$total_cache_write"
+            } >> "$GITHUB_ENV"
+            {
+              echo "## OpenCode validation repair usage"
+              echo "| Model | Input | Output | Reasoning | Cache read | Cache write |"
+              echo "|---|---:|---:|---:|---:|---:|"
+              echo "| $MAINTENANCE_MODEL | $repair_input | $repair_output | $repair_reasoning | $repair_cache_read | $repair_cache_write |"
+            } >> "$GITHUB_STEP_SUMMARY"
+            if [ -s "$summary_file" ] && grep -Fxq '## Problem' "$summary_file" && \
+              grep -Fxq '## Cause' "$summary_file" && grep -Fxq '## Fix' "$summary_file"; then
+              delimiter="MAINTENANCE_SUMMARY_$(openssl rand -hex 16)"
+              {
+                echo "MAINTENANCE_SUMMARY<<$delimiter"
+                cat "$summary_file"
+                printf '\n%s\n' "$delimiter"
+              } >> "$GITHUB_ENV"
+            fi
+            rm -f "$summary_file" apps/desktop/src-tauri/gen/schemas/linux-schema.json
+            changed_files=$(git status --porcelain -z | tr -cd '\0' | wc -c)
+            if [ "$changed_files" -gt "$MAX_FILES" ]; then
+              echo "OpenCode repair changed $changed_files files; limit is $MAX_FILES" >&2
+              exit 1
+            fi
+            attempt=$((attempt + 1))
+          done
 
       - name: Remove generated Linux Tauri schema
         if: always()
