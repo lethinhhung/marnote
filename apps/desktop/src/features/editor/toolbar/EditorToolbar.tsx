@@ -5,7 +5,7 @@ import { AlignLeft, AlignCenter, AlignRight, Bold, ChevronDown, Folder, Link2, M
 import "./toolbar-responsive.css";
 import { LinkDialog } from "./dialogs/LinkDialog";
 import { setColumnAlignment } from "../table-controls/tableAlignment";
-import { actions, actionGroups, moreActions, toolbarGlyph } from "./toolbarActions";
+import { actions, actionGroups, moreActions, toolbarGlyph } from "../toolbarActions";
 import type { Entry } from "../../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./dialogs/WorkspaceLinkPalette";
 import { relativeWorkspaceLink } from "../links/workspaceLinks";
