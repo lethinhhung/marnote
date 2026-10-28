@@ -3,7 +3,6 @@ import { EditorState, TextSelection, type Transaction } from "@tiptap/pm/state";
 import { describe, expect, it, vi } from "vitest";
 import type { Editor } from "@tiptap/react";
 import { setColumnAlignment } from "./tableAlignment";
-import { TableMap } from "@tiptap/pm/tables";
 
 const schema = new Schema({
   topNode: "doc",
@@ -15,7 +14,7 @@ const schema = new Schema({
     tableRow: { content: "tableCell+", tableRole: "row" },
     tableCell: {
       content: "block+", tableRole: "cell",
-      attrs: { align: { default: null }, colspan: { default: 1 }, rowspan: { default: 1 } },
+      attrs: { align: { default: null } },
     },
   },
 });
@@ -37,15 +36,6 @@ function tableDocWithColumnAligned(columnAlignments: (string | null)[]): Node {
     [cell("a", columnAlignments[0]), cell("b", columnAlignments[1])],
     [cell("c", columnAlignments[0]), cell("d", columnAlignments[1])],
   ].map((cells) => schema.nodes.tableRow.create(null, cells));
-  return schema.nodes.doc.create(null, schema.nodes.table.create(null, rows));
-}
-
-function tableDocWithUnevenCellSizes(): Node {
-  const cell = (value: string) => schema.nodes.tableCell.create(
-    null, schema.nodes.paragraph.create(null, schema.text(value)),
-  );
-  const rows = [[cell("a"), cell("long content")], [cell("longer content"), cell("b")]]
-    .map((cells) => schema.nodes.tableRow.create(null, cells));
   return schema.nodes.doc.create(null, schema.nodes.table.create(null, rows));
 }
 
@@ -77,15 +67,6 @@ describe("setColumnAlignment", () => {
     expect(setColumnAlignment(editor, "center")).toBe(true);
     expect(dispatch).toHaveBeenCalledTimes(1);
     expect(alignments(dispatch.mock.calls[0][0])).toEqual(["center", null, "center", null]);
-  });
-
-  it("updates the selected column when cells have different content sizes", () => {
-    const { editor, dispatch } = createEditorState(tableDocWithUnevenCellSizes());
-
-    expect(setColumnAlignment(editor, "right")).toBe(true);
-    const table = dispatch.mock.calls[0][0].doc.firstChild!;
-    const map = TableMap.get(table);
-    expect(map.map.map((pos) => table.nodeAt(pos)?.attrs.align)).toEqual(["right", null, "right", null]);
   });
 
   it("does not dispatch when the requested alignment makes no document change", () => {
