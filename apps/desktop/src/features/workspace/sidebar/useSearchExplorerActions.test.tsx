@@ -165,6 +165,21 @@ describe("useSearchExplorerActions", () => {
     expect(onTargetChangeMock).not.toHaveBeenCalled();
   });
 
+  it("does not call onTargetChange when selected note is inside deleted folder", () => {
+    renderHookWithProps({ selected: "folder/subfolder/note.md", selectedFolder: "folder/subfolder" });
+
+    act(() => {
+      document.dispatchEvent(new CustomEvent("marnote-search-remove", {
+        detail: { path: "folder", kind: "directory" },
+      }));
+    });
+
+    expect(onDeleteMock).toHaveBeenCalledWith("folder");
+    expect(setSelectedFolderMock).toHaveBeenCalledWith("");
+    expect(setTreeFocusMock).toHaveBeenCalledWith("note");
+    expect(onTargetChangeMock).not.toHaveBeenCalled();
+  });
+
   it("cancels deletion when confirm returns false", () => {
     confirmMock.mockReturnValue(false);
     const preventDefaultMock = vi.fn();
