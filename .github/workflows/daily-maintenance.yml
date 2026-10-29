@@ -3,6 +3,7 @@ name: Daily maintenance
 on:
   schedule:
     - cron: "59 16 * * *"
+    - cron: "59 4 * * *"
   workflow_dispatch:
     inputs:
       maintenance_date:
