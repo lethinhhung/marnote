@@ -13,10 +13,10 @@ on:
       session:
         description: Maintenance session to run manually
         required: true
-        default: both
+        default: all
         type: choice
         options:
-          - both
+          - all
           - fix
           - refactor
           - tests
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(inputs.session == 'tests' && '{"include":[{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || inputs.session == 'fix' && '{"include":[{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || inputs.session == 'refactor' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"}]}' || inputs.session == 'both' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || github.event.schedule == '59 16 * * *' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"},{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}') }}
+      matrix: ${{ fromJSON(inputs.session == 'tests' && '{"include":[{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || inputs.session == 'fix' && '{"include":[{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || inputs.session == 'refactor' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"}]}' || (inputs.session == 'all' || inputs.session == 'both') && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"},{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || github.event.schedule == '59 16 * * *' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"},{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}') }}
     steps:
       - name: Check out develop
         uses: actions/checkout@v4
