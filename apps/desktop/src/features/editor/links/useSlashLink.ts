@@ -1,9 +1,29 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import type { Editor } from "@tiptap/react";
 import type { Entry } from "../../../shared/domain/workspace";
-import { relativeWorkspaceLink } from "./workspaceLinks";
+import { relativeWorkspaceLink, findWorkspaceLink } from "./workspaceLinks";
 
 export type SlashLinkState = { from: number; to: number; top: number; bottom: number; left: number };
+
+export function navigateHref({
+  entries,
+  path,
+  onNavigate,
+  value,
+}: {
+  entries: Entry[];
+  path: string;
+  onNavigate: (path: string, kind: "file" | "directory") => void;
+  value: string;
+}) {
+  const target = findWorkspaceLink(entries, path, value);
+  if (target) {
+    onNavigate(target.path, target.kind);
+    return;
+  }
+  const normalized = /^[a-z][a-z\d+.-]*:/i.test(value) || value.startsWith("//") ? value : `https://${value}`;
+  window.open(normalized, "_blank", "noopener,noreferrer");
+}
 
 export function useSlashLink({
   entries,
@@ -39,14 +59,8 @@ export function useSlashLink({
     return () => window.removeEventListener("resize", place);
   }, [slashLink]);
 
-  const navigateHref = (value: string) => {
-    const entry = entries.find(e => relativeWorkspaceLink(path, e) === value) ?? entries.find(e => relativeWorkspaceLink(path, e) === value.replace(/^https?:\/\//, ""));
-    if (entry) {
-      onNavigate(entry.path, entry.kind);
-      return;
-    }
-    const normalized = value.startsWith("//") ? `https:${value}` : value.startsWith("http") ? value : `https://${value}`;
-    window.open(normalized, "_blank", "noopener,noreferrer");
+  const handleNavigateHref = (value: string) => {
+    navigateHref({ entries, path, onNavigate, value });
   };
 
   const applySlashLink = (text: string, href: string) => {
@@ -87,7 +101,7 @@ export function useSlashLink({
     setLinkText,
     linkHref,
     setLinkHref,
-    navigateHref,
+    navigateHref: handleNavigateHref,
     applySlashLink,
     cancelSlashLink,
     cancelWorkspaceLink,
