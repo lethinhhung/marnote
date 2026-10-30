@@ -19,6 +19,7 @@ on:
           - both
           - fix
           - refactor
+          - tests
       focus_area:
         description: Code area for the fix session (auto rotates daily)
         required: true
@@ -38,9 +39,20 @@ jobs:
   maintenance:
     name: ${{ matrix.session }}
     runs-on: ubuntu-latest
+    if: ${{ (inputs.session == '' || inputs.session == 'both' || inputs.session == matrix.session) && (matrix.session != 'tests' || github.event_name != 'schedule' || github.event.schedule == '59 16 * * *') }}
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(inputs.session == 'fix' && '{"include":[{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || inputs.session == 'refactor' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"}]}' || '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}') }}
+      matrix:
+        include:
+          - session: refactor
+            prompt: .github/prompts/daily-refactor.md
+            branch_prefix: refactor
+          - session: fix
+            prompt: .github/prompts/daily-fix.md
+            branch_prefix: fix
+          - session: tests
+            prompt: .github/prompts/daily-tests.md
+            branch_prefix: tests
     steps:
       - name: Check out develop
         uses: actions/checkout@v4
@@ -65,7 +77,8 @@ jobs:
         env:
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
           PROMPT_FILE: ${{ matrix.prompt }}
-          MAX_FILES: ${{ matrix.session == 'refactor' && '3' || '999' }}
+          MAX_FILES: ${{ matrix.session == 'refactor' && '3' || matrix.session == 'tests' && '2' || '999' }}
+          MAINTENANCE_SESSION: ${{ matrix.session }}
           REQUESTED_FOCUS_AREA: ${{ inputs.focus_area }}
         run: |
           set -u
@@ -73,12 +86,16 @@ jobs:
             echo "NVIDIA_API_KEY is not configured" >&2
             exit 1
           fi
-          focus_areas=(editor workspace search)
-          focus_area="${REQUESTED_FOCUS_AREA:-auto}"
-          if [ "$focus_area" = "auto" ]; then
-            day_of_year=$(date -u +%j)
-            focus_index=$((10#$day_of_year % ${#focus_areas[@]}))
-            focus_area="${focus_areas[$focus_index]}"
+          if [ "$MAINTENANCE_SESSION" = "tests" ]; then
+            focus_area="unit test gap"
+          else
+            focus_areas=(editor workspace search)
+            focus_area="${REQUESTED_FOCUS_AREA:-auto}"
+            if [ "$focus_area" = "auto" ]; then
+              day_of_year=$(date -u +%j)
+              focus_index=$((10#$day_of_year % ${#focus_areas[@]}))
+              focus_area="${focus_areas[$focus_index]}"
+            fi
           fi
           echo "MAINTENANCE_FOCUS_AREA=$focus_area" >> "$GITHUB_ENV"
           echo "Focus area: $focus_area" >> "$GITHUB_STEP_SUMMARY"
