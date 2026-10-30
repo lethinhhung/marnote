@@ -39,20 +39,9 @@ jobs:
   maintenance:
     name: ${{ matrix.session }}
     runs-on: ubuntu-latest
-    if: ${{ (inputs.session == '' || inputs.session == 'both' || inputs.session == matrix.session) && (matrix.session != 'tests' || github.event_name != 'schedule' || github.event.schedule == '59 16 * * *') }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - session: refactor
-            prompt: .github/prompts/daily-refactor.md
-            branch_prefix: refactor
-          - session: fix
-            prompt: .github/prompts/daily-fix.md
-            branch_prefix: fix
-          - session: tests
-            prompt: .github/prompts/daily-tests.md
-            branch_prefix: tests
+      matrix: ${{ fromJSON(inputs.session == 'tests' && '{"include":[{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || inputs.session == 'fix' && '{"include":[{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || inputs.session == 'refactor' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"}]}' || inputs.session == 'both' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}' || github.event.schedule == '59 16 * * *' && '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"},{"session":"tests","prompt":".github/prompts/daily-tests.md","branch_prefix":"tests"}]}' || '{"include":[{"session":"refactor","prompt":".github/prompts/daily-refactor.md","branch_prefix":"refactor"},{"session":"fix","prompt":".github/prompts/daily-fix.md","branch_prefix":"fix"}]}') }}
     steps:
       - name: Check out develop
         uses: actions/checkout@v4
