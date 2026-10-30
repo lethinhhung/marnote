@@ -20,7 +20,7 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 - Run every day at 11:59 and 23:59 in `Asia/Ho_Chi_Minh` (04:59 and 16:59 UTC; GitHub Actions scheduled workflows use UTC).
 - The workflow is stored on `main`; scheduled runs start there, then each maintenance job checks out `develop` and opens its pull request against `develop`.
 - Manual runs may set the optional `maintenance_date` input (`YYYY-MM-DD`) to label maintenance branches and pull requests for a specific date. Scheduled runs use the current UTC date.
-- Manual runs may select `both`, `fix`, `refactor`, or `tests`. Scheduled runs execute refactor and bug-fix sessions at both times, and the test-gap session only at 23:59.
+- Manual runs may select `all`, `fix`, `refactor`, or `tests`. The `all` option runs all three sessions. Scheduled runs execute refactor and bug-fix sessions at both times, and the test-gap session only at 23:59.
 - Bug-fix runs select a focus area: `editor`, `workspace`, or `search`. Manual runs may choose one; scheduled and `auto` runs rotate by UTC day of year.
 - Run independent sessions, each starting from `develop`:
   1. Refactor
