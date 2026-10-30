@@ -77,7 +77,7 @@ function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
     if (!folderMatches(entry.path, filter.folder) || (filter.type && filter.type !== "note")) continue;
     for (const tag of new Set(entry.metadata?.tags ?? [])) {
       const tagName = tag.toLocaleLowerCase();
-      if (filter.tag ? tagName === filter.tag : tagName.includes(words.join(" "))) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      if (filter.tag ? tagName === filter.tag : words.some(word => tagName.includes(word))) counts.set(tag, (counts.get(tag) ?? 0) + 1);
     }
   }
   return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));

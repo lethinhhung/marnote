@@ -122,4 +122,9 @@ describe("searchWorkspace", () => {
     const results = searchWorkspace(taggedTree, "in:Notes", {});
     expect(results.notes.map((n) => n.source).every((source) => source === "Folder")).toBe(true);
   });
+
+  it("collects tags matching any search word for multi-word queries", () => {
+    const results = searchWorkspace(taggedTree, "work personal", {});
+    expect(results.tags.map((t) => t.name)).toEqual(["personal", "work"]);
+  });
 });
