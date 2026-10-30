@@ -17,14 +17,15 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 
 ## Schedule and Sessions
 
-- Run every day at 23:59 in `Asia/Ho_Chi_Minh` (16:59 UTC; GitHub Actions scheduled workflows use UTC).
+- Run every day at 11:59 and 23:59 in `Asia/Ho_Chi_Minh` (04:59 and 16:59 UTC; GitHub Actions scheduled workflows use UTC).
 - The workflow is stored on `main`; scheduled runs start there, then each maintenance job checks out `develop` and opens its pull request against `develop`.
 - Manual runs may set the optional `maintenance_date` input (`YYYY-MM-DD`) to label maintenance branches and pull requests for a specific date. Scheduled runs use the current UTC date.
-- Manual runs may select `both`, `fix`, or `refactor`. Scheduled runs execute both sessions.
+- Manual runs may select `both`, `fix`, `refactor`, or `tests`. Scheduled runs execute refactor and bug-fix sessions at both times, and the test-gap session only at 23:59.
 - Bug-fix runs select a focus area: `editor`, `workspace`, or `search`. Manual runs may choose one; scheduled and `auto` runs rotate by UTC day of year.
-- Run two independent sessions, each starting from `develop`:
+- Run independent sessions, each starting from `develop`:
   1. Refactor
   2. Bug fix
+  3. Test gap (23:59 run only)
 - Each session uses its own dedicated branch and pull request.
 
 ## Refactor Session
@@ -51,6 +52,14 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 - Do not fix speculative issues without reasonable evidence.
 - Do not install dependencies or run tests; the workflow runs `pnpm check` after edits.
 
+## Test Gap Session
+
+- Identify one evidence-backed unit-test gap and add or update tests only.
+- Inspect no more than six directly related implementation and test files, and change no more than two test files.
+- Do not change production code, configuration, documentation, or generated files.
+- If no clear gap can be tested without production changes, leave the repository unchanged.
+- Do not install dependencies or run tests; the workflow runs `pnpm check` after edits.
+
 ## Validation
 
 - The workflow runs `pnpm check` after edits.
@@ -69,6 +78,7 @@ Branch formats:
 
 - `agent/refactor-YYYY-MM-DD`
 - `agent/fix-YYYY-MM-DD`
+- `agent/tests-YYYY-MM-DD`
 
 ## Pull Request Description
 
