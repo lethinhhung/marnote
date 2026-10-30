@@ -27,7 +27,7 @@ export function parseSearchQuery(query: string): SearchFilter {
 export function searchNotes(treeEntries: Entry[] | undefined, query: string): Entry[] {
   if (!treeEntries || !query.trim()) return [];
   const needle = query.toLocaleLowerCase();
-  return flattenEntries(treeEntries).filter(entry => entry.kind === "file" && entry.path.toLowerCase().endsWith(".md") && (entry.name + " " + entry.path).toLocaleLowerCase().includes(needle)).slice(0, 8);
+  return flattenEntries(treeEntries).filter(isMarkdown).filter(entry => (entry.name + " " + entry.path).toLocaleLowerCase().includes(needle)).slice(0, 8);
 }
 
 function makeExcerpt(content: string, query: string): string {
@@ -40,18 +40,18 @@ function makeExcerpt(content: string, query: string): string {
 }
 
 const hasWords = (value: string, words: string[]) => words.every(word => value.includes(word));
+const folderMatches = (path: string, folder: string) => !folder || path.toLocaleLowerCase().includes(folder);
 
 export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
   if (!query.trim()) return { notes: [], folders: [], tags: [] };
   const filter = parseSearchQuery(query);
   const all = flattenEntries(entries);
   const words = filter.text.split(/\s+/).filter(Boolean);
-  const folderMatches = (path: string) => !filter.folder || path.toLocaleLowerCase().includes(filter.folder);
-  const notes = all.filter(isMarkdown).filter(entry => folderMatches(entry.path) && (!filter.type || filter.type === "note"))
+  const notes = all.filter(isMarkdown).filter(entry => folderMatches(entry.path, filter.folder) && (!filter.type || filter.type === "note"))
     .map(entry => makeNoteMatch(entry, words, filter, contents[entry.path] ?? ""))
     .filter((match): match is NoteMatch => !!match)
     .sort((a, b) => b.score - a.score || (b.entry.modifiedMs ?? 0) - (a.entry.modifiedMs ?? 0));
-  const folders = all.filter(entry => entry.kind === "directory" && (!filter.type || filter.type === "folder") && folderMatches(entry.path))
+  const folders = all.filter(entry => entry.kind === "directory" && (!filter.type || filter.type === "folder") && folderMatches(entry.path, filter.folder))
     .filter(entry => !words.length || hasWords(`${entry.name} ${entry.path}`.toLocaleLowerCase(), words));
   const tags = collectTags(all, filter, words);
   return { notes, folders, tags };
@@ -74,7 +74,7 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
 function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
   const counts = new Map<string, number>();
   for (const entry of entries.filter(isMarkdown)) {
-    if (!folderFilter(entry.path, filter.folder) || (filter.type && filter.type !== "note")) continue;
+    if (!folderMatches(entry.path, filter.folder) || (filter.type && filter.type !== "note")) continue;
     for (const tag of new Set(entry.metadata?.tags ?? [])) {
       const tagName = tag.toLocaleLowerCase();
       if (filter.tag ? tagName === filter.tag : words.some(word => tagName.includes(word))) counts.set(tag, (counts.get(tag) ?? 0) + 1);
@@ -83,4 +83,4 @@ function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
   return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-const folderFilter = (path: string, folder: string) => !folder || path.toLocaleLowerCase().includes(folder);
+
