@@ -4,6 +4,7 @@ import { z } from "zod";
 import { resolveWorkspace, ResolvedWorkspace, WorkspaceError, diagnose } from "./workspace.js";
 import { listWorkspace } from "./listWorkspace.js";
 import { readNote } from "./readNote.js";
+import { searchNotes } from "./searchNotes.js";
 
 export interface ServerConfig {
   workspacePath: string;
@@ -62,6 +63,27 @@ export async function initializeServer(config: ServerConfig): Promise<McpServer>
       const result = await readNote(resolvedWorkspace.root, path);
       return {
         content: [{ type: "text", text: result.content }],
+      };
+    }
+  );
+
+  server.registerTool(
+    "search_notes",
+    {
+      title: "Search Notes",
+      description: "Search notes by title, path, tags, and content",
+      inputSchema: {
+        query: z.string().describe("Search query"),
+        limit: z.number().int().positive().max(100).optional().describe("Maximum results (default 20, max 100)"),
+      },
+    },
+    async ({ query, limit }) => {
+      if (!resolvedWorkspace) {
+        throw new Error("Workspace not initialized");
+      }
+      const result = await searchNotes(resolvedWorkspace, query, limit);
+      return {
+        content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
       };
     }
   );
