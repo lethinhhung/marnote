@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "start": "node dist/cli.js"
