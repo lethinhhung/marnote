@@ -29,11 +29,11 @@ function item(path: string) {
   return button;
 }
 
-function renderDragDrop(entries: Entry[], sort: ExplorerSort) {
+function renderDragDrop(entries: Entry[], sort: ExplorerSort, manualOrder: Record<string, string[]> = {}) {
   const onMove = vi.fn().mockResolvedValue(true);
   const onReorder = vi.fn().mockResolvedValue(true);
   const setExpanded = vi.fn();
-  const hook = renderHook(() => useTreeDragDrop({ entries, sort, setExpanded, onMove, onReorder }));
+  const hook = renderHook(() => useTreeDragDrop({ entries, sort, manualOrder, setExpanded, onMove, onReorder }));
   return { ...hook, onMove, onReorder, setExpanded };
 }
 
@@ -78,6 +78,22 @@ describe("useTreeDragDrop", () => {
 
     expect(onReorder).toHaveBeenCalledWith("", ["B.md", "A.md"]);
     expect(onMove).not.toHaveBeenCalled();
+  });
+
+  it("preserves existing manual order when reordering siblings", async () => {
+    const entries: Entry[] = [
+      { name: "c.md", path: "c.md", kind: "file" },
+      { name: "a.md", path: "a.md", kind: "file" },
+      { name: "b.md", path: "b.md", kind: "file" },
+      { name: "z.md", path: "z.md", kind: "file" },
+    ];
+    const manualOrder = { "": ["c.md", "a.md", "b.md", "z.md"] };
+    mountTreeDom([{ path: "a.md", kind: "file" }, { path: "b.md", kind: "file" }]);
+    const { result, onReorder } = renderDragDrop(entries, "manual", manualOrder);
+
+    await drag(result, "z.md", "a.md");
+
+    expect(onReorder).toHaveBeenCalledWith("", ["c.md", "a.md", "z.md", "b.md"]);
   });
 
   it("ignores a drop released outside the tree", async () => {
