@@ -1,7 +1,8 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import { promises as fs } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { spawn, ChildProcess } from "child_process";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { initializeServer, runServer } from "./server.js";
 import { WorkspaceError } from "./workspace.js";
@@ -326,5 +327,218 @@ describe("stdio protocol output separation", () => {
     expect(consoleLogSpy).not.toHaveBeenCalledWith(expect.stringContaining("note.md"));
 
     consoleLogSpy.mockRestore();
+  });
+});
+
+interface McpRequest {
+  jsonrpc: "2.0";
+  id: number | string;
+  method: string;
+  params?: unknown;
+}
+
+interface McpResponse {
+  jsonrpc: "2.0";
+  id: number | string;
+  result?: unknown;
+  error?: { code: number; message: string; data?: unknown };
+}
+
+function createRequest(id: number | string, method: string, params?: unknown): McpRequest {
+  return { jsonrpc: "2.0", id, method, params };
+}
+
+async function waitForLine(process: ChildProcess, stream: "stdout" | "stderr", timeout = 2000): Promise<string | null> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), timeout);
+    const handler = (data: Buffer) => {
+      clearTimeout(timer);
+      const line = data.toString().trim();
+      if (line) {
+        process[stream]?.off("data", handler);
+        resolve(line);
+      }
+    };
+    process[stream]?.on("data", handler);
+  });
+}
+
+async function sendRequest(process: ChildProcess, request: McpRequest): Promise<McpResponse> {
+  const line = JSON.stringify(request);
+  process.stdin?.write(line + "\n");
+  const responseLine = await waitForLine(process, "stdout");
+  if (!responseLine) {
+    throw new Error("No response received");
+  }
+  return JSON.parse(responseLine) as McpResponse;
+}
+
+async function readStderrLines(process: ChildProcess, count: number, timeout = 1000): Promise<string[]> {
+  const lines: string[] = [];
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(lines), timeout);
+    const handler = (data: Buffer) => {
+      const line = data.toString().trim();
+      if (line) {
+        lines.push(line);
+        if (lines.length >= count) {
+          clearTimeout(timer);
+          process.stderr?.off("data", handler);
+          resolve(lines);
+        }
+      }
+    };
+    process.stderr?.on("data", handler);
+  });
+}
+
+describe("stdio subprocess integration", () => {
+  let tempDir: string;
+  let serverProcess: ChildProcess;
+  let requestId = 0;
+
+  beforeAll(async () => {
+    tempDir = await createTempDir();
+    await fs.writeFile(join(tempDir, "note1.md"), "# Note 1\n\nContent one");
+    await fs.writeFile(join(tempDir, "note2.md"), "# Note 2\n\nContent two");
+    await fs.mkdir(join(tempDir, "folder"), { recursive: true });
+    await fs.writeFile(join(tempDir, "folder", "nested.md"), "# Nested\n\nDeep content");
+    const marnoteDir = join(tempDir, ".marnote");
+    await fs.mkdir(marnoteDir, { recursive: true });
+    await fs.writeFile(
+      join(marnoteDir, "metadata.json"),
+      JSON.stringify({
+        entries: {
+          "note1.md": { tags: ["tag-a", "tag-b"] },
+          "note2.md": { tags: ["tag-b"] },
+          "folder/nested.md": { tags: ["tag-c"] },
+        },
+      })
+    );
+  });
+
+  afterAll(async () => {
+    await cleanupTempDir(tempDir);
+  });
+
+  beforeEach(() => {
+    serverProcess = spawn(process.execPath, ["dist/cli.js", tempDir], {
+      cwd: process.cwd(),
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+    requestId = 0;
+  });
+
+  afterEach(async () => {
+    if (serverProcess && !serverProcess.killed) {
+      serverProcess.kill();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+  });
+
+  async function initialize(): Promise<void> {
+    const initRequest = createRequest(++requestId, "initialize", {
+      protocolVersion: "2024-11-05",
+      capabilities: {},
+      clientInfo: { name: "test-client", version: "1.0.0" },
+    });
+    const response = await sendRequest(serverProcess, initRequest);
+    expect(response.result).toBeDefined();
+    expect((response.result as { protocolVersion: string }).protocolVersion).toBe("2024-11-05");
+
+    const initializedRequest = createRequest(++requestId, "notifications/initialized", {});
+    serverProcess.stdin?.write(JSON.stringify(initializedRequest) + "\n");
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+
+  async function listTools(): Promise<string[]> {
+    const request = createRequest(++requestId, "tools/list", {});
+    const response = await sendRequest(serverProcess, request);
+    const tools = (response.result as { tools: Array<{ name: string }> }).tools;
+    return tools.map((t) => t.name).sort();
+  }
+
+  async function callTool(name: string, args: unknown): Promise<unknown> {
+    const request = createRequest(++requestId, "tools/call", { name, arguments: args });
+    const response = await sendRequest(serverProcess, request);
+    if (response.error) {
+      throw new Error(`Tool error: ${response.error.message}`);
+    }
+    const content = (response.result as { content: Array<{ type: string; text: string }> }).content;
+    try {
+      return JSON.parse(content[0].text);
+    } catch {
+      return content[0].text;
+    }
+  }
+
+  it("starts server and exposes exactly three tools", async () => {
+    await initialize();
+    const tools = await listTools();
+    expect(tools).toEqual(["list_workspace", "read_note", "search_notes"]);
+  });
+
+  it("list_workspace returns workspace entries via stdio", async () => {
+    await initialize();
+    const entries = (await callTool("list_workspace", {})) as Array<{ name: string }>;
+    const names = entries.map((e) => e.name).sort();
+    expect(names).toEqual(["folder", "note1.md", "note2.md"]);
+  });
+
+  it("read_note reads note content via stdio", async () => {
+    await initialize();
+    const content = (await callTool("read_note", { path: "note1.md" })) as string;
+    expect(content).toBe("# Note 1\n\nContent one");
+  });
+
+  it("read_note reads nested note content via stdio", async () => {
+    await initialize();
+    const content = (await callTool("read_note", { path: "folder/nested.md" })) as string;
+    expect(content).toBe("# Nested\n\nDeep content");
+  });
+
+  it("search_notes searches by title via stdio", async () => {
+    await initialize();
+    const result = (await callTool("search_notes", { query: "Note 1" })) as { results: Array<{ path: string }>; total: number };
+    expect(result.results.some((r) => r.path === "note1.md")).toBe(true);
+  });
+
+  it("search_notes searches by tag via stdio", async () => {
+    await initialize();
+    const result = (await callTool("search_notes", { query: "tag-a" })) as { results: Array<{ path: string }>; total: number };
+    expect(result.results.some((r) => r.path === "note1.md")).toBe(true);
+  });
+
+  it("search_notes searches by content via stdio", async () => {
+    await initialize();
+    const result = (await callTool("search_notes", { query: "Content one" })) as { results: Array<{ path: string }>; total: number };
+    expect(result.results.some((r) => r.path === "note1.md")).toBe(true);
+  });
+
+  it("diagnostics go to stderr, not stdout (protocol output separation)", async () => {
+    await initialize();
+
+    const stderrLines = await readStderrLines(serverProcess, 1, 500);
+    const hasDiagnostics = stderrLines.some((line) => line.includes("[mcp]"));
+
+    expect(hasDiagnostics).toBe(false);
+  });
+
+  it("invalid tool call returns error response, not stderr", async () => {
+    await initialize();
+    const request = createRequest(++requestId, "tools/call", { name: "nonexistent_tool", arguments: {} });
+    const response = await sendRequest(serverProcess, request);
+    const result = response.result as { isError?: boolean } | undefined;
+    expect(result?.isError).toBe(true);
+  });
+
+  it("no additional tools are exposed beyond the three specified", async () => {
+    await initialize();
+    const tools = await listTools();
+    expect(tools.length).toBe(3);
+    expect(tools).not.toContain("write_note");
+    expect(tools).not.toContain("delete_note");
+    expect(tools).not.toContain("git");
+    expect(tools).not.toContain("backlinks");
   });
 });

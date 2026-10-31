@@ -6,14 +6,19 @@
   "exports": {
     ".": "./src/index.ts"
   },
+  "bin": {
+    "marnote-mcp": "./dist/cli.js"
+  },
   "scripts": {
-    "build": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "start": "node dist/cli.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "vitest": "^2.1.8"

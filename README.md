@@ -51,6 +51,29 @@ pnpm --filter @marnote/desktop desktop:dev
 
 To run the web shell during UI development, use `pnpm dev`. To check the project, use `pnpm check`; to build, use `pnpm build`.
 
+### MCP server
+
+Advanced users can configure an MCP client to start Marnote's local stdio server. From the repository root, use this generic client configuration and replace the workspace path with the folder to open:
+
+```json
+{
+  "mcpServers": {
+    "marnote": {
+      "command": "pnpm",
+      "args": [
+        "--filter",
+        "@marnote/mcp",
+        "start",
+        "--",
+        "/absolute/path/to/workspace"
+      ]
+    }
+  }
+}
+```
+
+The server provides three read-only tools: `list_workspace` lists Markdown notes and folders, `read_note` reads a note, and `search_notes` searches notes by their content and metadata.
+
 ## Project layout
 
 - `apps/desktop` — React, TypeScript, Vite, and Tauri desktop app
