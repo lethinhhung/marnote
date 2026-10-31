@@ -19,6 +19,20 @@ export function reorderedPaths(paths: string[], source: string, target: string, 
   return next;
 }
 
+export function getSiblingPathsInOrder(
+  entries: Entry[],
+  parent: string,
+  mode: ExplorerSort,
+  order: Record<string, string[]>,
+): string[] {
+  const siblings = siblingPaths(entries, parent);
+  if (mode !== "manual") return siblings;
+  const manual = order[parent] ?? [];
+  const manualSet = new Set(manual);
+  const remaining = siblings.filter(p => !manualSet.has(p)).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  return [...manual, ...remaining];
+}
+
 const byName = (a: Entry, b: Entry) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 
 export function sortEntries(entries: Entry[], mode: ExplorerSort, order: Record<string, string[]>, parent = ""): Entry[] {

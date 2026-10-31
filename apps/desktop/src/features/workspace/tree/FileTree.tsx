@@ -16,6 +16,7 @@ export function FileTree(props: Props) {
   const { dragging, dropTarget, blankDropY, start, consumeSkipClick } = useTreeDragDrop({
     entries: props.entries,
     sort: props.sort,
+    manualOrder: props.manualOrder,
     setExpanded,
     onMove: props.onMove,
     onReorder: props.onReorder,
