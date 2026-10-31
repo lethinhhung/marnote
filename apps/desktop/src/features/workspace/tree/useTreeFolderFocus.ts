@@ -1,4 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import { ancestorPaths } from "../state/workspacePaths";
 
 export function useTreeFolderFocus(setExpanded: Dispatch<SetStateAction<Set<string>>>) {
   const [focusPath, setFocusPath] = useState("");
@@ -7,10 +8,9 @@ export function useTreeFolderFocus(setExpanded: Dispatch<SetStateAction<Set<stri
     const navigate = (event: Event) => {
       const path = (event as CustomEvent<string>).detail;
       if (typeof path !== "string" || !path) return;
-      const parts = path.split("/").filter(Boolean);
       setExpanded(current => {
         const next = new Set(current);
-        parts.slice(0, -1).forEach((_, index) => next.add(parts.slice(0, index + 1).join("/")));
+        ancestorPaths(path).forEach(parent => next.add(parent));
         return next;
       });
       setFocusPath("");
