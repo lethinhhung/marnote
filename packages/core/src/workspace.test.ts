@@ -68,6 +68,17 @@ describe("buildWorkspaceTree", () => {
     expect(tree.map((n) => n.name)).toEqual(["a", "docs", "z.md"]);
   });
 
+  it("sorts case-insensitively then lowercase before uppercase", () => {
+    const files: WorkspaceFile[] = [
+      { path: "a.md" },
+      { path: "B.md" },
+      { path: "A.md" },
+      { path: "b.md" },
+    ];
+    const tree = buildWorkspaceTree(files);
+    expect(tree.map((n) => n.name)).toEqual(["a.md", "A.md", "b.md", "B.md"]);
+  });
+
   it("creates implicit parent directories", () => {
     const files: WorkspaceFile[] = [{ path: "deep/nested/file.md" }];
     const tree = buildWorkspaceTree(files);
