@@ -99,6 +99,7 @@
 - Marnote exposes an MCP server for external AI and coding tools.
 - Target clients include Claude Code, Codex, Cursor, and OpenCode.
 - AI tools should be able to retrieve relevant context without reading the entire workspace.
+- The first delivery is a local, read-only stdio server configured for one workspace, as defined in [Integrations](integrations.md).
 - MCP retrieval should support:
   - Browse workspace structure.
   - Read notes.
