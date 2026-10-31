@@ -1,20 +1,11 @@
 import { WorkspaceEntry } from "./workspace.js";
+import type { MatchSource, SearchMatch, SearchOptions } from "./searchTypes.js";
+import { normalize, parseQuery, hasWords } from "./searchQuery.js";
+import { collectSearchableEntries } from "./searchEntries.js";
+import { makeExcerpt } from "./searchUtils.js";
 
-export type MatchSource = "Title" | "Path" | "Tag" | "Content";
-
-export interface SearchMatch {
-  path: string;
-  name: string;
-  excerpt: string;
-  score: number;
-  source: MatchSource;
-}
-
-export interface SearchOptions {
-  tags?: Map<string, string[]>;
-  contents?: Map<string, string>;
-  limit?: number;
-}
+export type { MatchSource, SearchMatch, SearchOptions };
+export { normalize, parseQuery, hasWords };
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
@@ -23,74 +14,6 @@ const SCORE_TITLE = 100;
 const SCORE_PATH = 70;
 const SCORE_TAG = 50;
 const SCORE_CONTENT = 20;
-
-function normalize(text: string): string {
-  return text.toLocaleLowerCase();
-}
-
-function parseQuery(query: string): string[] {
-  return query
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean)
-    .map(normalize);
-}
-
-function hasWords(value: string, words: string[]): boolean {
-  return words.every((word) => value.includes(word));
-}
-
-function isMarkdownFile(path: string): boolean {
-  return path.toLowerCase().endsWith(".md");
-}
-
-function makeExcerpt(content: string, query: string): string {
-  const body = normalize(content);
-  const words = parseQuery(query);
-  const positions = words
-    .map((word) => body.indexOf(word))
-    .filter((pos) => pos >= 0)
-    .sort((a, b) => a - b);
-
-  if (positions.length === 0) return "";
-
-  const index = positions[0];
-  const start = Math.max(0, index - 55);
-  const end = Math.min(content.length, index + query.length + 85);
-  const prefix = start > 0 ? "…" : "";
-  const suffix = end < content.length ? "…" : "";
-  return `${prefix}${content.slice(start, end).replace(/\s+/g, " ").trim()}${suffix}`;
-}
-
-function collectMarkdownEntries(
-  entries: WorkspaceEntry[],
-  result: WorkspaceEntry[] = []
-): WorkspaceEntry[] {
-  for (const entry of entries) {
-    if (entry.kind === "file" && isMarkdownFile(entry.name)) {
-      result.push(entry);
-    } else if (entry.kind === "directory" && entry.children) {
-      collectMarkdownEntries(entry.children, result);
-    }
-  }
-  return result;
-}
-
-function getEntryTags(
-  entry: WorkspaceEntry,
-  tags: Map<string, string[]> | undefined
-): string[] {
-  if (!tags) return [];
-  return tags.get(entry.path) ?? [];
-}
-
-function getEntryContent(
-  entry: WorkspaceEntry,
-  contents: Map<string, string> | undefined
-): string {
-  if (!contents) return "";
-  return contents.get(entry.path) ?? "";
-}
 
 function determineMatchSource(
   title: string,
@@ -129,28 +52,20 @@ export function searchWorkspace(
   if (words.length === 0) return [];
 
   const clampedLimit = Math.min(Math.max(1, limit), MAX_LIMIT);
-  const markdownEntries = collectMarkdownEntries(entries);
+  const searchableEntries = collectSearchableEntries(entries, tags, contents);
 
   const matches: SearchMatch[] = [];
 
-  for (const entry of markdownEntries) {
-    const title = normalize(entry.name.replace(/\.md$/i, ""));
-    const path = normalize(entry.path);
-    const entryTags = getEntryTags(entry, tags);
-    const tagText = normalize(entryTags.join(" "));
-    const content = getEntryContent(entry, contents);
-    const normalizedContent = normalize(content);
+  for (const se of searchableEntries) {
+    if (!hasWords(se.searchableText, words)) continue;
 
-    const searchableText = `${title} ${path} ${tagText} ${normalizedContent}`;
-    if (!hasWords(searchableText, words)) continue;
-
-    const source = determineMatchSource(title, path, tagText, normalizedContent, words);
+    const source = determineMatchSource(se.title, se.path, se.tagText, se.normalizedContent, words);
     const score = scoreForSource(source);
-    const excerpt = source === "Content" ? makeExcerpt(content, query) : "";
+    const excerpt = source === "Content" ? makeExcerpt(se.content, query) : "";
 
     matches.push({
-      path: entry.path,
-      name: entry.name,
+      path: se.entry.path,
+      name: se.entry.name,
       excerpt,
       score,
       source,
