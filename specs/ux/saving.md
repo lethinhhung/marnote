@@ -3,7 +3,7 @@
 ## Save modes
 
 - Keep **Save** at the right side of the editor formatting toolbar in both modes. Disable it when there are no unsaved changes or while a save is in progress.
-- Show an **Automatic / Manual** segmented control beside the save status in the note footer. The selection applies across workspaces and restarts.
+- Show an **Automatic / Manual** segmented control beside the save status in the full note footer and in its **More** menu when compact. The selection applies across workspaces and restarts.
 - In **Automatic**, save after a user pauses editing.
 - Switching from Manual to Automatic schedules any pending draft for autosave.
 - In **Manual**, edits stay as drafts until **Save**, `⌘S` / `Ctrl+S`, or the user chooses **Save** in a close or workspace switch prompt. Switching tabs preserves each tab's draft without prompting.
