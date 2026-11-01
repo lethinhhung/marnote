@@ -6,13 +6,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
 
 jobs:
   review:
-    name: Browser UI review
+    name: Explore, improve, and review UI
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
       - name: Check out develop
         uses: actions/checkout@v4
@@ -30,29 +31,56 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential curl file libayatana-appindicator3-dev libssl-dev \
+            libwebkit2gtk-4.1-dev libxdo-dev librsvg2-dev wget
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Capture browser evidence
+      - name: Start the app for browser exploration
         run: |
-          mkdir -p artifacts/ui-review
-          pnpm --filter @marnote/desktop dev --host 127.0.0.1 > /tmp/marnote-vite.log 2>&1 &
-          echo $! > /tmp/marnote-vite.pid
-          trap 'kill "$(cat /tmp/marnote-vite.pid)" 2>/dev/null || true' EXIT
+          pnpm --filter @marnote/desktop dev --host 127.0.0.1 > "$RUNNER_TEMP/marnote-vite.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/marnote-vite.pid"
           for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:5173/ > /dev/null; then break; fi
+            if curl --fail --silent http://127.0.0.1:5173/ > /dev/null; then exit 0; fi
             sleep 1
           done
-          curl --fail --silent http://127.0.0.1:5173/ > /dev/null
-          node apps/desktop/scripts/weekly-ui-review.mjs
+          cat "$RUNNER_TEMP/marnote-vite.log"
+          exit 1
 
       - name: Install OpenCode
         run: npm install --global opencode-ai
 
-      - name: Review screenshots and propose improvements
+      - name: Configure browser tool
+        run: |
+          mkdir -p artifacts/ui-review
+          cat > opencode.json <<'EOF'
+          {
+            "$schema": "https://opencode.ai/config.json",
+            "mcp": {
+              "playwright": {
+                "type": "local",
+                "command": [
+                  "pnpm", "exec", "playwright-mcp", "--headless", "--isolated", "--caps", "vision",
+                  "--init-script", "apps/desktop/scripts/ui-review-bridge.js",
+                  "--output-dir", "artifacts/ui-review"
+                ],
+                "enabled": true,
+                "timeout": 120000
+              }
+            }
+          }
+          EOF
+
+      - name: Explore, review, and fix one UI issue
+        id: agent
         env:
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
         run: |
@@ -61,21 +89,57 @@ jobs:
             exit 1
           fi
           prompt=$(cat .github/prompts/weekly-ui-review.md)
-          model="nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b"
-          echo "Reviewing browser evidence with vision model $model"
-          timeout 20m opencode run --auto --model "$model" \
-            --file artifacts/ui-review/desktop-home.png \
-            --file artifacts/ui-review/desktop-note.png \
-            --file artifacts/ui-review/narrow-note.png \
-            --file artifacts/ui-review/browser-observations.json \
-            "$prompt"
+          timeout 35m opencode run --auto \
+            --model nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b "$prompt"
           test -s artifacts/ui-review/review.md || {
-            echo "No model produced a UI review" >&2
+            echo "OpenCode did not produce the required UI review" >&2
             exit 1
           }
+          node -e 'require("node:fs").rmSync("opencode.json")'
+          unexpected=$(git status --porcelain -- . \
+            ':(exclude)apps/desktop/src/**' ':(exclude)artifacts/ui-review/**')
+          if [ -n "$unexpected" ]; then
+            echo "Agent changed files outside the permitted UI scope:" >&2
+            echo "$unexpected" >&2
+            exit 1
+          fi
+          files=$(git status --porcelain -- apps/desktop/src | sed 's/^...//' | sort -u)
+          count=$(printf '%s\n' "$files" | sed '/^$/d' | wc -l | tr -d ' ')
+          if [ "$count" -gt 3 ]; then
+            echo "Agent changed $count app files; the limit is three" >&2
+            exit 1
+          fi
+          if [ "$count" -gt 0 ]; then
+            test -s artifacts/ui-review/pr-body.md || {
+              echo "Agent changed code but did not produce the PR description" >&2
+              exit 1
+            }
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
           cat artifacts/ui-review/review.md >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload review and screenshots
+      - name: Run repository validation
+        if: steps.agent.outputs.changed == 'true'
+        run: pnpm check
+
+      - name: Set review date
+        id: date
+        run: echo "value=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
+      - name: Create improvement pull request
+        if: steps.agent.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          base: develop
+          branch: agent/ui-review-${{ steps.date.outputs.value }}
+          title: "ui: weekly UI improvement (${{ steps.date.outputs.value }})"
+          body-path: artifacts/ui-review/pr-body.md
+          commit-message: "ui: weekly UI improvement"
+          add-paths: apps/desktop/src/**
+
+      - name: Upload review and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -83,3 +147,10 @@ jobs:
           path: artifacts/ui-review/
           if-no-files-found: warn
           retention-days: 30
+
+      - name: Stop app server
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/marnote-vite.pid" ]; then
+            kill "$(cat "$RUNNER_TEMP/marnote-vite.pid")" 2>/dev/null || true
+          fi
