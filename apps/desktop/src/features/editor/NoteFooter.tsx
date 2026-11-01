@@ -30,9 +30,9 @@ function positionFooterMenus(footer: HTMLElement): void {
 }
 
 function closeMenuOnBlur(event: FocusEvent<HTMLDetailsElement>): void {
-  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
-    event.currentTarget.open = false;
-  }
+  if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+  if (event.currentTarget.querySelector('.tag-picker-wrap [aria-expanded="true"], .emoji-picker [aria-expanded="true"]')) return;
+  event.currentTarget.open = false;
 }
 
 export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {}, tagUsageCounts = {}, updateTagColor, editTag }: { value: string; path: string; kind: "note" | "folder"; saveStatus: "saved" | "saving" | "error"; saveMode: "automatic" | "manual"; dirty: boolean; onSaveModeChange: (mode: "automatic" | "manual") => void; metadata?: WorkspaceEntryMetadata; updateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void; tags?: Record<string, string>; tagUsageCounts?: Record<string, number>; updateTagColor?: (name: string, color: string) => void; editTag?: (oldName: string, newName: string, color: string) => void }) {
@@ -50,9 +50,20 @@ export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onS
       }, 100);
     });
     const reposition = () => positionFooterMenus(footer);
+    const dismissMenus = (event: PointerEvent) => {
+      const target = event.target as Node;
+      const targetElement = event.target instanceof Element ? event.target : null;
+      footer.querySelectorAll<HTMLDetailsElement>(".note-footer-menu[open]").forEach(menu => {
+        if (menu.contains(target)) return;
+        const pickerOpen = menu.querySelector('.tag-picker-wrap [aria-expanded="true"], .emoji-picker [aria-expanded="true"]');
+        if (pickerOpen && targetElement?.closest(".tag-picker-layer, .emoji-picker-popover")) return;
+        menu.open = false;
+      });
+    };
     observer.observe(footer);
     window.addEventListener("resize", reposition);
-    return () => { observer.disconnect(); window.clearTimeout(resizeTimer.current); window.removeEventListener("resize", reposition); };
+    document.addEventListener("pointerdown", dismissMenus);
+    return () => { observer.disconnect(); window.clearTimeout(resizeTimer.current); window.removeEventListener("resize", reposition); document.removeEventListener("pointerdown", dismissMenus); };
   }, []);
   const { words, characters, readingTimeMinutes } = calculateNoteStats(value);
   const selectedTags = metadata?.tags ?? [];
