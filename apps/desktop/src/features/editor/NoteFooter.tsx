@@ -1,4 +1,4 @@
-import { type FocusEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Star, Edit2, Clock3, Folder, FileText, Info, MoreHorizontal } from "lucide-react";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import { TagPicker } from "./TagPicker";
@@ -29,12 +29,6 @@ function positionFooterMenus(footer: HTMLElement): void {
   });
 }
 
-function closeMenuOnBlur(event: FocusEvent<HTMLDetailsElement>): void {
-  if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
-  if (event.currentTarget.querySelector('.tag-picker-wrap [aria-expanded="true"], .emoji-picker [aria-expanded="true"]')) return;
-  event.currentTarget.open = false;
-}
-
 export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {}, tagUsageCounts = {}, updateTagColor, editTag }: { value: string; path: string; kind: "note" | "folder"; saveStatus: "saved" | "saving" | "error"; saveMode: "automatic" | "manual"; dirty: boolean; onSaveModeChange: (mode: "automatic" | "manual") => void; metadata?: WorkspaceEntryMetadata; updateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void; tags?: Record<string, string>; tagUsageCounts?: Record<string, number>; updateTagColor?: (name: string, color: string) => void; editTag?: (oldName: string, newName: string, color: string) => void }) {
   const footerRef = useRef<HTMLElement>(null);
   const resizeTimer = useRef<number | undefined>(undefined);
@@ -50,7 +44,7 @@ export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onS
       }, 100);
     });
     const reposition = () => positionFooterMenus(footer);
-    const dismissMenus = (event: PointerEvent) => {
+    const dismissMenus = (event: Event) => {
       const target = event.target as Node;
       const targetElement = event.target instanceof Element ? event.target : null;
       footer.querySelectorAll<HTMLDetailsElement>(".note-footer-menu[open]").forEach(menu => {
@@ -63,7 +57,8 @@ export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onS
     observer.observe(footer);
     window.addEventListener("resize", reposition);
     document.addEventListener("pointerdown", dismissMenus);
-    return () => { observer.disconnect(); window.clearTimeout(resizeTimer.current); window.removeEventListener("resize", reposition); document.removeEventListener("pointerdown", dismissMenus); };
+    document.addEventListener("focusin", dismissMenus);
+    return () => { observer.disconnect(); window.clearTimeout(resizeTimer.current); window.removeEventListener("resize", reposition); document.removeEventListener("pointerdown", dismissMenus); document.removeEventListener("focusin", dismissMenus); };
   }, []);
   const { words, characters, readingTimeMinutes } = calculateNoteStats(value);
   const selectedTags = metadata?.tags ?? [];
@@ -92,8 +87,8 @@ export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onS
       {kind === "note" && saveStatusView}
       <span className="note-footer-path" title={path}>{path || "Markdown"}</span>
       {kind === "note" && compactStats}
-      {kind === "note" && <details className="note-footer-menu note-footer-info" onBlur={closeMenuOnBlur} onToggle={event => positionFooterMenus(event.currentTarget.closest("footer")!)}><summary aria-label="Note information" title="Note information"><Info size={14} /></summary><div className="note-footer-popup">{timestamps}</div></details>}
-      <details className="note-footer-menu" onBlur={closeMenuOnBlur} onToggle={event => positionFooterMenus(event.currentTarget.closest("footer")!)}><summary aria-label="More note options" title="More note options"><MoreHorizontal size={16} /></summary><div className="note-footer-popup">{tagsControl}{iconControls}{kind === "note" && saveOptions}</div></details>
+      {kind === "note" && <details className="note-footer-menu note-footer-info" onToggle={event => positionFooterMenus(event.currentTarget.closest("footer")!)}><summary aria-label="Note information" title="Note information"><Info size={14} /></summary><div className="note-footer-popup">{timestamps}</div></details>}
+      <details className="note-footer-menu" onToggle={event => positionFooterMenus(event.currentTarget.closest("footer")!)}><summary aria-label="More note options" title="More note options"><MoreHorizontal size={16} /></summary><div className="note-footer-popup">{tagsControl}{iconControls}{kind === "note" && saveOptions}</div></details>
     </> : <>
       <div className="note-footer-left">{timestamps}{tagsControl}{iconControls}{kind === "note" && <>{saveStatusView}{saveOptions}</>}<span className="note-footer-path" title={path}>{path || "Markdown"}</span></div>
       {kind === "note" && stats}
