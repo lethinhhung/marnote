@@ -1,12 +1,12 @@
 use super::{root, target};
 use std::fs;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static NEXT_WORKSPACE: AtomicU64 = AtomicU64::new(0);
 
 fn temp_workspace() -> PathBuf {
-    let unique = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
+    let unique = NEXT_WORKSPACE.fetch_add(1, Ordering::Relaxed);
     let path = std::env::temp_dir().join(format!("marnote-paths-{}-{unique}", std::process::id()));
     fs::create_dir_all(&path).unwrap();
     fs::canonicalize(&path).unwrap()
