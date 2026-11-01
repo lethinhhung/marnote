@@ -9,10 +9,11 @@ import { actions, actionGroups, moreActions, toolbarGlyph } from "../toolbarActi
 import type { Entry } from "../../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./dialogs/WorkspaceLinkPalette";
 import { relativeWorkspaceLink } from "../links/workspaceLinks";
+import { EditorZoom } from "./EditorZoom";
 
-type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[] };
+type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[]; zoom?: number; onZoomDecrease?: () => void; onZoomIncrease?: () => void; onZoomReset?: () => void };
 
-export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, path, entries }: Props) {
+export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, path, entries, zoom = 100, onZoomDecrease = () => {}, onZoomIncrease = () => {}, onZoomReset = () => {} }: Props) {
   const activeActions = useEditorState({ editor, selector: ({ editor: current }) => actions.map(action => !!current && !!action.active?.(current)) });
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
@@ -92,6 +93,7 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     {workspaceOpen && createPortal(<WorkspaceLinkPalette entries={entries} onClose={closeWorkspacePicker} onSelect={addWorkspaceLink} />, document.body)}
     <span className="toolbar-spacer" />
     <div className="toolbar-utility">
+      <EditorZoom value={zoom} onDecrease={onZoomDecrease} onIncrease={onZoomIncrease} onReset={onZoomReset} />
       {!source && supportsWideContent && <button type="button" className={horizontalScroll ? "tool active wide-content-toggle" : "tool wide-content-toggle"} title={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-label={horizontalScroll ? "Disable horizontal scrolling" : "Enable horizontal scrolling"} aria-pressed={horizontalScroll} onClick={onToggleHorizontalScroll}><MoveHorizontal size={16} /><span>{horizontalScroll ? "Scroll" : "Wrap"}</span></button>}
       <button type="button" className="tool toolbar-save" onClick={onSave} disabled={!dirty || saving} title="Save note (⌘S / Ctrl+S)" aria-label="Save note"><Save size={14} /><span>Save</span></button>
     </div>
