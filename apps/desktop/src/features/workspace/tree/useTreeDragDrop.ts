@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 
 import type { Entry } from "../workspaceTypes";
 import { parentPath } from "../state/workspacePaths";
 import { dropDestination } from "./treeDrop";
-import { reorderedPaths, siblingPaths, type ExplorerSort } from "../sortEntries";
+import { reorderedPaths, getSiblingPathsInOrder, type ExplorerSort } from "../sortEntries";
 
 /** Drop target marker used while a drag hovers blank space inside the tree. */
 export const BLANK_DROP_TARGET = "__blank__";
@@ -13,6 +13,7 @@ type DragStartEvent = { button: number; clientX: number; clientY: number };
 type Options = {
   entries: Entry[];
   sort: ExplorerSort;
+  manualOrder: Record<string, string[]>;
   setExpanded: Dispatch<SetStateAction<Set<string>>>;
   onMove: (source: string, destination: string) => Promise<boolean>;
   onReorder: (parent: string, paths: string[]) => Promise<boolean>;
@@ -22,7 +23,7 @@ type Options = {
  * Drag and drop behavior for the explorer tree: pointer tracking, drop target
  * resolution, manual reordering, moving items, and undoing the last move.
  */
-export function useTreeDragDrop({ entries, sort, setExpanded, onMove, onReorder }: Options) {
+export function useTreeDragDrop({ entries, sort, manualOrder, setExpanded, onMove, onReorder }: Options) {
   const [dragging, setDragging] = useState("");
   const [dropTarget, setDropTarget] = useState("");
   const [blankDropY, setBlankDropY] = useState<number | null>(null);
@@ -54,7 +55,7 @@ export function useTreeDragDrop({ entries, sort, setExpanded, onMove, onReorder 
         const edgeDrop = event.clientY <= rowBounds.top + rowBounds.height * 0.25 || event.clientY >= rowBounds.top + rowBounds.height * 0.75;
         if (kind === "file" || edgeDrop) {
           const parent = parentPath(path);
-          const paths = reorderedPaths(siblingPaths(entries, parent), active.path, path, after);
+          const paths = reorderedPaths(getSiblingPathsInOrder(entries, parent, sort, manualOrder), active.path, path, after);
           if (paths.length) await onReorder(parent, paths);
           return;
         }
@@ -102,7 +103,7 @@ export function useTreeDragDrop({ entries, sort, setExpanded, onMove, onReorder 
     window.addEventListener("pointermove", trackPointer);
     window.addEventListener("keydown", undoMove);
     return () => { window.removeEventListener("pointerup", finish); window.removeEventListener("pointercancel", finish); window.removeEventListener("pointermove", trackPointer); window.removeEventListener("keydown", undoMove); };
-  }, [onMove, onReorder, entries, sort, setExpanded]);
+  }, [onMove, onReorder, entries, sort, manualOrder, setExpanded]);
 
   const start = (path: string, event: DragStartEvent) => { if (event.button !== 0) return; skipClick.current = false; drag.current = { path, x: event.clientX, y: event.clientY, moved: false }; };
 

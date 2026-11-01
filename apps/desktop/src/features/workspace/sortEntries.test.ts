@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { reorderedPaths, siblingPaths, sortEntries } from "./sortEntries";
+import { reorderedPaths, siblingPaths, sortEntries, getSiblingPathsInOrder } from "./sortEntries";
 import type { Entry } from "./workspaceTypes";
 
 const file = (name: string, path = name, modifiedMs?: number): Entry => ({
@@ -27,6 +27,48 @@ describe("reorderedPaths", () => {
   it("places the source before or after the target", () => {
     expect(reorderedPaths(["a", "b", "c"], "a", "c", false)).toEqual(["b", "a", "c"]);
     expect(reorderedPaths(["a", "b", "c"], "a", "b", true)).toEqual(["b", "a", "c"]);
+  });
+});
+
+describe("getSiblingPathsInOrder", () => {
+  const entries: Entry[] = [
+    { name: "c.md", path: "c.md", kind: "file" },
+    { name: "a.md", path: "a.md", kind: "file" },
+    { name: "b.md", path: "b.md", kind: "file" },
+    { name: "z.md", path: "z.md", kind: "file" },
+  ];
+
+  it("returns raw sibling order for non-manual modes", () => {
+    expect(getSiblingPathsInOrder(entries, "", "name", {})).toEqual(["c.md", "a.md", "b.md", "z.md"]);
+    expect(getSiblingPathsInOrder(entries, "", "modified", {})).toEqual(["c.md", "a.md", "b.md", "z.md"]);
+  });
+
+  it("returns manual order first, then name-sorted remaining for manual mode", () => {
+    const order = { "": ["c.md", "a.md", "b.md", "z.md"] };
+    expect(getSiblingPathsInOrder(entries, "", "manual", order)).toEqual(["c.md", "a.md", "b.md", "z.md"]);
+  });
+
+  it("preserves manual order and appends missing entries name-sorted", () => {
+    const entriesWithExtra: Entry[] = [
+      { name: "c.md", path: "c.md", kind: "file" },
+      { name: "a.md", path: "a.md", kind: "file" },
+      { name: "b.md", path: "b.md", kind: "file" },
+      { name: "z.md", path: "z.md", kind: "file" },
+      { name: "x.md", path: "x.md", kind: "file" },
+    ];
+    const order = { "": ["c.md", "a.md"] };
+    expect(getSiblingPathsInOrder(entriesWithExtra, "", "manual", order)).toEqual(["c.md", "a.md", "b.md", "x.md", "z.md"]);
+  });
+
+  it("handles nested folder siblings", () => {
+    const nestedEntries: Entry[] = [
+      { name: "parent", path: "parent", kind: "directory", children: [
+        { name: "c.md", path: "parent/c.md", kind: "file" },
+        { name: "a.md", path: "parent/a.md", kind: "file" },
+      ]},
+    ];
+    const order = { "parent": ["parent/a.md", "parent/c.md"] };
+    expect(getSiblingPathsInOrder(nestedEntries, "parent", "manual", order)).toEqual(["parent/a.md", "parent/c.md"]);
   });
 });
 
