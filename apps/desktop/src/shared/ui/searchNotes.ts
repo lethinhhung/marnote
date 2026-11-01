@@ -1,5 +1,4 @@
 import { flattenEntries, isMarkdown, type Entry } from "../domain/workspace";
-export { flattenEntries };
 
 export type MatchSource = "Title" | "Folder" | "Tag" | "Content";
 export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
@@ -22,12 +21,6 @@ export function parseSearchQuery(query: string): SearchFilter {
   }
   filter.text = filter.text.toLocaleLowerCase();
   return filter;
-}
-
-export function searchNotes(treeEntries: Entry[] | undefined, query: string): Entry[] {
-  if (!treeEntries || !query.trim()) return [];
-  const needle = query.toLocaleLowerCase();
-  return flattenEntries(treeEntries).filter(isMarkdown).filter(entry => (entry.name + " " + entry.path).toLocaleLowerCase().includes(needle)).slice(0, 8);
 }
 
 function makeExcerpt(content: string, query: string): string {
