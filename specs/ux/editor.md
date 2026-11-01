@@ -7,6 +7,11 @@
 - **Markdown** toggles source view; **Copy MD** copies the draft. Saving behavior is defined in [Saving](saving.md).
 - External edits show **Load external version** and **Keep mine** options.
 
+## Viewing
+
+- Provide accessible zoom controls with current percentage, increase, decrease, and reset actions; support `⌘+` / `Ctrl++`, `⌘-` / `Ctrl+-`, and `⌘0` / `Ctrl+0` while the editor is active.
+- Zoom the note title and content in formatted and source views. Keep zoom consistent across notes, views, and app restarts; leave interface sizing and saved content unchanged.
+
 ## Blocks and links
 
 - Toolbar and `/` menu insert text, headings, lists, tasks, quotes, code, tables, links, and dividers. Slash results support arrow keys, Enter, and Escape.
