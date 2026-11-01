@@ -9,7 +9,7 @@
 
 ## Viewing
 
-- Provide accessible zoom controls with current percentage, increase, decrease, and reset actions; support `⌘+` / `Ctrl++`, `⌘-` / `Ctrl+-`, and `⌘0` / `Ctrl+0` while the editor is active.
+- Provide accessible zoom controls from 80% to 150% in 10% steps, with current percentage, increase, decrease, and reset actions. Support `⌘+` / `Ctrl++`, `⌘-` / `Ctrl+-`, and `⌘0` / `Ctrl+0` while the editor is active.
 - Zoom the note title and content in formatted and source views. Keep zoom consistent across notes, views, and app restarts; leave interface sizing and saved content unchanged.
 
 ## Blocks and links
