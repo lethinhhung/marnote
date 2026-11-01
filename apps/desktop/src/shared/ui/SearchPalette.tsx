@@ -1,8 +1,8 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, FileText, Folder, Link2, Plus, Search, Zap } from "lucide-react";
-import type { Entry, WorkspaceTree } from "../domain/workspace";
 import { readFile } from "../../platform/workspace";
-import { flattenEntries, parseSearchQuery, searchWorkspace } from "./searchNotes";
+import { flattenEntries, type Entry, type WorkspaceTree } from "../domain/workspace";
+import { parseSearchQuery, searchWorkspace } from "./searchNotes";
 import { loadSearchIndex, updateSearchIndexContent } from "./searchIndex";
 import type { CopyNoteValue, SearchTargetAction } from "./searchActions";
 import { SearchActionsMenu } from "./SearchActionsMenu";
