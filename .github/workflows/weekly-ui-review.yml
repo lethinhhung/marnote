@@ -1,0 +1,85 @@
+name: Weekly UI review
+
+on:
+  schedule:
+    - cron: "59 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: Browser UI review
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out develop
+        uses: actions/checkout@v4
+        with:
+          ref: develop
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Capture browser evidence
+        run: |
+          mkdir -p artifacts/ui-review
+          pnpm --filter @marnote/desktop dev --host 127.0.0.1 > /tmp/marnote-vite.log 2>&1 &
+          echo $! > /tmp/marnote-vite.pid
+          trap 'kill "$(cat /tmp/marnote-vite.pid)" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:5173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:5173/ > /dev/null
+          node apps/desktop/scripts/weekly-ui-review.mjs
+
+      - name: Install OpenCode
+        run: npm install --global opencode-ai
+
+      - name: Review screenshots and propose improvements
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "NVIDIA_API_KEY is not configured" >&2
+            exit 1
+          fi
+          prompt=$(cat .github/prompts/weekly-ui-review.md)
+          model="nvidia/nvidia/nemotron-3.5-super-vl-120b-a12b"
+          echo "Reviewing browser evidence with vision model $model"
+          timeout 20m opencode run --auto --model "$model" \
+            --file artifacts/ui-review/desktop-home.png \
+            --file artifacts/ui-review/desktop-note.png \
+            --file artifacts/ui-review/narrow-note.png \
+            --file artifacts/ui-review/browser-observations.json \
+            "$prompt"
+          test -s artifacts/ui-review/review.md || {
+            echo "No model produced a UI review" >&2
+            exit 1
+          }
+          cat artifacts/ui-review/review.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload review and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-ui-review-${{ github.run_number }}
+          path: artifacts/ui-review/
+          if-no-files-found: warn
+          retention-days: 30

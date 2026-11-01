@@ -22,6 +22,7 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 - Manual runs may set the optional `maintenance_date` input (`YYYY-MM-DD`) to label maintenance branches and pull requests for a specific date. Scheduled runs use the current UTC date.
 - Manual runs may select `all`, `fix`, `refactor`, or `tests`. The `all` option runs all three sessions. Scheduled runs execute refactor and bug-fix sessions at both times, and the test-gap session only at 23:59.
 - Bug-fix runs select a focus area: `editor`, `workspace`, or `search`. Manual runs may choose one; scheduled and `auto` runs rotate by UTC day of year.
+- A separate weekly UI review runs every Monday at 05:59 UTC (12:59 in `Asia/Ho_Chi_Minh`). It captures Playwright screenshots from the desktop app's web interface and creates a review artifact; it does not edit code or open a pull request.
 - Run independent sessions, each starting from `develop`:
   1. Refactor
   2. Bug fix
@@ -64,6 +65,14 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 
 - The workflow runs `pnpm check` after edits.
 - Do not create a pull request if the session produces no valid changes or validation fails.
+
+## Weekly UI Review
+
+- Install Chromium and run the desktop React interface in Playwright with a deterministic in-memory Tauri bridge and demo workspace.
+- Capture the home state and an opened note at 1440×960, then the opened note at 800×900. Save screenshots and browser observations as a 30-day Actions artifact and add the review to the job summary.
+- Attach the screenshots and observations to OpenCode so NVIDIA's vision-language model can inspect the rendered interface. Do not fall back to text-only models; fail the review if image inspection is unavailable.
+- Report only evidence-backed, actionable UI/UX findings, or state that there are none. Include the mocked-bridge limitation and unexercised states. Do not modify application code or create a pull request.
+- The manual `workflow_dispatch` run uses the same review flow.
 
 ## Git and Pull Requests
 
