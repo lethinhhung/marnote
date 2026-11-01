@@ -23,13 +23,14 @@ export function parseSearchQuery(query: string): SearchFilter {
   return filter;
 }
 
-function makeExcerpt(content: string, query: string): string {
-  const body = content.toLocaleLowerCase();
-  const index = query.split(/\s+/).map(word => body.indexOf(word)).filter(position => position >= 0).sort((a, b) => a - b)[0] ?? -1;
+function makeExcerpt(sourceText: string, query: string): string {
+  const body = sourceText.toLocaleLowerCase();
+  const words = query.split(/\s+/).filter(Boolean);
+  const index = words.map(word => body.indexOf(word)).filter(position => position >= 0).sort((a, b) => a - b)[0] ?? -1;
   if (index < 0) return "";
   const start = Math.max(0, index - 55);
-  const end = Math.min(content.length, index + query.length + 85);
-  return `${start ? "…" : ""}${content.slice(start, end).replace(/\s+/g, " ").trim()}${end < content.length ? "…" : ""}`;
+  const end = Math.min(sourceText.length, index + query.length + 85);
+  return `${start ? "…" : ""}${sourceText.slice(start, end).replace(/\s+/g, " ").trim()}${end < sourceText.length ? "…" : ""}`;
 }
 
 const hasWords = (value: string, words: string[]) => words.every(word => value.includes(word));
@@ -61,7 +62,8 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
     : filter.tag ? "Tag" : filter.folder ? "Folder" : "Content";
   if (words.length && !hasWords(`${title} ${path} ${tagText} ${content}`.toLocaleLowerCase(), words)) return null;
   const score = source === "Title" ? 100 : source === "Folder" ? 70 : source === "Tag" ? 50 : 20;
-  return { entry, excerpt: makeExcerpt(content, filter.text), score, source };
+  const sourceText = source === "Title" ? entry.name.replace(/\.md$/i, "") : source === "Folder" ? entry.path : source === "Tag" ? tagNames.join(" ") : content;
+  return { entry, excerpt: makeExcerpt(sourceText, filter.text), score, source };
 }
 
 function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
