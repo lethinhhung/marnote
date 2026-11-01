@@ -1,0 +1,27 @@
+{
+  "name": "@marnote/mcp",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "marnote-mcp": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "pnpm build && vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "vitest": "^2.1.8"
+  }
+}
