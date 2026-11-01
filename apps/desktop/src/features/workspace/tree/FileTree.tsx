@@ -5,6 +5,7 @@ import { TreeRow } from "./TreeRow";
 import { visibleEntries } from "./treeVisibility";
 import { useTreeFolderFocus } from "./useTreeFolderFocus";
 import { sortEntries, type ExplorerSort } from "../sortEntries";
+import { ancestorPaths } from "../state/workspacePaths";
 import { BLANK_DROP_TARGET, useTreeDragDrop } from "./useTreeDragDrop";
 
 export type TreeEdit = { kind: "note" | "folder" | "rename-note" | "rename-folder"; path: string; value: string };
@@ -23,15 +24,15 @@ export function FileTree(props: Props) {
   useEffect(() => {
     if (!props.edit) return;
     const target = props.edit.kind.startsWith("rename") ? props.edit.path : props.edit.path.replace(/\/$/, "");
-    const parts = target.split("/").filter(Boolean);
-    const ancestors = props.edit.kind.startsWith("rename") ? parts.slice(0, -1) : parts;
-    setExpanded(current => { const next = new Set(current); ancestors.forEach((_, index) => next.add(ancestors.slice(0, index + 1).join("/"))); return next; });
+    const ancestors = props.edit.kind.startsWith("rename")
+      ? ancestorPaths(target)
+      : ancestorPaths(target, true);
+    setExpanded(current => { const next = new Set(current); ancestors.forEach(parent => next.add(parent)); return next; });
   }, [props.edit]);
   useEffect(() => {
     if (!props.selectedFolder) return;
-    const parts = props.selectedFolder.split("/").filter(Boolean);
-    const ancestors = parts.slice(0, -1);
-    setExpanded(current => { const next = new Set(current); ancestors.forEach((_, index) => next.add(ancestors.slice(0, index + 1).join("/"))); return next; });
+    const ancestors = ancestorPaths(props.selectedFolder);
+    setExpanded(current => { const next = new Set(current); ancestors.forEach(parent => next.add(parent)); return next; });
   }, [props.selectedFolder]);
   const click = (entry: Entry) => {
     if (consumeSkipClick()) return;
