@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import type { Editor } from "@tiptap/react";
 import type { Entry } from "../../../shared/domain/workspace";
 import { relativeWorkspaceLink, findWorkspaceLink } from "./workspaceLinks";
+import { isExternalUrl } from "./linkUrl";
 
 export type SlashLinkState = { from: number; to: number; top: number; bottom: number; left: number };
 
@@ -21,7 +22,7 @@ export function navigateHref({
     onNavigate(target.path, target.kind);
     return;
   }
-  const normalized = /^[a-z][a-z\d+.-]*:/i.test(value) || value.startsWith("//") ? value : `https://${value}`;
+  const normalized = isExternalUrl(value) ? value : `https://${value}`;
   window.open(normalized, "_blank", "noopener,noreferrer");
 }
 

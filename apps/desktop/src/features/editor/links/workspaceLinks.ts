@@ -1,4 +1,5 @@
 import { flattenEntries, type Entry } from "../../../shared/domain/workspace";
+import { isExternalUrl } from "./linkUrl";
 export { flattenEntries };
 
 export function relativeWorkspaceLink(from: string, target: Entry) {
@@ -13,7 +14,7 @@ export function relativeWorkspaceLink(from: string, target: Entry) {
 }
 
 export function resolveWorkspaceLink(from: string, href: string) {
-  if (!href || /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("//") || href.startsWith("#")) return null;
+  if (!href || isExternalUrl(href) || href.startsWith("#")) return null;
   let target: string;
   try { target = decodeURIComponent(href.split(/[?#]/, 1)[0]); } catch { return null; }
   if (!target) return null;
