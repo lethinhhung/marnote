@@ -2,10 +2,15 @@ import { isTauri } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-shell";
 
 const domain = /^(?:www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:[/?#]|$)/i;
+const externalScheme = /^[a-z][a-z\d+.-]*:/i;
+
+export function isExternalUrl(value: string): boolean {
+  return externalScheme.test(value) || value.startsWith("//");
+}
 
 export function normalizeLinkUrl(value: string) {
   const href = value.trim();
-  if (/^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("/")) return href;
+  if (isExternalUrl(href) || href.startsWith("/")) return href;
   if (href.startsWith("./") || href.startsWith("../") || href.endsWith("/") || /(?:^|\/)\.{0,2}[^/]*\.md(?:[?#].*)?$/i.test(href)) return href;
   return domain.test(href) ? `https://${href}` : href;
 }
