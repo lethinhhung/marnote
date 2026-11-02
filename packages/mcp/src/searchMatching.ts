@@ -1,10 +1,24 @@
 import { WorkspaceEntry } from "./workspace.js";
-import type { MatchSource, SearchMatch, SearchOptions } from "./searchTypes.js";
 import { normalize, parseQuery, hasWords } from "./searchQuery.js";
 import { collectSearchableEntries } from "./searchEntries.js";
 import { makeExcerpt } from "./searchUtils.js";
 
-export type { MatchSource, SearchMatch, SearchOptions };
+export type MatchSource = "Title" | "Path" | "Tag" | "Content";
+
+export interface SearchMatch {
+  path: string;
+  name: string;
+  excerpt: string;
+  score: number;
+  source: MatchSource;
+}
+
+export interface SearchOptions {
+  tags?: Map<string, string[]>;
+  contents?: Map<string, string>;
+  limit?: number;
+}
+
 export { normalize, parseQuery, hasWords };
 
 const DEFAULT_LIMIT = 20;
