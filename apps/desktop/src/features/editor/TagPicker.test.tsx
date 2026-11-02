@@ -60,7 +60,7 @@ describe("TagPicker", () => {
   });
 
   it("creates a new tag from the picker", () => {
-    const { onChange } = renderTagPicker();
+    const { onChange, onColor } = renderTagPicker();
     openPicker();
 
     const input = screen.getByPlaceholderText("Create a tag");
@@ -68,6 +68,7 @@ describe("TagPicker", () => {
     fireEvent.keyDown(input, { key: "Enter" });
 
     expect(onChange).toHaveBeenCalledWith(["new-tag"]);
+    expect(onColor).toHaveBeenCalledWith("new-tag", "#74856b");
   });
 
   it("opens the tag management dialog", () => {

@@ -68,7 +68,7 @@ export function TagPicker({ selected, tags, usageCounts, onChange, onColor, onEd
   }, [manage, focusedTag]);
   const toggle = (tag: string) => onChange(selected.includes(tag) ? selected.filter(value => value !== tag) : [...selected, tag]);
   const valueToCreate = () => name.trim().replace(/^#/, "");
-  const createSelected = () => { const value = valueToCreate(); if (!value) return; if (!selected.includes(value)) onChange([...selected, value]); setName(""); };
+  const createSelected = () => { const value = valueToCreate(); if (!value) return; if (!selected.includes(value)) onChange([...selected, value]); if (!tags[value]) onColor(value, "#74856b"); setName(""); };
   const createManaged = () => { const value = valueToCreate(); if (!value) return; onColor(value, tags[value] ?? "#74856b"); setName(""); };
   return <div className="tag-picker-wrap" ref={root}>
     <button className={`note-footer-action tag-picker-trigger ${open ? "active" : ""}`} onClick={() => open ? setOpen(false) : show()} aria-label={selected.length ? `Edit tags, ${selected.length} selected` : "Add tag"} aria-expanded={open}><Tag size={12} /><span>Add tag</span></button>
