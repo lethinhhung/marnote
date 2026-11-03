@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::{metadata, workspace::root};
+use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::Path};
 
 pub(super) const INDEX: &str = "index.json";
