@@ -22,11 +22,31 @@ fn temp_dir() -> PathBuf {
 fn mutations_preserve_unrelated_records() {
     let temp = temp_dir();
     let mut original = WorkspaceMetadata::default();
-    original.entries.insert("keep.md".into(), EntryMetadata { favorite: Some(true), ..Default::default() });
-    original.entries.insert("edit.md".into(), EntryMetadata { tags: Some(vec!["old".into()]), ..Default::default() });
+    original.entries.insert(
+        "keep.md".into(),
+        EntryMetadata {
+            favorite: Some(true),
+            ..Default::default()
+        },
+    );
+    original.entries.insert(
+        "edit.md".into(),
+        EntryMetadata {
+            tags: Some(vec!["old".into()]),
+            ..Default::default()
+        },
+    );
     write_metadata(&temp, &original).unwrap();
 
-    update_metadata(&temp, "edit.md", EntryMetadata { tags: Some(vec!["new".into()]), ..Default::default() }).unwrap();
+    update_metadata(
+        &temp,
+        "edit.md",
+        EntryMetadata {
+            tags: Some(vec!["new".into()]),
+            ..Default::default()
+        },
+    )
+    .unwrap();
     remove_metadata(&temp, "gone.md").unwrap();
     let result = read_metadata(&temp).unwrap();
     assert_eq!(result.entries.len(), 2);
@@ -50,7 +70,10 @@ fn failed_atomic_write_keeps_existing_metadata() {
     let path = temp.join(".marnote/metadata.json");
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(&path, r#"{"entries":{}}"#).unwrap();
-    let collision = path.parent().unwrap().join(format!(".metadata-{}.tmp", std::process::id()));
+    let collision = path
+        .parent()
+        .unwrap()
+        .join(format!(".metadata-{}.tmp", std::process::id()));
     fs::write(&collision, "occupied").unwrap();
 
     assert!(update_metadata(&temp, "new.md", EntryMetadata::default()).is_err());

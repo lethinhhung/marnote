@@ -22,6 +22,7 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 - Manual runs may set the optional `maintenance_date` input (`YYYY-MM-DD`) to label maintenance branches and pull requests for a specific date. Scheduled runs use the current UTC date.
 - Manual runs may select `all`, `fix`, `refactor`, or `tests`. The `all` option runs all three sessions. Scheduled runs execute refactor and bug-fix sessions at both times, and the test-gap session only at 23:59.
 - Bug-fix runs select a focus area: `editor`, `workspace`, or `search`. Manual runs may choose one; scheduled and `auto` runs rotate by UTC day of year.
+- A weekly UI review runs every Monday at 05:59 UTC (12:59 in `Asia/Ho_Chi_Minh`). The agent uses Playwright to choose a scope, explore the interface, capture evidence, and implement at most one focused UI improvement. It opens a pull request only when `pnpm check` passes and code changes were made.
 - Run independent sessions, each starting from `develop`:
   1. Refactor
   2. Bug fix
@@ -64,6 +65,14 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 
 - The workflow runs `pnpm check` after edits.
 - Do not create a pull request if the session produces no valid changes or validation fails.
+
+## Weekly UI Review
+
+- Install Chromium and run the desktop React interface with a deterministic in-memory Tauri bridge and demo workspace. Give OpenCode Playwright MCP tools so the agent can navigate, interact, resize, inspect screenshots, and choose its own review scope.
+- The agent explores a small number of user flows, uses relevant UX specs, and captures before and after screenshots when it makes a fix. Preserve the report and screenshots as a 30-day Actions artifact.
+- Permit at most one evidence-backed UI fix per run, changing up to three files under `apps/desktop/src/`. If no supported fix is found, leave code unchanged and do not open a pull request.
+- Run `pnpm check` after edits. Open a pull request against `develop` only when validation passes.
+- The manual `workflow_dispatch` run uses the same review flow.
 
 ## Git and Pull Requests
 

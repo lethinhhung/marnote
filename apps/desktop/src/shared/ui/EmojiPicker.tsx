@@ -4,10 +4,10 @@ import FullEmojiPicker from "emoji-picker-react";
 import type { ThemeValue } from "emoji-picker-react";
 import { X } from "lucide-react";
 
-type Props = { value?: string; onChange: (emoji: string) => void; label?: string; fallback?: ReactNode };
+type Props = { value?: string; onChange: (emoji: string) => void; label?: string; buttonText?: string; fallback?: ReactNode };
 type Position = { top: number; left: number; width: number; height: number };
 
-export function EmojiPicker({ value, onChange, label = "Choose emoji", fallback = "😊" }: Props) {
+export function EmojiPicker({ value, onChange, label = "Choose emoji", buttonText, fallback = "😊" }: Props) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<Position | null>(null);
   const [theme, setTheme] = useState<ThemeValue>(() => document.documentElement.dataset.theme === "dark" ? "dark" : "light");
@@ -49,7 +49,7 @@ export function EmojiPicker({ value, onChange, label = "Choose emoji", fallback 
   }, [open]);
 
   return <span className="emoji-picker" ref={anchor}>
-    <button type="button" aria-label={label} title={label} aria-expanded={open} onClick={() => setOpen(current => !current)}>{value || fallback}</button>
+    <button type="button" aria-label={label} title={label} aria-expanded={open} onClick={() => setOpen(current => !current)}>{value || fallback}{buttonText && <span>{buttonText}</span>}</button>
     {open && position && createPortal(<div className="emoji-picker-popover" ref={panel} style={position} onClick={event => event.stopPropagation()}>
       <div className="emoji-picker-toolbar"><button type="button" className="emoji-picker-remove" onClick={() => { onChange(""); setOpen(false); }}><X size={12} />Remove emoji</button></div>
       <FullEmojiPicker width={position.width} height={Math.max(240, position.height - 34)} theme={theme} style={{ "--epr-header-padding": "5px 8px", "--epr-category-navigation-button-size": "27px" } as CSSProperties} onEmojiClick={emoji => { onChange(emoji.emoji); setOpen(false); }} />
