@@ -1,5 +1,6 @@
-use super::{file_create_markdown, file_delete, file_empty_trash, file_restore_trash};
+use super::{file_create_markdown, file_delete, file_empty_trash, file_list_trash, file_move, file_restore_trash};
 use crate::metadata;
+use crate::tree;
 use std::{
     fs,
     path::PathBuf,
@@ -8,16 +9,42 @@ use std::{
 
 static COUNTER: AtomicU64 = AtomicU64::new(0);
 
-fn workspace() -> (PathBuf, PathBuf) {
-    let id = COUNTER.fetch_add(1, Ordering::Relaxed);
-    let root = std::env::temp_dir().join(format!("marnote-trash-safety-{id}"));
-    let outside = std::env::temp_dir().join(format!("marnote-outside-trash-{id}.md"));
-    if root.exists() {
-        fs::remove_dir_all(&root).unwrap();
+struct TempWorkspace {
+    root: PathBuf,
+    outside: PathBuf,
+}
+
+impl TempWorkspace {
+    fn new(prefix: &str) -> Self {
+        let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!("{prefix}-{id}"));
+        let outside = std::env::temp_dir().join(format!("marnote-outside-{prefix}-{id}.md"));
+        if root.exists() {
+            fs::remove_dir_all(&root).unwrap();
+        }
+        let _ = fs::remove_file(&outside);
+        fs::create_dir_all(&root).unwrap();
+        fs::write(&outside, "keep me").unwrap();
+        Self { root, outside }
     }
-    let _ = fs::remove_file(&outside);
-    fs::create_dir_all(&root).unwrap();
-    fs::write(&outside, "keep me").unwrap();
+
+    fn root(&self) -> String {
+        self.root.to_string_lossy().into_owned()
+    }
+}
+
+impl Drop for TempWorkspace {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.root);
+        let _ = fs::remove_file(&self.outside);
+    }
+}
+
+fn workspace() -> (PathBuf, PathBuf) {
+    let ws = TempWorkspace::new("marnote-trash-safety");
+    let root = ws.root.clone();
+    let outside = ws.outside.clone();
+    std::mem::forget(ws);
     (root, outside)
 }
 
@@ -190,4 +217,75 @@ fn empty_trash_removes_legacy_items_from_disk() {
     assert_eq!(fs::read_to_string(&outside).unwrap(), "keep me");
     fs::remove_dir_all(ws).unwrap();
     fs::remove_file(outside).unwrap();
+}
+
+#[test]
+fn workspace_note_lifecycle_create_move_trash_restore() {
+    let ws = TempWorkspace::new("lifecycle");
+
+    // Step 1: Create a note
+    file_create_markdown(ws.root(), "note.md".into(), "original content".into()).unwrap();
+
+    // Verify tree after creation
+    let entries = tree::collect(&ws.root, &ws.root).unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].name, "note.md");
+    assert_eq!(entries[0].path, "note.md");
+    assert_eq!(entries[0].kind, "file");
+    assert_eq!(fs::read_to_string(ws.root.join("note.md")).unwrap(), "original content");
+
+    // Step 2: Move the note to a subfolder
+    fs::create_dir_all(ws.root.join("folder")).unwrap();
+    file_move(ws.root(), "note.md".into(), "folder/note.md".into()).unwrap();
+
+    // Verify tree after move
+    let entries = tree::collect(&ws.root, &ws.root).unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].name, "folder");
+    assert_eq!(entries[0].kind, "directory");
+    assert_eq!(entries[0].children.len(), 1);
+    assert_eq!(entries[0].children[0].name, "note.md");
+    assert_eq!(entries[0].children[0].path, "folder/note.md");
+    assert!(!ws.root.join("note.md").exists());
+    assert_eq!(fs::read_to_string(ws.root.join("folder/note.md")).unwrap(), "original content");
+
+    // Step 3: Trash the moved note
+    let trash_path = file_delete(ws.root(), "folder/note.md".into()).unwrap();
+
+    // Verify tree after trash - note should be gone, folder still exists but empty
+    let entries = tree::collect(&ws.root, &ws.root).unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].name, "folder");
+    assert_eq!(entries[0].kind, "directory");
+    assert!(entries[0].children.is_empty());
+    assert!(!ws.root.join("folder/note.md").exists());
+
+    // Verify trash entry exists
+    let trash_items = file_list_trash(ws.root()).unwrap();
+    assert_eq!(trash_items.len(), 1);
+    assert_eq!(trash_items[0].path, "folder/note.md");
+
+    // Step 4: Restore the note
+    let trash_id = PathBuf::from(&trash_path)
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .into_owned();
+    file_restore_trash(ws.root(), trash_id).unwrap();
+
+    // Verify tree after restore - note back at original path
+    let entries = tree::collect(&ws.root, &ws.root).unwrap();
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0].name, "folder");
+    assert_eq!(entries[0].kind, "directory");
+    assert_eq!(entries[0].children.len(), 1);
+    assert_eq!(entries[0].children[0].name, "note.md");
+    assert_eq!(entries[0].children[0].path, "folder/note.md");
+    assert_eq!(fs::read_to_string(ws.root.join("folder/note.md")).unwrap(), "original content");
+
+    // Verify trash entry is gone
+    let trash_items = file_list_trash(ws.root()).unwrap();
+    assert!(trash_items.is_empty());
+
+    // Cleanup happens via Drop on ws
 }
