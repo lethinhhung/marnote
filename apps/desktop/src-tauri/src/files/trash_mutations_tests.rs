@@ -72,3 +72,36 @@ fn empty_trash_permanently_removes_trashed_items() {
     assert!(super::file_list_trash(root(&ws)).unwrap().is_empty());
     assert!(!ws.join("note.md").exists());
 }
+
+#[test]
+fn legacy_trash_item_restore_fails_without_moving_item() {
+    let ws = workspace();
+    let trash = ws.join(".marnote-trash");
+    fs::create_dir_all(&trash).unwrap();
+
+    let legacy_file = trash.join("legacy-file.bin");
+    fs::write(&legacy_file, b"legacy content").unwrap();
+
+    assert!(file_restore_trash(root(&ws), "legacy-file.bin".into()).is_err());
+    assert!(legacy_file.exists());
+    assert!(!ws.join("legacy-file.bin").exists());
+}
+
+#[test]
+fn empty_trash_removes_legacy_items_from_disk() {
+    let ws = workspace();
+    let trash = ws.join(".marnote-trash");
+    fs::create_dir_all(&trash).unwrap();
+
+    let legacy_file = trash.join("legacy-file.bin");
+    let legacy_dir = trash.join("legacy-dir");
+    fs::write(&legacy_file, b"legacy content").unwrap();
+    fs::create_dir_all(&legacy_dir).unwrap();
+    fs::write(legacy_dir.join("nested.txt"), b"nested").unwrap();
+
+    file_empty_trash(root(&ws)).unwrap();
+
+    assert!(!legacy_file.exists());
+    assert!(!legacy_dir.exists());
+    assert!(super::file_list_trash(root(&ws)).unwrap().is_empty());
+}
