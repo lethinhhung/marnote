@@ -11,7 +11,9 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "pnpm build && vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1",
+    "test": "pnpm test:unit && pnpm test:integration",
+    "test:unit": "pnpm build && vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1 --exclude '**/server.integration.*.test.ts'",
+    "test:integration": "pnpm build && vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1 src/server.integration.init.test.ts src/server.integration.protocol.test.ts src/server.integration.tools.test.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "start": "node dist/cli.js"

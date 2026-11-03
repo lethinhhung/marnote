@@ -95,6 +95,16 @@ mod tests {
         let _ = std::os::windows::fs::symlink_file(target, dir.join(name));
     }
 
+    #[cfg(windows)]
+    fn create_dir_symlink(dir: &PathBuf, name: &str, target: &PathBuf) {
+        let _ = std::os::windows::fs::symlink_dir(target, dir.join(name));
+    }
+
+    #[cfg(unix)]
+    fn create_dir_symlink(dir: &PathBuf, name: &str, target: &PathBuf) {
+        let _ = unix_symlink(target, dir.join(name));
+    }
+
     #[test]
     fn collect_includes_directories_and_markdown_files() {
         let temp = create_temp_dir();
@@ -214,5 +224,22 @@ mod tests {
 
         let entries = collect(&temp, &base).unwrap();
         assert!(entries.is_empty());
+    }
+
+    #[test]
+    fn collect_skips_directory_symlinks() {
+        let temp = create_temp_dir();
+        let base = temp.clone();
+
+        create_file(&temp, "note.md", "# Note");
+        let target_dir = create_dir(&temp, "real_folder");
+        create_file(&target_dir, "target.md", "# Target");
+        create_dir_symlink(&temp, "link_to_folder", &target_dir);
+
+        let entries = collect(&temp, &base).unwrap();
+
+        let names: Vec<&str> = entries.iter().map(|e| e.name.as_str()).collect();
+        assert_eq!(names, vec!["note.md", "real_folder"]);
+        assert!(!names.contains(&"link_to_folder"));
     }
 }
