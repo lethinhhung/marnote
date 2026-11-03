@@ -1,6 +1,5 @@
-import { isMarkdown, type WorkspaceTree } from "../domain/workspace";
+import { flattenEntries, isMarkdown, type WorkspaceTree } from "../domain/workspace";
 import type { ReadResult } from "../../platform/workspace";
-import { flattenEntries } from "./searchNotes";
 
 type CachedNote = { modifiedMs?: number; content: string };
 const indexes = new Map<string, Map<string, CachedNote>>();

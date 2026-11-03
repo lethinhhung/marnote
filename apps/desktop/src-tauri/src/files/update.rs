@@ -1,5 +1,13 @@
-use crate::{metadata, workspace::{root, target}};
-use std::{fs, io::Write, path::Path, time::{SystemTime, UNIX_EPOCH}};
+use crate::{
+    metadata,
+    workspace::{root, target},
+};
+use std::{
+    fs,
+    io::Write,
+    path::Path,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 fn current_timestamp_ms() -> u128 {
     SystemTime::now()
@@ -45,14 +53,16 @@ pub fn update_markdown(
     }
     replace_atomically(&p, content, expected_content)?;
 
-    let mut existing = metadata::read_metadata(&r).map_err(|e| format!("Metadata read failed: {}", e))?;
+    let mut existing =
+        metadata::read_metadata(&r).map_err(|e| format!("Metadata read failed: {}", e))?;
     let now = current_timestamp_ms();
     let mut entry_metadata = existing.entries.remove(path).unwrap_or_default();
     entry_metadata.updated_ms = Some(now);
     if entry_metadata.created_ms.is_none() {
         entry_metadata.created_ms = Some(now);
     }
-    metadata::update_metadata(&r, path, entry_metadata).map_err(|e| format!("Metadata write failed: {}", e))?;
+    metadata::update_metadata(&r, path, entry_metadata)
+        .map_err(|e| format!("Metadata write failed: {}", e))?;
 
     Ok(())
 }

@@ -7,6 +7,11 @@ const file = (path: string): Entry => ({
   path,
   kind: "file",
 });
+const folder = (path: string): Entry => ({
+  name: path.split("/").pop() ?? path,
+  path,
+  kind: "directory",
+});
 
 describe("uniqueCreatePath", () => {
   it("keeps an unchanged path when there is no sibling conflict", () => {
@@ -33,5 +38,24 @@ describe("uniqueCreatePath", () => {
   it("checks conflicts among entries in the same nested folder", () => {
     const entries = [file("projects/alpha/brief.md"), file("projects/beta/brief.md")];
     expect(uniqueCreatePath(entries, "projects/alpha/brief.md")).toBe("projects/alpha/brief-1.md");
+  });
+});
+
+describe("uniqueCreatePath folder paths", () => {
+  it("keeps a folder path unchanged when there is no sibling conflict", () => {
+    expect(uniqueCreatePath([folder("projects/notes")], "projects/archive")).toBe("projects/archive");
+  });
+
+  it("matches folder conflicts without regard to case", () => {
+    expect(uniqueCreatePath([folder("projects/NOTES")], "projects/notes")).toBe("projects/notes-1");
+  });
+
+  it("uses the first available numeric suffix for folders", () => {
+    const entries = [folder("projects/plan"), folder("projects/plan-1"), folder("projects/plan-2")];
+    expect(uniqueCreatePath(entries, "projects/plan")).toBe("projects/plan-3");
+  });
+
+  it("handles root-level folders", () => {
+    expect(uniqueCreatePath([folder("Inbox")], "Inbox")).toBe("Inbox-1");
   });
 });

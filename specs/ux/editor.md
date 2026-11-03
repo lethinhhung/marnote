@@ -7,6 +7,11 @@
 - **Markdown** toggles source view; **Copy MD** copies the draft. Saving behavior is defined in [Saving](saving.md).
 - External edits show **Load external version** and **Keep mine** options.
 
+## Viewing
+
+- Provide accessible zoom controls from 80% to 150% in 10% steps, with current percentage, increase, decrease, and reset actions. Support `⌘+` / `Ctrl++`, `⌘-` / `Ctrl+-`, and `⌘0` / `Ctrl+0` while the editor is active.
+- Zoom the note title and content in formatted and source views. Keep zoom consistent across notes, views, and app restarts; leave interface sizing and saved content unchanged.
+
 ## Blocks and links
 
 - Toolbar and `/` menu insert text, headings, lists, tasks, quotes, code, tables, links, and dividers. Slash results support arrow keys, Enter, and Escape.
@@ -18,6 +23,11 @@
 - Workspace links open notes or focus folders in Explorer. If a target no longer exists, identify it as unavailable and allow editing or removing the link without redirecting it.
 - Hover or focus a link to show its destination: the address for web links, and the item name and path for workspace links. Offer **Open link**, destination-appropriate copy, **Edit**, and **Remove link** actions.
 - Heading and footer expose note metadata; the footer also shows path, save state, and note statistics.
+
+## Footer
+
+- Keep the footer on one line. Below 950px, keep status, path, and counters visible; move timestamps to **Info** and tags, emoji, favorite, and save mode to **More**. Keep controls inline when space allows.
+- Keep menus anchored and inside the window; flip below when needed and close on focus loss. Use square menu and favorite buttons, and label the emoji control **Add emoji**.
 
 ## Gaps
 

@@ -53,6 +53,32 @@ fn delete_rejects_symlink_to_file_outside_workspace() {
     fs::remove_file(outside).unwrap();
 }
 
+#[cfg(unix)]
+#[test]
+fn delete_rejects_symlink_to_folder_outside_workspace() {
+    let (ws, outside_file) = workspace();
+    let outside_dir =
+        std::env::temp_dir().join(format!("marnote-outside-dir-{}", std::process::id()));
+    let _ = fs::remove_dir_all(&outside_dir);
+    fs::create_dir_all(outside_dir.join("secret_folder")).unwrap();
+    fs::write(outside_dir.join("secret_folder/file.md"), "secret").unwrap();
+    std::os::unix::fs::symlink(&outside_dir.join("secret_folder"), ws.join("linked_folder"))
+        .unwrap();
+
+    assert!(file_delete(root(&ws), "linked_folder".into()).is_err());
+    assert!(outside_dir.join("secret_folder").exists());
+    assert!(outside_dir.join("secret_folder/file.md").exists());
+    assert_eq!(
+        fs::read_to_string(outside_dir.join("secret_folder/file.md")).unwrap(),
+        "secret"
+    );
+    assert!(ws.join("linked_folder").symlink_metadata().is_ok());
+
+    fs::remove_dir_all(ws).unwrap();
+    fs::remove_file(outside_file).unwrap();
+    fs::remove_dir_all(outside_dir).unwrap();
+}
+
 #[test]
 fn delete_file_success_removes_requested_file() {
     let (ws, outside) = workspace();
@@ -99,9 +125,18 @@ fn delete_folder_success_removes_requested_folder_and_contents() {
     let result = file_delete(root(&ws), "folder".into());
     assert!(result.is_ok(), "delete should succeed: {:?}", result.err());
 
-    assert!(!ws.join("folder").exists(), "deleted folder should not exist");
-    assert!(!ws.join("folder/file1.md").exists(), "nested file should not exist");
-    assert!(!ws.join("folder/sub/file2.md").exists(), "deeply nested file should not exist");
+    assert!(
+        !ws.join("folder").exists(),
+        "deleted folder should not exist"
+    );
+    assert!(
+        !ws.join("folder/file1.md").exists(),
+        "nested file should not exist"
+    );
+    assert!(
+        !ws.join("folder/sub/file2.md").exists(),
+        "deeply nested file should not exist"
+    );
     assert_eq!(
         fs::read_to_string(ws.join("other.md")).unwrap(),
         "keep this",
@@ -120,7 +155,11 @@ fn delete_folder_success_removes_requested_folder_and_contents() {
         .filter_map(|e| e.ok())
         .filter(|e| e.file_name() != "index.json")
         .collect();
-    assert_eq!(trash_entries.len(), 1, "trash should have one entry for the folder");
+    assert_eq!(
+        trash_entries.len(),
+        1,
+        "trash should have one entry for the folder"
+    );
 
     fs::remove_dir_all(ws).unwrap();
     fs::remove_file(outside).unwrap();

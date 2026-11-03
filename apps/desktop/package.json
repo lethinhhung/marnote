@@ -1,7 +1,7 @@
 {
   "name": "@marnote/desktop",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,8 +9,10 @@
     "tauri": "tauri",
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
-    "test": "vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1",
-    "test:rust": "cargo test --manifest-path src-tauri/Cargo.toml",
+    "test": "pnpm test:unit && pnpm test:rust:unit && pnpm test:rust:integration",
+    "test:unit": "vitest run --passWithNoTests --maxWorkers=1 --minWorkers=1",
+    "test:rust:unit": "cargo test --manifest-path src-tauri/Cargo.toml -- --skip ipc_workspace_note_lifecycle_create_move_trash_restore",
+    "test:rust:integration": "cargo test --manifest-path src-tauri/Cargo.toml ipc_workspace_note_lifecycle_create_move_trash_restore",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src vite.config.ts"
   },

@@ -17,5 +17,8 @@ fn suffixes_non_markdown_name_without_changing_its_extension_like_text() {
 
 #[test]
 fn suffixes_only_the_final_markdown_extension() {
-    assert_eq!(with_suffix("notes/draft.md.backup", 4, true), "notes/draft.md.backup-4");
+    assert_eq!(
+        with_suffix("notes/draft.md.backup", 4, true),
+        "notes/draft.md.backup-4"
+    );
 }

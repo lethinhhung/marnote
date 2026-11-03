@@ -4,6 +4,21 @@ Notable user-facing changes are recorded here for each release. Add a dated vers
 
 ## Unreleased
 
+## [0.4.0] - 2026-11-03
+
+### Added
+
+- Connect read-only MCP clients to search and read notes in a workspace.
+- Adjust editor zoom and keep the chosen size across app restarts.
+
+### Improved
+
+- Keep note footer controls usable in narrow windows and improve breadcrumb menus and copy controls.
+
+### Compatibility
+
+- Existing Markdown workspaces need no migration. macOS builds remain ad-hoc signed and not notarized; first launch may require approval in Privacy & Security settings.
+
 ## [0.3.0] - 2026-10-26
 
 ### Added

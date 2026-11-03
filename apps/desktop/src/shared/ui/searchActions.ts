@@ -1,5 +1,5 @@
 import type { Entry, WorkspaceTree } from "../domain/workspace";
-import { flattenEntries, relativeWorkspaceLink } from "../../features/editor/workspaceLinks";
+import { flattenEntries, relativeWorkspaceLink } from "../../features/editor/links/workspaceLinks";
 import { uniqueCreatePath } from "../../features/workspace/uniqueCreatePath";
 
 export type CopyNoteValue = "link" | "relative-path" | "full-path";

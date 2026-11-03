@@ -8,7 +8,11 @@ fn temp_workspace() -> PathBuf {
         .unwrap()
         .as_nanos();
     let thread_id = std::thread::current().id();
-    let path = std::env::temp_dir().join(format!("marnote-tag-test-{}-{:?}-{unique}", std::process::id(), thread_id));
+    let path = std::env::temp_dir().join(format!(
+        "marnote-tag-test-{}-{:?}-{unique}",
+        std::process::id(),
+        thread_id
+    ));
     fs::create_dir_all(&path).unwrap();
     fs::canonicalize(&path).unwrap()
 }
@@ -158,11 +162,17 @@ fn rename_tag_updates_entry_tag_references() {
     .unwrap();
     let store = read_tags(&ws);
     let note_meta = store.entries.get("note.md").unwrap();
-    assert_eq!(note_meta.tags.as_deref(), Some(&["job".to_string(), "urgent".to_string()][..]));
+    assert_eq!(
+        note_meta.tags.as_deref(),
+        Some(&["job".to_string(), "urgent".to_string()][..])
+    );
     let inner_meta = store.entries.get("folder/inner.md").unwrap();
     assert_eq!(inner_meta.tags.as_deref(), Some(&["job".to_string()][..]));
     let folder_meta = store.entries.get("folder").unwrap();
-    assert_eq!(folder_meta.tags.as_deref(), Some(&["project".to_string()][..]));
+    assert_eq!(
+        folder_meta.tags.as_deref(),
+        Some(&["project".to_string()][..])
+    );
     assert!(store.tags.contains_key("job"));
     assert!(!store.tags.contains_key("work"));
     fs::remove_dir_all(&ws).unwrap();
