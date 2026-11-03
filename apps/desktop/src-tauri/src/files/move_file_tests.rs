@@ -281,7 +281,10 @@ fn move_rejects_symlink_destination_outside_workspace() {
 #[test]
 fn move_rejects_symlink_source_folder_outside_workspace() {
     let (ws, outside_file) = workspace();
-    let outside_dir = std::env::temp_dir().join(format!("marnote-outside-move-src-dir-{}", std::process::id()));
+    let outside_dir = std::env::temp_dir().join(format!(
+        "marnote-outside-move-src-dir-{}",
+        std::process::id()
+    ));
     let _ = fs::remove_dir_all(&outside_dir);
     fs::create_dir_all(outside_dir.join("secret_folder")).unwrap();
     file_create_markdown(
@@ -311,14 +314,22 @@ fn move_rejects_symlink_source_folder_outside_workspace() {
 #[test]
 fn move_rejects_symlink_destination_folder_outside_workspace() {
     let (ws, outside_file) = workspace();
-    let outside_dir = std::env::temp_dir().join(format!("marnote-outside-move-dst-dir-{}", std::process::id()));
+    let outside_dir = std::env::temp_dir().join(format!(
+        "marnote-outside-move-dst-dir-{}",
+        std::process::id()
+    ));
     let _ = fs::remove_dir_all(&outside_dir);
     fs::create_dir_all(outside_dir.join("secret_folder")).unwrap();
     std::os::unix::fs::symlink(&outside_dir.join("secret_folder"), ws.join("linked_folder"))
         .unwrap();
     file_create_markdown(root(&ws), "source.md".into(), "content".into()).unwrap();
 
-    assert!(file_move(root(&ws), "source.md".into(), "linked_folder/note.md".into()).is_err());
+    assert!(file_move(
+        root(&ws),
+        "source.md".into(),
+        "linked_folder/note.md".into()
+    )
+    .is_err());
     assert!(ws.join("source.md").exists());
     assert!(outside_dir.join("secret_folder").exists());
     assert!(ws.join("linked_folder").symlink_metadata().is_ok());

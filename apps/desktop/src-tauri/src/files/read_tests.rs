@@ -53,7 +53,10 @@ fn read_rejects_symlink_to_file_outside_workspace() {
     std::os::unix::fs::symlink(&outside, ws.join("linked.md")).unwrap();
 
     assert!(read_markdown(&root(&ws), "linked.md").is_err());
-    assert_eq!(fs::read_to_string(&outside).unwrap(), "# Secret\noutside content");
+    assert_eq!(
+        fs::read_to_string(&outside).unwrap(),
+        "# Secret\noutside content"
+    );
     assert!(ws.join("linked.md").symlink_metadata().is_ok());
 
     fs::remove_dir_all(ws).unwrap();
@@ -64,11 +67,17 @@ fn read_rejects_symlink_to_file_outside_workspace() {
 #[test]
 fn read_rejects_symlink_to_folder_outside_workspace() {
     let ws = temp_workspace();
-    let outside_dir = std::env::temp_dir().join(format!("marnote-outside-read-dir-{}", std::process::id()));
+    let outside_dir =
+        std::env::temp_dir().join(format!("marnote-outside-read-dir-{}", std::process::id()));
     let _ = fs::remove_dir_all(&outside_dir);
     fs::create_dir_all(outside_dir.join("secret_folder")).unwrap();
-    fs::write(outside_dir.join("secret_folder/note.md"), "# Secret\noutside content").unwrap();
-    std::os::unix::fs::symlink(&outside_dir.join("secret_folder"), ws.join("linked_folder")).unwrap();
+    fs::write(
+        outside_dir.join("secret_folder/note.md"),
+        "# Secret\noutside content",
+    )
+    .unwrap();
+    std::os::unix::fs::symlink(&outside_dir.join("secret_folder"), ws.join("linked_folder"))
+        .unwrap();
 
     assert!(read_markdown(&root(&ws), "linked_folder/note.md").is_err());
     assert!(outside_dir.join("secret_folder").exists());

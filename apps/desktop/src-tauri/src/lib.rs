@@ -8,6 +8,37 @@ mod tags_tests;
 mod tree;
 mod workspace;
 
+#[macro_export]
+macro_rules! invoke_handler {
+    () => {
+        $crate::invoke_handler!(@build $crate::workspace::default_workspace)
+    };
+    (test) => {
+        // The default_workspace command requires the production Wry AppHandle runtime.
+        $crate::invoke_handler!(@build)
+    };
+    (@build $( $extra:path ),*) => {
+        tauri::generate_handler![
+            $crate::workspace::open_workspace,
+            $crate::workspace::list_workspace_tree,
+            $crate::files::file_read_markdown,
+            $crate::files::file_create_markdown,
+            $crate::files::file_update_markdown,
+            $crate::files::file_move,
+            $crate::files::file_delete,
+            $crate::files::file_list_trash,
+            $crate::files::file_restore_trash,
+            $crate::files::file_empty_trash,
+            $crate::folders::folder_create,
+            $crate::update_entry_metadata,
+            $crate::save_workspace_tags,
+            $crate::save_manual_order,
+            $crate::tags::rename_workspace_tag,
+            $( $extra, )*
+        ]
+    };
+}
+
 #[tauri::command]
 fn update_entry_metadata(
     root_path: String,
@@ -81,27 +112,13 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![
-            workspace::open_workspace,
-            workspace::default_workspace,
-            workspace::list_workspace_tree,
-            files::file_read_markdown,
-            files::file_create_markdown,
-            files::file_update_markdown,
-            files::file_move,
-            files::file_delete,
-            files::file_list_trash,
-            files::file_restore_trash,
-            files::file_empty_trash,
-            folders::folder_create,
-            update_entry_metadata,
-            save_workspace_tags,
-            save_manual_order,
-            tags::rename_workspace_tag
-        ])
+        .invoke_handler(invoke_handler!())
         .run(tauri::generate_context!())
         .expect("failed to run Marnote");
 }
+
+#[cfg(test)]
+mod ipc_lifecycle_tests;
 
 #[cfg(test)]
 mod tests {

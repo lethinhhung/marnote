@@ -1,4 +1,7 @@
-use super::{file_create_markdown, file_delete, file_empty_trash, file_list_trash, file_move, file_restore_trash};
+use super::{
+    file_create_markdown, file_delete, file_empty_trash, file_list_trash, file_move,
+    file_restore_trash,
+};
 use crate::metadata;
 use crate::tree;
 use std::{
@@ -232,7 +235,10 @@ fn workspace_note_lifecycle_create_move_trash_restore() {
     assert_eq!(entries[0].name, "note.md");
     assert_eq!(entries[0].path, "note.md");
     assert_eq!(entries[0].kind, "file");
-    assert_eq!(fs::read_to_string(ws.root.join("note.md")).unwrap(), "original content");
+    assert_eq!(
+        fs::read_to_string(ws.root.join("note.md")).unwrap(),
+        "original content"
+    );
 
     // Step 2: Move the note to a subfolder
     fs::create_dir_all(ws.root.join("folder")).unwrap();
@@ -247,7 +253,10 @@ fn workspace_note_lifecycle_create_move_trash_restore() {
     assert_eq!(entries[0].children[0].name, "note.md");
     assert_eq!(entries[0].children[0].path, "folder/note.md");
     assert!(!ws.root.join("note.md").exists());
-    assert_eq!(fs::read_to_string(ws.root.join("folder/note.md")).unwrap(), "original content");
+    assert_eq!(
+        fs::read_to_string(ws.root.join("folder/note.md")).unwrap(),
+        "original content"
+    );
 
     // Step 3: Trash the moved note
     let trash_path = file_delete(ws.root(), "folder/note.md".into()).unwrap();
@@ -281,7 +290,10 @@ fn workspace_note_lifecycle_create_move_trash_restore() {
     assert_eq!(entries[0].children.len(), 1);
     assert_eq!(entries[0].children[0].name, "note.md");
     assert_eq!(entries[0].children[0].path, "folder/note.md");
-    assert_eq!(fs::read_to_string(ws.root.join("folder/note.md")).unwrap(), "original content");
+    assert_eq!(
+        fs::read_to_string(ws.root.join("folder/note.md")).unwrap(),
+        "original content"
+    );
 
     // Verify trash entry is gone
     let trash_items = file_list_trash(ws.root()).unwrap();
