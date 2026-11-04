@@ -2,6 +2,7 @@
 
 ## Editing
 
+- Web Markdown source view shows the current draft when active.
 - Notes open in tabs; closing the active tab saves and selects the most recent remaining tab.
 - Edit the title in place; Enter or blur commits. `.md` is shown separately.
 - **Markdown** toggles source view; **Copy MD** copies the draft. Saving behavior is defined in [Saving](saving.md).
