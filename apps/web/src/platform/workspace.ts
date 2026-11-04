@@ -1,5 +1,6 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { WorkspaceTree, WorkspaceEntryMetadata } from "../shared/domain/workspace";
+import { normalizeWorkspacePath } from "@marnote/core";
 
 const DB_NAME = "marnote-web";
 const DB_VERSION = 1;
@@ -210,6 +211,19 @@ export async function readFile(rootPath: string, path: string): Promise<ReadResu
   const file = await getFile(tree.path, path);
   if (!file) throw new Error(`File not found: ${path}`);
   return { path, content: file.content, modifiedMs: file.modifiedMs };
+}
+
+export type MarkdownDownloadResult = {
+  content: string;
+  filename: string;
+};
+
+export async function downloadNoteAsMarkdown(rootPath: string, path: string): Promise<MarkdownDownloadResult> {
+  const result = await readFile(rootPath, path);
+  const normalizedPath = path.replace(/\\/g, "/").replace(/\/+/g, "/").replace(/^\/|\/$/g, "");
+  const basename = normalizedPath.split("/").pop() || "note";
+  const filename = basename.endsWith(".md") ? basename : `${basename}.md`;
+  return { content: result.content, filename };
 }
 
 export async function writeFile(rootPath: string, path: string, content: string, expectedContent: string): Promise<void> {
@@ -548,6 +562,24 @@ export async function exportWorkspace(): Promise<Blob> {
   return zip.generateAsync({ type: "blob" });
 }
 
+export function validateZipEntryPaths(zip: { files: Record<string, { dir: boolean }> }): void {
+  for (const [zipPath, entry] of Object.entries(zip.files)) {
+    if (entry.dir) continue;
+    if (zipPath === "workspace.json") continue;
+
+    let relativePath: string;
+    if (zipPath.startsWith("notes/")) {
+      relativePath = zipPath.slice("notes/".length);
+    } else {
+relativePath = zipPath;
+    }
+    const normalized = normalizeWorkspacePath(relativePath);
+    if (!normalized) {
+      throw new Error(`Invalid path in archive: ${zipPath}`);
+    }
+  }
+}
+
 export async function importWorkspace(blob: Blob): Promise<void> {
   const JSZip = (await import("jszip")).default;
   const zip = await JSZip.loadAsync(blob);
@@ -557,6 +589,8 @@ export async function importWorkspace(blob: Blob): Promise<void> {
   const data = JSON.parse(json);
 
   if (!data.tree || !data.files) throw new Error("Invalid workspace archive: missing required data");
+
+  validateZipEntryPaths(zip);
 
   const db = await getDB();
   const tx = db.transaction(["workspace", "files", "trash", "tags", "manualOrder"], "readwrite");

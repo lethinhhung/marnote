@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { File, FileText, Download, Upload } from "lucide-react";
+import { File, FileText, Download, Upload, AlertTriangle } from "lucide-react";
 import { useTheme } from "../shared/theme/useTheme";
 import { useWorkspace } from "../features/workspace/state/useWorkspace";
 import { WorkspaceSidebar } from "../features/workspace/sidebar/WorkspaceSidebar";
@@ -16,6 +16,7 @@ import { useExplorerLayout } from "../features/workspace/layout/useExplorerLayou
 import { ExplorerSplitter } from "../features/workspace/layout/ExplorerSplitter";
 import { createSearchActions } from "../shared/ui/searchActions";
 import { useUnsavedChangesPrompt } from "./useUnsavedChangesPrompt";
+import { downloadNoteAsMarkdown } from "../platform/workspace";
 
 function findEntry(entries: Entry[] | undefined, path: string): Entry | undefined {
   if (!entries) return undefined;
@@ -45,6 +46,7 @@ export function App() {
   const { mode: saveMode, setMode: setSaveMode } = useSaveMode();
   const unsavedPrompt = useUnsavedChangesPrompt();
   const titleInput = useRef<HTMLSpanElement>(null);
+  const [importPending, setImportPending] = useState<File | null>(null);
   const path = workspace.note?.path || "";
   const name = path.split("/").pop()?.replace(/\.md$/i, "") || "Untitled note";
   useEffect(() => { if (!path) setSource(false); }, [path]);
@@ -109,15 +111,43 @@ export function App() {
       workspace.setError(String(e));
     }
   };
-  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleDownloadNote = async () => {
+    if (!path) {
+      workspace.setError("Select a note to download.");
+      return;
+    }
     try {
-      await workspace.importWorkspace(file);
-      event.target.value = "";
+      const result = await downloadNoteAsMarkdown(workspace.tree?.path || "", path);
+      const url = URL.createObjectURL(new Blob([result.content], { type: "text/markdown;charset=utf-8" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (e) {
       workspace.setError(String(e));
     }
+  };
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    event.target.value = "";
+    setImportPending(file);
+  };
+
+  const handleConfirmImport = async () => {
+    const file = importPending;
+    if (!file) return;
+    setImportPending(null);
+    try {
+      await workspace.importWorkspace(file);
+    } catch (e) {
+      workspace.setError(String(e));
+    }
+  };
+
+  const handleCancelImport = () => {
+    setImportPending(null);
   };
   return <main className="app-shell">
     <HeaderBar tree={workspace.tree} path={path} content={draft} theme={theme} source={source} explorerCollapsed={explorer.collapsed} onToggleExplorer={toggleExplorer} toggleTheme={toggleTheme} onToggleSource={() => setSource(value => !value)} onSelect={entry => { if (entry.kind === "directory") document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: entry.path })); else void noteTabs.selectTab(entry.path); }} onCreate={title => { void searchActions.createNote(title); }} onCapture={() => { void noteTabs.create(); }} onCopy={value => { void searchActions.copy(value); }} onQuickAction={(entry, action, content) => {
@@ -126,6 +156,7 @@ export function App() {
       return document.dispatchEvent(new CustomEvent("marnote-search-remove", { detail: { path: entry.path, kind: entry.kind }, cancelable: true }));
     }} extraActions={
       <>
+        <button className="header-action" onClick={() => void handleDownloadNote()} disabled={!path} title={path ? "Download note as Markdown" : "Select a note to download"} aria-label="Download note as Markdown"><FileText size={16} /></button>
         <button className="header-action" onClick={handleExport} title="Export workspace" aria-label="Export workspace"><Download size={16} /></button>
         <label className="header-action" title="Import workspace" aria-label="Import workspace"><Upload size={16} /><input type="file" accept=".zip" onChange={handleImport} style={{ display: "none" }} onClick={e => e.stopPropagation()} /></label>
       </>
@@ -134,6 +165,19 @@ export function App() {
       <section className="workspace" onPointerDown={event => { if (workspace.note && (event.target as HTMLElement).closest(".editor-canvas")) document.dispatchEvent(new CustomEvent("marnote-focus-note")); }}>
         {noteTabs.tabs.length > 0 && <NoteTabs paths={noteTabs.tabs} icons={tabIcons} dirtyPath={path && (saveStatus !== "saved" || draft !== workspace.note?.content) ? path : ""} activePath={path} canCreate={!!workspace.tree} onSelect={target => { void noteTabs.selectTab(target); }} onClose={target => { void noteTabs.closeTab(target); }} onCloseOthers={target => { void noteTabs.closeOthers(target); }} onCloseAll={() => { void noteTabs.closeAll(); }} onCreate={() => { void noteTabs.create(); }} onReorder={noteTabs.reorder} />}
         {workspace.error && <div className="status-banner error" role="alert">{workspace.error}</div>}
+        {importPending && (
+          <div className="move-dialog-backdrop" role="presentation" onClick={handleCancelImport}>
+            <section className="move-dialog" role="alertdialog" aria-modal="true" aria-labelledby="import-title" aria-describedby="import-description" onClick={e => e.stopPropagation()} onKeyDown={event => { if (event.key === "Escape") { event.preventDefault(); handleCancelImport(); } }}>
+              <h2 id="import-title"><AlertTriangle size={20} className="import-warning-icon" /> Import workspace</h2>
+              <p id="import-description">This will replace all notes, folders, tags, favorites, and ordering in the current workspace. This action cannot be undone.</p>
+              {workspace.error && <p className="unsaved-error" role="alert">{workspace.error}</p>}
+              <footer>
+                <button type="button" onClick={handleCancelImport}>Cancel</button>
+                <button type="button" className="primary" onClick={handleConfirmImport}>Replace workspace</button>
+              </footer>
+            </section>
+          </div>
+        )}
         {workspace.note ? <NoteEditor key={path} value={draft} onChange={noteTabs.updateDraft} source={source} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
       </section>
     </div>

@@ -34,14 +34,17 @@ import {
   createFile,
   createFolder,
   deleteFile,
+  downloadNoteAsMarkdown,
   importWorkspace,
   moveFile,
   restoreTrash,
   saveManualOrder,
   saveWorkspaceTags,
   updateEntryMetadata,
+  validateZipEntryPaths,
   writeFile,
 } from "./workspace";
+import { normalizeWorkspacePath } from "@marnote/core";
 
 const QUOTA_ERROR = new DOMException("Quota exceeded", "QuotaExceededError");
 
@@ -231,5 +234,181 @@ describe("workspace platform quota handling", () => {
       expect(error).toBeInstanceOf(QuotaExceededError);
       expect((error as QuotaExceededError).name).toBe("QuotaExceededError");
     }
+  });
+});
+
+describe("validateZipEntryPaths", () => {
+  function createMockZip(files: Record<string, boolean>) {
+    return {
+      files: Object.fromEntries(
+        Object.entries(files).map(([path, isDir]) => [
+          path,
+          { dir: isDir, async: vi.fn() },
+        ])
+      ),
+    };
+  }
+
+  it("rejects directory traversal entries (../)", () => {
+    const zip = createMockZip({
+      "notes/test.md": false,
+      "notes/../evil.md": false,
+    });
+
+    expect(() => validateZipEntryPaths(zip)).toThrow("Invalid path in archive");
+  });
+
+  it("rejects absolute paths in archive", () => {
+    const zip = createMockZip({
+      "notes/test.md": false,
+      "/absolute.md": false,
+    });
+
+    expect(() => validateZipEntryPaths(zip)).toThrow("Invalid path in archive");
+  });
+
+  it("rejects Windows-style absolute paths", () => {
+    const zip = createMockZip({
+      "notes/test.md": false,
+      "C:\\Windows\\evil.md": false,
+    });
+
+    expect(() => validateZipEntryPaths(zip)).toThrow("Invalid path in archive");
+  });
+
+  it("rejects paths with leading slash in notes/", () => {
+    const zip = createMockZip({
+      "notes/test.md": false,
+      "notes//evil.md": false,
+    });
+
+    expect(() => validateZipEntryPaths(zip)).toThrow("Invalid path in archive");
+  });
+
+  it("accepts valid nested note paths", () => {
+    const zip = createMockZip({
+      "notes/folder/subfolder/note.md": false,
+      "notes/another.md": false,
+    });
+
+    expect(() => validateZipEntryPaths(zip)).not.toThrow();
+  });
+
+  it("ignores directories", () => {
+    const zip = createMockZip({
+      "notes/test.md": false,
+      "notes/folder/": true,
+      "notes/../evil.md": false,
+    });
+
+    expect(() => validateZipEntryPaths(zip)).toThrow("Invalid path in archive");
+  });
+
+  it("normalizeWorkspacePath rejects traversal and absolute paths", () => {
+    expect(normalizeWorkspacePath("../evil.md")).toBeNull();
+    expect(normalizeWorkspacePath("folder/../../evil.md")).toBeNull();
+    expect(normalizeWorkspacePath("/absolute.md")).toBeNull();
+    expect(normalizeWorkspacePath("C:\\path.md")).toBeNull();
+    expect(normalizeWorkspacePath("valid/path.md")).toBe("valid/path.md");
+    expect(normalizeWorkspacePath("folder/subfolder/note.md")).toBe("folder/subfolder/note.md");
+    expect(normalizeWorkspacePath("folder/../evil.md")).toBe("evil.md");
+  });
+});
+
+describe("importWorkspace validation integration", () => {
+  beforeEach(() => {
+    setupBasicMocks();
+  });
+
+  it("does not clear or write workspace data on validation failure", async () => {
+    const { validateZipEntryPaths } = await import("./workspace");
+    const mockZip = {
+      files: {
+        "notes/test.md": { dir: false },
+        "notes/../evil.md": { dir: false },
+      },
+    };
+
+    try {
+      validateZipEntryPaths(mockZip);
+    } catch {
+      // Expected to throw
+    }
+
+    expect(mockClear).not.toHaveBeenCalled();
+    expect(mockPut).not.toHaveBeenCalled();
+  });
+});
+
+describe("downloadNoteAsMarkdown", () => {
+  beforeEach(() => {
+    setupBasicMocks();
+  });
+
+  it("returns note content as Markdown with .md filename", async () => {
+    const markdownContent = "# Hello\n\nWorld";
+    mockGetFromIndex.mockResolvedValueOnce({
+      ...defaultFile,
+      content: markdownContent,
+    });
+
+    const result = await downloadNoteAsMarkdown("/", "notes/hello.md");
+
+    expect(result.content).toBe(markdownContent);
+    expect(result.filename).toBe("hello.md");
+  });
+
+  it("adds .md extension when path has no extension", async () => {
+    mockGetFromIndex.mockResolvedValueOnce({
+      ...defaultFile,
+      content: "content",
+    });
+
+    const result = await downloadNoteAsMarkdown("/", "notes/readme");
+
+    expect(result.content).toBe("content");
+    expect(result.filename).toBe("readme.md");
+  });
+
+  it("preserves .md extension when already present", async () => {
+    mockGetFromIndex.mockResolvedValueOnce({
+      ...defaultFile,
+      content: "content",
+    });
+
+    const result = await downloadNoteAsMarkdown("/", "notes/document.md");
+
+    expect(result.filename).toBe("document.md");
+  });
+
+  it("handles nested paths correctly", async () => {
+    mockGetFromIndex.mockResolvedValueOnce({
+      ...defaultFile,
+      content: "nested content",
+    });
+
+    const result = await downloadNoteAsMarkdown("/", "folder/subfolder/note.txt");
+
+    expect(result.content).toBe("nested content");
+    expect(result.filename).toBe("note.txt.md");
+  });
+
+  it("throws when note not found", async () => {
+    mockGetFromIndex.mockResolvedValueOnce(null);
+
+    await expect(downloadNoteAsMarkdown("/", "missing.md")).rejects.toThrow("File not found");
+  });
+
+  it("does not modify workspace data (read-only operation)", async () => {
+    mockGetFromIndex.mockResolvedValueOnce({
+      ...defaultFile,
+      content: "read only",
+    });
+
+    await downloadNoteAsMarkdown("/", "test.md");
+
+    expect(mockPut).not.toHaveBeenCalled();
+    expect(mockDelete).not.toHaveBeenCalled();
+    expect(mockTransaction).not.toHaveBeenCalled();
   });
 });
