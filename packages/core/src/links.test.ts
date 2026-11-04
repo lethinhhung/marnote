@@ -12,6 +12,12 @@ describe("resolveNoteLink", () => {
     expect(resolveNoteLink("docs/guide/start.md", "../../other.md")).toBe("other.md");
   });
 
+  it("resolves links to notes in sibling directories", () => {
+    expect(resolveNoteLink("docs/guide/start.md", "../api/reference.md")).toBe("docs/api/reference.md");
+    expect(resolveNoteLink("a/b/c.md", "../d/e.md")).toBe("a/d/e.md");
+    expect(resolveNoteLink("docs/guide/start.md", "../api/reference")).toBe("docs/api/reference.md");
+  });
+
   it("strips query parameters and fragments", () => {
     expect(resolveNoteLink("start.md", "other.md?query=1")).toBe("other.md");
     expect(resolveNoteLink("start.md", "other.md#section")).toBe("other.md");
