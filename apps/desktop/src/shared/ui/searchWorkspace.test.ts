@@ -102,4 +102,27 @@ describe("searchWorkspace", () => {
     expect(results.notes[0].source).toBe("Content");
     expect(results.notes[0].excerpt.toLocaleLowerCase()).toContain("quarter");
   });
+
+  it("matches folder by path segment, not substring (regression for MyNotes vs Notes)", () => {
+    const tree: Entry[] = [
+      dir("MyNotes", "MyNotes", [
+        file("File.md", "MyNotes/File.md"),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "in:Notes", {});
+    expect(results.notes).toHaveLength(0);
+  });
+
+  it("matches nested folder by path segment", () => {
+    const tree: Entry[] = [
+      dir("Projects", "Projects", [
+        dir("Notes", "Projects/Notes", [
+          file("Meeting.md", "Projects/Notes/Meeting.md"),
+        ]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "in:Notes", {});
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].entry.path).toBe("Projects/Notes/Meeting.md");
+  });
 });
