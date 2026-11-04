@@ -59,6 +59,26 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Tauri Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            librsvg2-dev \
+            wget
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Install OpenCode
         run: npm install --global opencode-ai
 
@@ -203,26 +223,6 @@ jobs:
           echo "All free models failed or produced no changes" >&2
           exit 1
 
-      - name: Set up Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install Tauri Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            curl \
-            file \
-            libayatana-appindicator3-dev \
-            libssl-dev \
-            libwebkit2gtk-4.1-dev \
-            libxdo-dev \
-            librsvg2-dev \
-            wget
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
       - name: Validate changes and repair failures
         env:
           NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
@@ -263,7 +263,7 @@ jobs:
             echo "Validation failed; asking $MAINTENANCE_MODEL to repair (attempt $attempt/$max_repairs)"
             prompt="$(cat "$PROMPT_FILE")
 
-          Focus area for this run: ${MAINTENANCE_FOCUS_AREA:-unspecified}. Treat it as a strict scope boundary. Preserve the original session scope and limit the final changed files to $MAX_FILES. The code you produced failed the workflow's required validation. Read the failure report below, identify the concrete cause, and fix it in the current worktree. Do not discard the existing work. After fixing it, update $summary_file with the actual final changes using exactly ## Problem, ## Cause, and ## Fix headings. The workflow will run pnpm check again, so do not claim validation passed yourself.
+          Focus area for this run: ${MAINTENANCE_FOCUS_AREA:-unspecified}. Treat it as a strict scope boundary. Preserve the original session scope and limit the final changed files to $MAX_FILES. The code you produced failed the workflow's required validation. Read the failure report below, identify the concrete cause, and fix it in the current worktree. Do not discard the existing work. After fixing it, run focused checks for the changed files (lint, directly related unit tests, and relevant package typecheck where applicable), fix any remaining failures, and rerun affected checks. Do not run the full pnpm check; the workflow will run it again as the independent final gate. Update $summary_file with the actual final changes using exactly ## Problem, ## Cause, and ## Fix headings. Do not claim validation passed yourself.
 
           Validation failure report (last 500 lines):
           $(tail -n 500 "$check_log")"

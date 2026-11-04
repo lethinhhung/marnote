@@ -51,7 +51,7 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 - Implement the smallest safe fix.
 - Add or update a regression test when appropriate.
 - Do not fix speculative issues without reasonable evidence.
-- Do not install dependencies or run tests; the workflow runs `pnpm check` after edits.
+- Dependencies are installed before OpenCode runs. Run focused lint, directly related unit tests, and the relevant package typecheck during implementation; fix failures and rerun affected checks. Do not run the full `pnpm check`; the workflow runs it as the final gate.
 
 ## Test Gap Session
 
@@ -59,7 +59,7 @@ Automate daily repository maintenance with GitHub Actions and OpenCode using NVI
 - Inspect no more than six directly related implementation and test files, and change no more than two test files.
 - Do not change production code, configuration, documentation, or generated files.
 - If no clear gap can be tested without production changes, leave the repository unchanged.
-- Do not install dependencies or run tests; the workflow runs `pnpm check` after edits.
+- Dependencies are installed before OpenCode runs. Run directly related unit tests and lint changed test files during implementation; fix failures and rerun those checks. Do not run the full `pnpm check`; the workflow runs it as the final gate.
 
 ## Validation
 
