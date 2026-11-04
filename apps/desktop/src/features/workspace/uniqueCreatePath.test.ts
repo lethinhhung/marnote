@@ -39,6 +39,28 @@ describe("uniqueCreatePath", () => {
     const entries = [file("projects/alpha/brief.md"), file("projects/beta/brief.md")];
     expect(uniqueCreatePath(entries, "projects/alpha/brief.md")).toBe("projects/alpha/brief-1.md");
   });
+
+  it("detects conflicts in nested folders when given a tree with children", () => {
+    const entries: Entry[] = [
+      {
+        name: "projects",
+        path: "projects",
+        kind: "directory",
+        children: [
+          {
+            name: "alpha",
+            path: "projects/alpha",
+            kind: "directory",
+            children: [
+              { name: "brief.md", path: "projects/alpha/brief.md", kind: "file" },
+            ],
+          },
+        ],
+      },
+    ];
+    expect(uniqueCreatePath(entries, "projects/alpha/brief.md")).toBe("projects/alpha/brief-1.md");
+    expect(uniqueCreatePath(entries, "projects/alpha/new.md")).toBe("projects/alpha/new.md");
+  });
 });
 
 describe("uniqueCreatePath folder paths", () => {
