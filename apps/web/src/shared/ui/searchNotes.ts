@@ -1,0 +1,79 @@
+import { flattenEntries, isMarkdown, type Entry } from "../domain/workspace";
+
+export type MatchSource = "Title" | "Folder" | "Tag" | "Content";
+export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
+export type SearchResults = { notes: NoteMatch[]; folders: Entry[]; tags: { name: string; count: number }[] };
+export type SearchFilter = { text: string; tag: string; folder: string; type: string };
+
+export function parseSearchQuery(query: string): SearchFilter {
+  const filter: SearchFilter = { text: "", tag: "", folder: "", type: "" };
+  const words = query.trim().split(/\s+/).filter(Boolean);
+  for (const word of words) {
+    if (word.startsWith("#") && word.length > 1) {
+      filter.tag = word.slice(1).toLocaleLowerCase();
+      continue;
+    }
+    const match = /^(tag|in|type):(.+)$/i.exec(word);
+    if (match) {
+      const key = match[1].toLowerCase() === "in" ? "folder" : match[1].toLowerCase();
+      filter[key as "tag" | "folder" | "type"] = match[2].replace(/^#/, "").toLocaleLowerCase();
+    } else filter.text += `${filter.text ? " " : ""}${word.replace(/^#/, "")}`;
+  }
+  filter.text = filter.text.toLocaleLowerCase();
+  return filter;
+}
+
+function makeExcerpt(sourceText: string, query: string): string {
+  const body = sourceText.toLocaleLowerCase();
+  const words = query.split(/\s+/).filter(Boolean);
+  const index = words.map(word => body.indexOf(word)).filter(position => position >= 0).sort((a, b) => a - b)[0] ?? -1;
+  if (index < 0) return "";
+  const start = Math.max(0, index - 55);
+  const end = Math.min(sourceText.length, index + query.length + 85);
+  return `${start ? "…" : ""}${sourceText.slice(start, end).replace(/\s+/g, " ").trim()}${end < sourceText.length ? "…" : ""}`;
+}
+
+const hasWords = (value: string, words: string[]) => words.every(word => value.includes(word));
+const folderMatches = (path: string, folder: string) => !folder || path.toLocaleLowerCase().includes(folder);
+
+export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
+  if (!query.trim()) return { notes: [], folders: [], tags: [] };
+  const filter = parseSearchQuery(query);
+  const all = flattenEntries(entries);
+  const words = filter.text.split(/\s+/).filter(Boolean);
+  const notes = all.filter(isMarkdown).filter(entry => folderMatches(entry.path, filter.folder) && (!filter.type || filter.type === "note"))
+    .map(entry => makeNoteMatch(entry, words, filter, contents[entry.path] ?? ""))
+    .filter((match): match is NoteMatch => !!match)
+    .sort((a, b) => b.score - a.score || (b.entry.modifiedMs ?? 0) - (a.entry.modifiedMs ?? 0));
+  const folders = all.filter(entry => entry.kind === "directory" && (!filter.type || filter.type === "folder") && folderMatches(entry.path, filter.folder))
+    .filter(entry => !words.length || hasWords(`${entry.name} ${entry.path}`.toLocaleLowerCase(), words));
+  const tags = collectTags(all, filter, words);
+  return { notes, folders, tags };
+}
+
+function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, content: string): NoteMatch | null {
+  const title = entry.name.replace(/\.md$/i, "").toLocaleLowerCase();
+  const path = entry.path.toLocaleLowerCase();
+  const tagNames = entry.metadata?.tags ?? [];
+  const tagText = tagNames.join(" ").toLocaleLowerCase();
+  if (filter.tag && !tagNames.some(tag => tag.toLocaleLowerCase() === filter.tag)) return null;
+  const source: MatchSource = words.length
+    ? hasWords(title, words) ? "Title" : hasWords(path, words) ? "Folder" : hasWords(tagText, words) ? "Tag" : "Content"
+    : filter.tag ? "Tag" : filter.folder ? "Folder" : "Content";
+  if (words.length && !hasWords(`${title} ${path} ${tagText} ${content}`.toLocaleLowerCase(), words)) return null;
+  const score = source === "Title" ? 100 : source === "Folder" ? 70 : source === "Tag" ? 50 : 20;
+  const sourceText = source === "Title" ? entry.name.replace(/\.md$/i, "") : source === "Folder" ? entry.path : source === "Tag" ? tagNames.join(" ") : content;
+  return { entry, excerpt: makeExcerpt(sourceText, filter.text), score, source };
+}
+
+function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
+  const counts = new Map<string, number>();
+  for (const entry of entries.filter(isMarkdown)) {
+    if (!folderMatches(entry.path, filter.folder) || (filter.type && filter.type !== "note")) continue;
+    for (const tag of new Set(entry.metadata?.tags ?? [])) {
+      const tagName = tag.toLocaleLowerCase();
+      if (filter.tag ? tagName === filter.tag : words.some(word => tagName.includes(word))) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+  return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+}
