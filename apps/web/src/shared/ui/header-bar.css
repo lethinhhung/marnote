@@ -3,7 +3,6 @@ html body { display: flex; align-items: stretch; justify-content: stretch; paddi
 main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 48px minmax(0, 1fr) 32px; border: 0; border-radius: 0; box-shadow: none; }
 .app-shell .topbar { position: relative; z-index: 5; height: 48px; min-height: 48px; gap: 12px; padding: 0 16px; background: #f8f7f4; border-color: #e5e2dc; -webkit-user-select: none; user-select: none; }
 .app-shell .topbar input { -webkit-user-select: text; user-select: text; }
-.app-shell .topbar.mac-titlebar { padding-left: 88px; }
 .app-shell .address { min-width: 0; flex: 1 1 auto; gap: 8px; overflow: visible; font-size: 13px; }
 .app-shell .address-path-region { position: relative; min-width: 0; flex: 0 1 auto; overflow: visible; }
 .app-shell .address-location { width: max-content; min-width: 0; display: flex; align-items: center; gap: 8px; overflow: visible; white-space: nowrap; }
@@ -42,13 +41,14 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
 .app-shell .header-copy, .app-shell .header-markdown { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 0 0 auto; padding: 6px 8px; border: 0; border-radius: 5px; background: transparent; color: #92948c; font-size: 12px; font-weight: 500; cursor: pointer; }
 .app-shell .header-copy:hover:not(:disabled), .app-shell .header-markdown:hover:not(:disabled), .app-shell .header-markdown.active { background: #fffdf9; color: #292c27; }
 .app-shell .header-copy:disabled, .app-shell .header-markdown:disabled { opacity: .45; cursor: default; }
+.app-shell .header-import { position: relative; }
+.app-shell .header-import:focus-visible { outline: 2px solid #526b58; outline-offset: 2px; }
 .app-shell .theme-toggle { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; padding: 0; border-radius: 5px; }
 .app-shell .topbar button:focus-visible { outline: 2px solid #526b58; outline-offset: 2px; }
 @media (max-width: 900px) {
   html body { padding: 0; }
   main.app-shell { width: 100%; height: 100%; border-radius: 0; grid-template-rows: 48px minmax(0,1fr) 32px; }
   .app-shell .topbar { height: 48px; min-height: 48px; gap: 8px; padding-right: 10px; }
-  .app-shell .topbar.mac-titlebar { padding-left: 88px; }
   .app-shell .address-brand { gap: 0; padding-right: 0; border-right: 0; }
   .app-shell .address-brand b { display: none; }
   .app-shell .global-search { flex-basis: 240px; min-width: 140px; }
@@ -60,7 +60,6 @@ main.app-shell { width: 100%; height: 100%; min-height: 0; grid-template-rows: 4
   html body { padding: 0; }
   main.app-shell { width: 100%; height: 100dvh; border: 0; border-radius: 0; box-shadow: none; grid-template-rows: 48px minmax(0,1fr) 32px; }
   .app-shell .topbar { gap: 6px; padding: 0 8px; }
-  .app-shell .topbar.mac-titlebar { padding-left: 88px; }
   .app-shell .address { flex: 0 1 auto; gap: 5px; font-size: 11px; }
   .app-shell .address-brand { gap: 0; padding-right: 0; font-size: 11px; }
   .app-shell .address-brand svg { width: 17px; height: 17px; }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { File, FilePlus, FileText, Folder, FolderOpen, FolderPlus, Home, Pencil, Trash2, Eye, EyeOff, Tag, Star, ChevronsUpDown } from "lucide-react";
+import { File, FilePlus, FileText, Folder, FolderPlus, Home, Pencil, Trash2, Eye, EyeOff, Tag, Star, ChevronsUpDown } from "lucide-react";
 import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import { FileTree, type TreeEdit } from "../tree/FileTree";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
@@ -18,7 +18,6 @@ type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; w
 export function WorkspaceSidebar(props: Props) {
   const { tree } = props;
   const sidebarRef = useRef<HTMLElement>(null);
-  const [browseError, setBrowseError] = useState("");
   const [edit, setEdit] = useState<TreeEdit | null>(null);
   const [selectedFolder, setSelectedFolder] = useState("");
   const [folderMenu, setFolderMenu] = useState<{ path: string; kind: "note" | "folder" | "root"; x: number; y: number } | null>(null);
@@ -71,11 +70,6 @@ export function WorkspaceSidebar(props: Props) {
   const actionLabel = folderFocused ? "folder" : "note";
   const noteParent = folderFocused ? selectedFolder : props.selected.split("/").slice(0, -1).join("/");
 
-  const browse = async () => {
-    setBrowseError("");
-    setBrowseError("Folder browsing is not available in the web app. Use the desktop app for arbitrary folder access.");
-  };
-
   const beginCreate = (kind: "note" | "folder", parent = selectedFolder) => setEdit({ kind, path: parent ? `${parent}/` : "", value: kind === "note" ? "Untitled" : "New folder" });
   const beginCreateNote = () => beginCreate("note", noteParent);
 
@@ -119,8 +113,7 @@ export function WorkspaceSidebar(props: Props) {
       <div className="sidebar-content">
         <button className="default-workspace" type="button" onClick={props.onDefault}><Home size={16} /> <span>My Notes</span></button>
 
-        <div className="sidebar-workspaces">
-          {props.recent.length > 0 && (
+        {props.recent.length > 0 && <div className="sidebar-workspaces">
             <label className="recent-workspaces">
               <span>Recent Workspaces</span>
               <span className="recent-workspace-select">
@@ -133,14 +126,7 @@ export function WorkspaceSidebar(props: Props) {
                 <ChevronsUpDown size={14} aria-hidden="true" />
               </span>
             </label>
-          )}
-        </div>
-
-        <div className="workspace-open">
-          <button className="open-workspace" type="button" onClick={() => void browse()}><FolderOpen size={14} /> Open workspace...</button>
-          <button className="open-workspace" type="button" disabled={!tree} onClick={() => setTrashOpen(true)}><Trash2 size={14} /> Workspace trash</button>
-          {browseError && <p className="sidebar-error" role="alert">{browseError}</p>}
-        </div>
+        </div>}
 
         <p className="sidebar-empty">Workspace data is stored in this browser profile’s site data. You can clear it in your browser’s site data settings.</p>
 

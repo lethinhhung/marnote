@@ -1,6 +1,6 @@
 .app-shell .sidebar.sidebar { width: 256px; flex: 0 0 256px; padding: 0; border-color: #e5e2dc; background: #f8f7f4; color: #292c27; }
 .app-shell .explorer-splitter::after { background: #e5e2dc; }
-.app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 16px; min-height: 0; overflow: hidden; padding: 12px; }
+.app-shell .sidebar-content { display: flex; flex: 1; flex-direction: column; gap: 8px; min-height: 0; overflow: hidden; padding: 12px; }
 .app-shell .sidebar .default-workspace { width: 100%; min-height: 36px; justify-content: flex-start; gap: 8px; margin: 0; padding: 8px 12px; border-color: #e2dfd8; border-radius: 8px; background: #fffdf9; color: #292c27; font-size: 12px; font-weight: 600; letter-spacing: -.02em; box-shadow: 0 1px 2px #292c2708; }
 .app-shell .sidebar .default-workspace svg { color: #526b58; }
 .app-shell .sidebar-workspaces { display: grid; gap: 6px; }
@@ -12,7 +12,7 @@
 .app-shell .sidebar .open-workspace { min-height: 30px; justify-content: center; gap: 6px; padding: 5px 10px; border: 1px dashed #e5e2dc; border-radius: 6px; background: transparent; color: #454a43; font-size: 12px; font-weight: 500; }
 .app-shell .sidebar .open-workspace svg { color: #92948c; }
 .app-shell .sidebar .open-workspace:hover { border-color: #92948c; background: #fffdf9; color: #292c27; }
-.app-shell .sidebar .sidebar-tree-section { display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: 8px; }
+.app-shell .sidebar .sidebar-tree-section { display: flex; flex: 1; flex-direction: column; min-height: 0; padding-top: 0; }
 .app-shell .sidebar .sidebar-heading { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px; min-height: 35px; margin: 0 4px 9px; color: #92948c; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; }
 .app-shell .sidebar .sidebar-heading > span { overflow: hidden; color: #70766d; text-overflow: ellipsis; white-space: nowrap; }
 .app-shell .sidebar .sidebar-heading div { align-items: center; justify-content: flex-start; gap: 3px; width: 100%; color: #92948c; }
@@ -46,7 +46,7 @@
 .app-shell .sidebar .tree-folder-tag { max-width: 58px; overflow: hidden; padding: 2px 5px; border: 1px solid color-mix(in srgb, var(--tag-accent, #526b58) 25%, #e5e2dc); border-radius: 4px; background: var(--tag-light-background, #eff1eb); color: var(--tag-light-color, #435c48); font-size: 10px; font-weight: 500; line-height: 1.1; text-overflow: ellipsis; white-space: nowrap; }
 .app-shell .sidebar .tree-item.selected .tree-folder-tag { border-color: color-mix(in srgb, var(--tag-accent, #526b58) 35%, #e5e2dc); background: var(--tag-light-background, #eff1eb); }
 .app-shell .sidebar .tree-favorite { flex: 0 0 12px; color: #de9e26; }
-.app-shell .sidebar .sidebar-empty { padding: 8px 4px; color: #92948c; font-size: 12px; }
+.app-shell .sidebar .sidebar-empty { margin: 0; padding: 0 4px; color: #92948c; font-size: 12px; }
 .app-shell .sidebar .tree-edit-row { height: 28px; }
 .app-shell .sidebar .tree-edit-row input { height: 24px; font-size: 12px; }
 .app-shell .sidebar .folder-context-menu { border-color: #e5e2dc; background: #fffdf9; }

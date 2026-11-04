@@ -38,7 +38,8 @@ export function NoteEditor({ value, onChange, source, heading }: Props) {
   });
 
   if (source) {
-    return <pre className="markdown-source" tabIndex={0} aria-label="Markdown source">{value}</pre>;
+    const markdown = editor?.getMarkdown() ?? value;
+    return <div className="editor-canvas"><pre className="markdown-source" tabIndex={0} aria-label="Markdown source">{markdown}</pre></div>;
   }
 
   return (
