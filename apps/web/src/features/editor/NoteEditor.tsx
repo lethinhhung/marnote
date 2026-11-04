@@ -1,0 +1,50 @@
+
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import Link from "@tiptap/extension-link";
+import Placeholder from "@tiptap/extension-placeholder";
+import { TableKit } from "@tiptap/extension-table";
+import { Markdown } from "@tiptap/markdown";
+import { initialMarkdown } from "./initialMarkdown";
+
+type Props = {
+  value: string;
+  onChange: (value: string) => void;
+  source: boolean;
+  heading: React.ReactNode;
+};
+
+export function NoteEditor({ value, onChange, source, heading }: Props) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({ codeBlock: false }),
+      TaskList,
+      TaskItem.configure({ nested: true }),
+      TableKit.configure({ table: { cellMinWidth: 120 } }),
+      Link.configure({ openOnClick: false }),
+      Placeholder.configure({ placeholder: "Write something…" }),
+      Markdown,
+    ],
+    content: value || initialMarkdown,
+    contentType: "markdown",
+    editorProps: {
+      attributes: { class: "editor-prose", "aria-label": "Markdown note editor" },
+    },
+    onUpdate: ({ editor: current }) => {
+      onChange(current.getMarkdown());
+    },
+  });
+
+  if (source) {
+    return <pre className="markdown-source" tabIndex={0} aria-label="Markdown source">{value}</pre>;
+  }
+
+  return (
+    <div className="editor-canvas">
+      <div className="note-heading">{heading}</div>
+      {editor ? <EditorContent editor={editor} /> : <div>Loading editor…</div>}
+    </div>
+  );
+}

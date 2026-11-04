@@ -1,0 +1,13 @@
+.editor-zoom { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 1px; }
+.editor-zoom .tool { width: 25px; min-width: 25px; height: 26px; }
+.editor-zoom .tool:disabled { opacity: .4; cursor: default; }
+.editor-zoom-value { min-width: 42px; height: 26px; padding: 0 3px; border: 0; border-radius: 4px; background: transparent; color: #596858; font: inherit; font-size: 11px; cursor: pointer; }
+.editor-zoom-value:hover { background: #f0f2ed; }
+.editor-canvas .note-heading .title-input { zoom: var(--editor-zoom, 1); }
+.editor-canvas .editor-prose, .editor-canvas .markdown-source { zoom: var(--editor-zoom, 1); }
+.editor-canvas .markdown-source:focus-visible { outline: 2px solid #82947c; outline-offset: -2px; }
+@media (max-width: 640px) {
+  .editor-zoom { gap: 0; }
+  .editor-zoom .tool { width: 23px; min-width: 23px; }
+  .editor-zoom-value { min-width: 36px; }
+}
