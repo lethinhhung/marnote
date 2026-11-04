@@ -12,6 +12,8 @@ const mockTransaction = vi.fn();
 const mockClear = vi.fn();
 const mockObjectStore = vi.fn();
 
+const clearedStores: string[] = [];
+
 const mockDB = {
   put: mockPut,
   get: mockGet,
@@ -24,10 +26,25 @@ const mockDB = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 vi.mocked(openDB).mockResolvedValue(mockDB as any);
 
-mockTransaction.mockReturnValue({
-  objectStore: mockObjectStore.mockReturnValue({ clear: mockClear }),
-  done: Promise.resolve(),
-});
+function createTransactionMock() {
+  clearedStores.length = 0;
+  const storeClears: Record<string, ReturnType<typeof vi.fn>> = {};
+  const stores = ["workspace", "files", "trash", "tags", "manualOrder"];
+  for (const store of stores) {
+    storeClears[store] = vi.fn(() => {
+      clearedStores.push(store);
+    });
+  }
+  mockObjectStore.mockImplementation((storeName: string) => ({
+    clear: storeClears[storeName] || mockClear,
+  }));
+  return {
+    objectStore: mockObjectStore,
+    done: Promise.resolve(),
+  };
+}
+
+mockTransaction.mockImplementation(createTransactionMock);
 
 import {
   QuotaExceededError,
@@ -96,16 +113,14 @@ function setupBasicMocks() {
   mockTransaction.mockReset();
   mockClear.mockReset();
   mockObjectStore.mockReset();
+  clearedStores.length = 0;
 
   mockGet.mockResolvedValue(defaultTree);
   mockGetFromIndex.mockResolvedValue(defaultFile);
   mockGetAllFromIndex.mockResolvedValue([]);
   mockPut.mockResolvedValue(undefined);
   mockDelete.mockResolvedValue(undefined);
-  mockTransaction.mockReturnValue({
-    objectStore: mockObjectStore.mockReturnValue({ clear: mockClear }),
-    done: Promise.resolve(),
-  });
+  mockTransaction.mockReturnValue(createTransactionMock());
 }
 
 describe("workspace platform quota handling", () => {
@@ -411,4 +426,193 @@ describe("downloadNoteAsMarkdown", () => {
     expect(mockDelete).not.toHaveBeenCalled();
     expect(mockTransaction).not.toHaveBeenCalled();
   });
+});
+
+describe("exportWorkspace and importWorkspace round trip", () => {
+  beforeEach(() => {
+    setupBasicMocks();
+  });
+
+  it("exports workspace data and imports it back with all content restored", async () => {
+    const treeWithData = {
+      ...defaultTree,
+      tree: {
+        name: "Notes",
+        path: "/",
+        entries: [
+          { name: "note1.md", path: "note1.md", kind: "file" as const, isEmpty: false, modifiedMs: 1000, metadata: { tags: {}, icon: "", favorite: false } },
+          { name: "folder", path: "folder", kind: "directory" as const, isEmpty: false, modifiedMs: 2000, children: [
+            { name: "note2.md", path: "folder/note2.md", kind: "file" as const, isEmpty: false, modifiedMs: 3000, metadata: { tags: { work: "blue" }, icon: "", favorite: true } }
+          ]}
+        ],
+        tags: { personal: "red", work: "blue" },
+        manualOrder: { "/": ["note1.md", "folder"], "folder": ["note2.md"] },
+      },
+    };
+    mockGet.mockResolvedValueOnce(treeWithData);
+    mockGetAllFromIndex.mockResolvedValueOnce([
+      { id: "/:note1.md", workspaceId: "/", path: "note1.md", content: "# Note 1\n\nContent one", modifiedMs: 1000 },
+      { id: "/:folder/note2.md", workspaceId: "/", path: "folder/note2.md", content: "# Note 2\n\nContent two", modifiedMs: 3000 },
+    ]);
+    const trashItems = [
+      { id: "trash-1", workspaceId: "/", path: "deleted.md", kind: "file" as const, content: "deleted content", metadata: { tags: {}, icon: "", favorite: false }, deletedAt: 4000, restorable: true },
+    ];
+    mockGetAllFromIndex.mockResolvedValueOnce(trashItems);
+    const db = await (await import("idb")).openDB("test-db", 1);
+    vi.mocked(db.getFromIndex).mockResolvedValueOnce({ id: "/:tags", workspaceId: "/", tags: { personal: "red", work: "blue" } });
+    vi.mocked(db.getAllFromIndex).mockResolvedValueOnce([
+      { id: "/:/", workspaceId: "/", parent: "/", paths: ["note1.md", "folder"] },
+      { id: "/:folder", workspaceId: "/", parent: "folder", paths: ["note2.md"] },
+    ]);
+
+    const exportWorkspace = (await import("./workspace")).exportWorkspace;
+    const blob = await exportWorkspace();
+
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.size).toBeGreaterThan(0);
+
+    mockGet.mockResolvedValueOnce(defaultTree);
+    mockGetAllFromIndex.mockResolvedValueOnce([]);
+    mockGetFromIndex.mockResolvedValueOnce(null);
+    mockPut.mockResolvedValue(undefined);
+    mockTransaction.mockReturnValue({
+      objectStore: mockObjectStore.mockReturnValue({ clear: mockClear }),
+      done: Promise.resolve(),
+    });
+
+    const importWorkspace = (await import("./workspace")).importWorkspace;
+    await importWorkspace(blob);
+
+    expect(mockClear).toHaveBeenCalledTimes(5);
+    expect(mockPut).toHaveBeenCalled();
+
+    const workspacePutCalls = mockPut.mock.calls.filter(call => call[0] === "workspace");
+    expect(workspacePutCalls.length).toBeGreaterThan(0);
+    const savedTree = workspacePutCalls[0][1].tree;
+    expect(savedTree.entries).toHaveLength(2);
+    expect(savedTree.entries[0].path).toBe("note1.md");
+    expect(savedTree.entries[1].path).toBe("folder");
+    expect(savedTree.entries[1].children?.[0].path).toBe("folder/note2.md");
+    expect(savedTree.tags).toEqual({ personal: "red", work: "blue" });
+    expect(savedTree.manualOrder).toEqual({ "/": ["note1.md", "folder"], "folder": ["note2.md"] });
+
+    const filePutCalls = mockPut.mock.calls.filter(call => call[0] === "files");
+    expect(filePutCalls.length).toBe(2);
+    expect(filePutCalls[0][1].path).toBe("note1.md");
+    expect(filePutCalls[0][1].content).toBe("# Note 1\n\nContent one");
+    expect(filePutCalls[1][1].path).toBe("folder/note2.md");
+    expect(filePutCalls[1][1].content).toBe("# Note 2\n\nContent two");
+
+    const trashPutCalls = mockPut.mock.calls.filter(call => call[0] === "trash");
+    expect(trashPutCalls.length).toBe(1);
+    expect(trashPutCalls[0][1].path).toBe("deleted.md");
+    expect(trashPutCalls[0][1].content).toBeUndefined();
+  });
+
+  it("importWorkspace explicitly replaces existing workspace data by clearing all stores first", async () => {
+    const existingTree = {
+      ...defaultTree,
+      tree: {
+        name: "Notes",
+        path: "/",
+        entries: [
+          { name: "old.md", path: "old.md", kind: "file" as const, isEmpty: false, modifiedMs: 1000, metadata: { tags: {}, icon: "", favorite: false } }
+        ],
+        tags: { old: "green" },
+        manualOrder: { "/": ["old.md"] },
+      },
+    };
+    mockGet.mockResolvedValueOnce(existingTree);
+    mockGetAllFromIndex.mockResolvedValueOnce([
+      { id: "/:old.md", workspaceId: "/", path: "old.md", content: "old content", modifiedMs: 1000 },
+    ]);
+    mockGetAllFromIndex.mockResolvedValueOnce([]);
+    const db = await (await import("idb")).openDB("test-db", 1);
+    vi.mocked(db.getFromIndex).mockResolvedValueOnce({ id: "/:tags", workspaceId: "/", tags: { old: "green" } });
+    vi.mocked(db.getAllFromIndex).mockResolvedValueOnce([
+      { id: "/:/", workspaceId: "/", parent: "/", paths: ["old.md"] },
+    ]);
+
+    const exportWorkspace = (await import("./workspace")).exportWorkspace;
+    const blob = await exportWorkspace();
+
+    mockGet.mockResolvedValueOnce(defaultTree);
+    mockGetAllFromIndex.mockResolvedValueOnce([]);
+    mockGetFromIndex.mockResolvedValueOnce(null);
+    mockPut.mockResolvedValue(undefined);
+    mockTransaction.mockReturnValue(createTransactionMock());
+
+    const importWorkspace = (await import("./workspace")).importWorkspace;
+    await importWorkspace(blob);
+
+    expect(clearedStores).toHaveLength(5);
+    expect(clearedStores).toEqual(expect.arrayContaining(["workspace", "files", "trash", "tags", "manualOrder"]));
+
+    const workspacePutCalls = mockPut.mock.calls.filter(call => call[0] === "workspace");
+    const savedTree = workspacePutCalls[0][1].tree;
+    expect(savedTree.entries.find((e: { path: string }) => e.path === "old.md")).toBeDefined();
+    expect(savedTree.tags).toEqual({ old: "green" });
+  });
+});
+
+describe("importWorkspace unsafe archive path rejection", () => {
+  beforeEach(() => {
+    setupBasicMocks();
+  });
+
+  it("rejects traversal paths without modifying workspace data", async () => {
+    const zip = { files: { "notes/../evil.md": { dir: false } } };
+    const { validateZipEntryPaths } = await import("./workspace");
+
+    expect(() => validateZipEntryPaths(zip)).toThrow("Invalid path in archive");
+    expect(clearedStores).toEqual([]);
+    expect(mockPut).not.toHaveBeenCalled();
+  });
+
+  it("rejects archive with absolute paths without modifying workspace", async () => {
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    zip.file("workspace.json", JSON.stringify({
+      tree: { name: "Notes", path: "/", entries: [], tags: {}, manualOrder: {} },
+      files: [],
+      trash: [],
+      tags: {},
+      manualOrder: {},
+      exportedAt: Date.now(),
+      version: 1,
+    }));
+    zip.file("/absolute.md", "bad");
+
+    const blob = await zip.generateAsync({ type: "blob" });
+
+    const importWorkspace = (await import("./workspace")).importWorkspace;
+    await expect(importWorkspace(blob)).rejects.toThrow("Invalid path in archive");
+
+    expect(clearedStores).toEqual([]);
+    expect(mockPut).not.toHaveBeenCalled();
+  });
+
+  it("rejects archive with Windows-style absolute paths without modifying workspace", async () => {
+    const JSZip = (await import("jszip")).default;
+    const zip = new JSZip();
+    zip.file("workspace.json", JSON.stringify({
+      tree: { name: "Notes", path: "/", entries: [], tags: {}, manualOrder: {} },
+      files: [],
+      trash: [],
+      tags: {},
+      manualOrder: {},
+      exportedAt: Date.now(),
+      version: 1,
+    }));
+    zip.file("C:\\Windows\\evil.md", "bad");
+
+    const blob = await zip.generateAsync({ type: "blob" });
+
+    const importWorkspace = (await import("./workspace")).importWorkspace;
+    await expect(importWorkspace(blob)).rejects.toThrow("Invalid path in archive");
+
+    expect(clearedStores).toEqual([]);
+    expect(mockPut).not.toHaveBeenCalled();
+  });
+
 });
