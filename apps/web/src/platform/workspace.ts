@@ -4,6 +4,17 @@ import type { WorkspaceTree, WorkspaceEntryMetadata } from "../shared/domain/wor
 const DB_NAME = "marnote-web";
 const DB_VERSION = 1;
 
+export class QuotaExceededError extends Error {
+  constructor(message = "Storage quota exceeded") {
+    super(message);
+    this.name = "QuotaExceededError";
+  }
+}
+
+function isQuotaError(error: unknown): error is DOMException {
+  return error instanceof DOMException && (error.name === "QuotaExceededError" || error.code === 22);
+}
+
 interface MarnoteDB extends DBSchema {
   workspace: {
     key: string;
@@ -109,11 +120,18 @@ async function getWorkspaceTree(): Promise<WorkspaceTree | null> {
 
 async function saveWorkspaceTree(tree: WorkspaceTree): Promise<void> {
   const db = await getDB();
-  await db.put("workspace", {
-    id: DEFAULT_WORKSPACE_ID,
-    tree,
-    updatedAt: Date.now(),
-  });
+  try {
+    await db.put("workspace", {
+      id: DEFAULT_WORKSPACE_ID,
+      tree,
+      updatedAt: Date.now(),
+    });
+  } catch (error) {
+    if (isQuotaError(error)) {
+      throw new QuotaExceededError("Failed to save workspace: storage quota exceeded");
+    }
+    throw error;
+  }
 }
 
 async function getFile(workspaceId: string, path: string): Promise<{ content: string; modifiedMs: number } | null> {
@@ -130,13 +148,20 @@ async function putFile(workspaceId: string, path: string, content: string, modif
   const db = await getDB();
   const normalizedPath = normalizePath(path);
   const id = `${workspaceId}:${normalizedPath}`;
-  await db.put("files", {
-    id,
-    workspaceId,
-    path: normalizedPath,
-    content,
-    modifiedMs,
-  });
+  try {
+    await db.put("files", {
+      id,
+      workspaceId,
+      path: normalizedPath,
+      content,
+      modifiedMs,
+    });
+  } catch (error) {
+    if (isQuotaError(error)) {
+      throw new QuotaExceededError("Failed to write file: storage quota exceeded");
+    }
+    throw error;
+  }
 }
 
 async function deleteFileRecord(workspaceId: string, path: string): Promise<void> {
@@ -287,7 +312,14 @@ export async function updateEntryMetadata(rootPath: string, path: string, metada
 export async function saveWorkspaceTags(rootPath: string, tags: Record<string, string>): Promise<void> {
   const db = await getDB();
   const id = `${rootPath}:tags`;
-  await db.put("tags", { id, workspaceId: rootPath, tags });
+  try {
+    await db.put("tags", { id, workspaceId: rootPath, tags });
+  } catch (error) {
+    if (isQuotaError(error)) {
+      throw new QuotaExceededError("Failed to save tags: storage quota exceeded");
+    }
+    throw error;
+  }
   const tree = await getWorkspaceTree();
   if (tree) {
     tree.tags = tags;
@@ -298,7 +330,14 @@ export async function saveWorkspaceTags(rootPath: string, tags: Record<string, s
 export async function saveManualOrder(rootPath: string, parent: string, paths: string[]): Promise<void> {
   const db = await getDB();
   const id = `${rootPath}:${parent}`;
-  await db.put("manualOrder", { id, workspaceId: rootPath, parent, paths });
+  try {
+    await db.put("manualOrder", { id, workspaceId: rootPath, parent, paths });
+  } catch (error) {
+    if (isQuotaError(error)) {
+      throw new QuotaExceededError("Failed to save manual order: storage quota exceeded");
+    }
+    throw error;
+  }
   const tree = await getWorkspaceTree();
   if (tree) {
     tree.manualOrder = { ...tree.manualOrder, [parent]: paths };
@@ -329,16 +368,23 @@ async function addToTrash(
 ): Promise<void> {
   const db = await getDB();
   const id = generateId();
-  await db.put("trash", {
-    id,
-    workspaceId,
-    path,
-    kind,
-    content,
-    metadata,
-    deletedAt: Date.now(),
-    restorable,
-  });
+  try {
+    await db.put("trash", {
+      id,
+      workspaceId,
+      path,
+      kind,
+      content,
+      metadata,
+      deletedAt: Date.now(),
+      restorable,
+    });
+  } catch (error) {
+    if (isQuotaError(error)) {
+      throw new QuotaExceededError("Failed to move to trash: storage quota exceeded");
+    }
+    throw error;
+  }
 }
 
 function findEntry(entries: Entry[], path: string): Entry | undefined {
@@ -527,7 +573,14 @@ export async function importWorkspace(blob: Blob): Promise<void> {
   }
   if (data.trash) {
     for (const item of data.trash) {
-      await db.put("trash", { ...item, workspaceId: data.tree.path, id: item.id });
+      try {
+        await db.put("trash", { ...item, workspaceId: data.tree.path, id: item.id });
+      } catch (error) {
+        if (isQuotaError(error)) {
+          throw new QuotaExceededError("Failed to import trash: storage quota exceeded");
+        }
+        throw error;
+      }
     }
   }
   if (data.tags) {

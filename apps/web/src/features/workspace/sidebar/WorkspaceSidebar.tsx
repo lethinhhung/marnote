@@ -142,6 +142,8 @@ export function WorkspaceSidebar(props: Props) {
           {browseError && <p className="sidebar-error" role="alert">{browseError}</p>}
         </div>
 
+        <p className="sidebar-empty">Workspace data is stored in this browser profile’s site data. You can clear it in your browser’s site data settings.</p>
+
         {tree && (
           <section className="sidebar-tree-section">
             <div className="sidebar-heading">
