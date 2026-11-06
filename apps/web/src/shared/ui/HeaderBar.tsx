@@ -209,10 +209,10 @@ export function HeaderBar({ tree, path, content, theme, source, explorerCollapse
                     <span className="address-path-current">{parts.at(-1)}</span>
                   </div>
                 </details>
-                {pathMenuControl}
               </div>
             )}
           </div>
+          {path && pathMenuControl}
         </div>
 
         <button
