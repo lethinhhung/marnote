@@ -60,7 +60,7 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     applyWorkspaceLink,
   } = useSlashLink({ entries, path, onNavigate, editorRef });
 
-  const editor = useEditor({ extensions: [StarterKit.configure({ codeBlock: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
+  const editor = useEditor({ extensions: [StarterKit.configure({ codeBlock: false, link: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
     onChange(current.getMarkdown());
     handleEditorUpdate();
   } });
