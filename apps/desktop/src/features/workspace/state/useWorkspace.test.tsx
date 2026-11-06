@@ -8,6 +8,7 @@ const workspaceOps = vi.hoisted(() => ({
   updateEntryMetadata: vi.fn(),
   saveWorkspaceTags: vi.fn(),
   saveManualOrder: vi.fn(),
+  moveFile: vi.fn(),
 }));
 
 vi.mock("../../../platform/workspace", () => ({
@@ -16,6 +17,7 @@ vi.mock("../../../platform/workspace", () => ({
   updateEntryMetadata: workspaceOps.updateEntryMetadata,
   saveWorkspaceTags: workspaceOps.saveWorkspaceTags,
   saveManualOrder: workspaceOps.saveManualOrder,
+  moveFile: workspaceOps.moveFile,
 }));
 
 describe("useWorkspace metadata updates", () => {
@@ -57,7 +59,7 @@ describe("useWorkspace reorder", () => {
     localStorage.clear();
   });
 
-  it("returns true when backend succeeds even if tree refresh fails", async () => {
+  it("returns false when tree refresh fails after backend succeeds", async () => {
     const initialTree = { name: "Notes", path: "/workspace", entries: [
       { name: "A.md", path: "A.md", kind: "file" as const },
       { name: "B.md", path: "B.md", kind: "file" as const },
@@ -73,6 +75,31 @@ describe("useWorkspace reorder", () => {
 
     expect(workspaceOps.saveManualOrder).toHaveBeenCalledWith("/workspace", "", ["B.md", "A.md"]);
     expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
-    expect(success).toBe(true);
+    expect(success).toBe(false);
+  });
+});
+
+describe("useWorkspace move", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("returns false when tree refresh fails after backend succeeds", async () => {
+    const initialTree = { name: "Notes", path: "/workspace", entries: [
+      { name: "A.md", path: "A.md", kind: "file" as const },
+    ] };
+    workspaceOps.openWorkspace.mockResolvedValue(initialTree);
+    workspaceOps.moveFile.mockResolvedValue(undefined);
+    workspaceOps.listWorkspace.mockRejectedValue(new Error("refresh failed"));
+
+    const { result } = renderHook(() => useWorkspace());
+    await act(async () => { await result.current.open("/workspace"); });
+
+    const success = await act(async () => await result.current.move("A.md", "B.md"));
+
+    expect(workspaceOps.moveFile).toHaveBeenCalledWith("/workspace", "A.md", "B.md");
+    expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
+    expect(success).toBe(false);
   });
 });
