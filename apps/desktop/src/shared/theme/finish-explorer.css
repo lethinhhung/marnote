@@ -4,7 +4,8 @@
 .app-shell .sidebar .default-workspace svg, .app-shell .sidebar .tree-item.selected,
 .app-shell .sidebar .tree-item.selected-folder { color: var(--marnote-accent); }
 .app-shell .sidebar .sidebar-workspaces { gap: 8px; }
-.app-shell .sidebar .recent-workspaces { gap: 8px; color: var(--marnote-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.app-shell .sidebar .recent-workspaces { gap: 8px; margin: 0; padding: 0; color: var(--marnote-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.app-shell .sidebar .recent-workspace-select, .app-shell .sidebar .recent-workspaces select { width: 100%; box-sizing: border-box; }
 .app-shell .sidebar .recent-workspaces select, .app-shell .sidebar .open-workspace { min-height: 32px; border-color: var(--marnote-line); border-radius: 8px; background: transparent; color: var(--marnote-secondary); font-size: 13px; font-weight: 400; }
 .app-shell .sidebar .open-workspace { justify-content: flex-start; gap: 8px; border-style: solid; }
 .app-shell .sidebar .open-workspace:hover, .app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: var(--marnote-raised); color: var(--marnote-ink); }

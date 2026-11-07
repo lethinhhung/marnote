@@ -8,6 +8,12 @@
 .editor-frame .toolbar-action-menu summary:hover { background: var(--marnote-raised); color: var(--marnote-ink); }
 .editor-frame .toolbar-action-menu-panel { gap: 4px; padding: 8px; }
 .editor-frame .toolbar-action-menu-panel .compact-tool { min-height: 32px; border-radius: 6px; font-size: 13px; }
+@container editor-frame (max-width: 1100px) {
+  .editor-frame .toolbar-more-controls { flex: 0 0 32px; }
+  .editor-frame .toolbar-action-menu.toolbar-more-menu summary { width: 32px; height: 32px; min-height: 32px; padding: 0; justify-content: center; }
+  .editor-frame .toolbar-more-menu summary > svg:first-child { width: 16px; height: 16px; }
+}
+.editor-frame .toolbar-more-menu summary { box-sizing: border-box; }
 .editor-frame .note-heading { gap: 16px; width: min(800px, calc(100% - 48px)); padding: 40px 0 16px; border-color: var(--marnote-line); }
 .editor-frame .note-heading > .emoji-picker { margin-left: 0; }
 .editor-frame .note-heading > .emoji-picker > button { width: 32px; min-width: 32px; height: 32px; border-radius: 7px; font-size: 20px; }
