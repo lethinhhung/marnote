@@ -178,7 +178,7 @@ export function App() {
             </section>
           </div>
         )}
-        {workspace.note ? <NoteEditor key={path} value={draft} onChange={noteTabs.updateDraft} source={source} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
+        {workspace.note ? <NoteEditor key={path} path={path} rootPath={workspace.tree?.path || ""} entries={workspace.tree?.entries ?? []} onNavigate={(target, kind) => { if (kind === "file") void noteTabs.selectTab(target); else document.dispatchEvent(new CustomEvent("marnote-navigate-folder", { detail: target })); }} value={draft} onChange={noteTabs.updateDraft} source={source} heading={<div className="title-field"><span ref={titleInput} className="title-input" role="textbox" aria-label="Note file name" aria-multiline="true" contentEditable suppressContentEditableWarning key={path} onBlur={event => { void renameTitle(event.currentTarget.textContent || ""); }} onKeyDown={event => { if (event.key === "Enter") { event.preventDefault(); event.currentTarget.blur(); } }}>{name}</span><span className="title-extension" onClick={() => titleInput.current?.focus()}>.md</span></div>} /> : <NoNoteOpened canCreate={!!workspace.tree} />}
       </section>
     </div>
     {unsavedPrompt.dialog}

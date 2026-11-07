@@ -74,3 +74,11 @@
 .note-tab-dirty { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: #e5a93c; }
 .note-tab-close { width: 16px; height: 16px; flex-basis: 16px; margin-right: 6px; }
 @media (max-width: 760px) { .editor-frame .note-heading, .editor-frame .editor-prose, .editor-frame .markdown-source { width: calc(100% - 40px); } .editor-frame .note-heading { padding-top: 28px; } .editor-frame .editor-prose, .editor-frame .markdown-source { padding-top: 22px; } }
+.backlinks-panel { max-width: 760px; margin: 36px auto 24px; padding-top: 18px; border-top: 1px solid #e8e5df; color: #666b62; font-size: 12px; }
+.backlinks-panel h2 { margin: 0 0 10px; color: #555d53; font: 600 15px Newsreader, Georgia, serif; }
+.backlinks-panel p { margin: 0; }
+.backlinks-panel ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.backlinks-panel li { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.backlinks-panel button { padding: 0; border: 0; background: none; color: #405b46; font: inherit; font-weight: 600; cursor: pointer; }
+.backlinks-panel button:hover { text-decoration: underline; }
+.backlinks-panel li span { overflow: hidden; color: #8b8e86; text-overflow: ellipsis; white-space: nowrap; }
