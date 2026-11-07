@@ -359,4 +359,11 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .search-results button:hover { background: #f1f3ed; }
 .search-results button small { grid-column: 2; overflow: hidden; color: #92968d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .search-results p { margin: 0; padding: 10px; color: #92968d; font-size: 12px; }
-@media (max-width: 760px) { .topbar { gap: 9px; padding: 0 10px; } .address { min-width: 0; gap: 5px; } .address-part { gap: 5px; } .global-search { height: 24px; min-width: 0; flex-basis: 120px; } }
+@media (max-width: 760px) { .topbar { gap: 9px; padding: 0 10px; } .address { min-width: 0; gap: 5px; } .address-part { gap: 5px; } .global-search { height: 24px; min-width: 0; flex-basis: 120px; } }.backlinks-panel { max-width: 760px; margin: 36px auto 24px; padding-top: 18px; border-top: 1px solid #e8e5df; color: #666b62; font-size: 12px; }
+.backlinks-panel h2 { margin: 0 0 10px; color: #555d53; font: 600 15px Newsreader, Georgia, serif; }
+.backlinks-panel p { margin: 0; }
+.backlinks-panel ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.backlinks-panel li { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.backlinks-panel button { padding: 0; border: 0; background: none; color: #405b46; font: inherit; font-weight: 600; cursor: pointer; }
+.backlinks-panel button:hover { text-decoration: underline; }
+.backlinks-panel li span { overflow: hidden; color: #8b8e86; text-overflow: ellipsis; white-space: nowrap; }

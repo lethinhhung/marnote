@@ -14,5 +14,6 @@
 ## Links
 
 - Support portable internal links and backlinks.
+- Show incoming links for the active note in a **Linked mentions** panel. Resolve links with the current note's relative-path rules, omit external URLs, and let users open each linking note. Rebuild backlinks from Markdown files rather than persisted index data.
 - Keep Markdown canonical; indexes and link graphs are rebuildable.
 - Resolve relative workspace links against the current tree. Moves do not rewrite existing links.

@@ -30,6 +30,10 @@
 - Keep the footer on one line. Below 950px, keep status, path, and counters visible; move timestamps to **Info** and tags, emoji, favorite, and save mode to **More**. Keep controls inline when space allows.
 - Keep menus anchored and inside the window; flip below when needed and close on focus loss. Use square menu and favorite buttons, and label the emoji control **Add emoji**.
 
+## Linked mentions
+
+- Below note content, show incoming workspace links in a **Linked mentions** section. Each result shows its note name and path and opens that note. Show a brief loading state and an empty state when no notes link to the current note.
+
 ## Gaps
 
 - Slash only inserts editor content.
