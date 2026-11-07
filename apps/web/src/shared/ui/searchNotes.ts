@@ -34,7 +34,11 @@ function makeExcerpt(sourceText: string, query: string): string {
 }
 
 const hasWords = (value: string, words: string[]) => words.every(word => value.includes(word));
-const folderMatches = (path: string, folder: string) => !folder || path.toLocaleLowerCase().includes(folder);
+const folderMatches = (path: string, folder: string) => {
+  if (!folder) return true;
+  const lowerFolder = folder.toLocaleLowerCase();
+  return path.toLocaleLowerCase().split("/").some(segment => segment === lowerFolder);
+};
 
 export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
   if (!query.trim()) return { notes: [], folders: [], tags: [] };
