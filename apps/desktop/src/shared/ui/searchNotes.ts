@@ -26,10 +26,13 @@ export function parseSearchQuery(query: string): SearchFilter {
 function makeExcerpt(sourceText: string, query: string): string {
   const body = sourceText.toLocaleLowerCase();
   const words = query.split(/\s+/).filter(Boolean);
-  const index = words.map(word => body.indexOf(word)).filter(position => position >= 0).sort((a, b) => a - b)[0] ?? -1;
-  if (index < 0) return "";
-  const start = Math.max(0, index - 55);
-  const end = Math.min(sourceText.length, index + query.length + 85);
+  const matches = words.map(word => ({ word, index: body.indexOf(word) })).filter(m => m.index >= 0);
+  if (!matches.length) return "";
+  matches.sort((a, b) => a.index - b.index);
+  const first = matches[0];
+  const last = matches[matches.length - 1];
+  const start = Math.max(0, first.index - 55);
+  const end = Math.min(sourceText.length, last.index + last.word.length + 85);
   return `${start ? "…" : ""}${sourceText.slice(start, end).replace(/\s+/g, " ").trim()}${end < sourceText.length ? "…" : ""}`;
 }
 
