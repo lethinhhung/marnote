@@ -31,12 +31,19 @@ const readme: Entry = entry({
 const workFolder: Entry = { name: "Work", path: "Work", kind: "directory" };
 const docsFolder: Entry = { name: "Docs", path: "Docs", kind: "directory" };
 const textFile: Entry = entry({ name: "data.txt", path: "Work/data.txt" });
+const distributed: Entry = entry({
+  name: "Alpha.md",
+  path: "Beta/Gamma.md",
+  modifiedMs: 300,
+  metadata: { tags: [] },
+});
 
-const entries = [meeting, plan, readme, workFolder, docsFolder, textFile];
+const entries = [meeting, plan, readme, workFolder, docsFolder, textFile, distributed];
 const contents: Record<string, string> = {
   "Work/Meeting Notes.md": "Discuss the quarterly roadmap",
   "Work/Project Plan.md": "Ship the search feature by Friday",
   "Docs/Readme.md": "Alpha beta gamma delta",
+  "Beta/Gamma.md": "Content without matching words",
 };
 
 describe("parseSearchQuery", () => {
@@ -130,5 +137,15 @@ describe("searchWorkspace", () => {
   it("produces an excerpt around the matched term", () => {
     const result = searchWorkspace(entries, "roadmap", contents);
     expect(result.notes[0].excerpt).toContain("roadmap");
+  });
+
+  it("produces a non-empty excerpt when words are distributed across title and path", () => {
+    const result = searchWorkspace(entries, "alpha beta", contents);
+    const distributedMatch = result.notes.find((n) => n.entry.name === "Alpha.md");
+    expect(distributedMatch).toBeDefined();
+    expect(distributedMatch!.source).toBe("Content");
+    expect(distributedMatch!.excerpt.length).toBeGreaterThan(0);
+    expect(distributedMatch!.excerpt.toLocaleLowerCase()).toContain("alpha");
+    expect(distributedMatch!.excerpt.toLocaleLowerCase()).toContain("beta");
   });
 });
