@@ -67,9 +67,14 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
   const source: MatchSource = words.length
     ? hasWords(title, words) ? "Title" : hasWords(path, words) ? "Folder" : hasWords(tagText, words) ? "Tag" : "Content"
     : filter.tag ? "Tag" : filter.folder ? "Folder" : "Content";
-  if (words.length && !hasWords(`${title} ${path} ${tagText} ${content}`.toLocaleLowerCase(), words)) return null;
+  const combinedLower = `${title} ${path} ${tagText} ${content}`.toLocaleLowerCase();
+  if (words.length && !hasWords(combinedLower, words)) return null;
   const score = source === "Title" ? 100 : source === "Folder" ? 70 : source === "Tag" ? 50 : 20;
-  const sourceText = source === "Title" ? entry.name.replace(/\.md$/i, "") : source === "Folder" ? entry.path : source === "Tag" ? tagNames.join(" ") : content;
+  const titleText = entry.name.replace(/\.md$/i, "");
+  const pathText = entry.path;
+  const tagTextOriginal = tagNames.join(" ");
+  const combinedText = `${titleText} ${pathText} ${tagTextOriginal} ${content}`;
+  const sourceText = source === "Title" ? titleText : source === "Folder" ? pathText : source === "Tag" ? tagTextOriginal : combinedText;
   return { entry, excerpt: makeExcerpt(sourceText, filter.text), score, source };
 }
 
