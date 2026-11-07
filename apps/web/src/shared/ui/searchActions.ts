@@ -41,17 +41,6 @@ async function copyEntry(root: string, from: string, target: Entry, title: strin
 
 async function copyText(value: string) { try { await navigator.clipboard.writeText(value); } catch { /* Clipboard access may be unavailable. */ } }
 
-function escapeHtml(value: string) {
-  return value.replace(/[&<>"']/g, character => {
-    switch (character) {
-      case "&": return "&";
-      case "<": return "<";
-      case ">": return ">";
-      case '"': return "\"";
-      case "'": return "'";
-      default: return character;
-    }
-  });
-}
+function escapeHtml(value: string) { return value.replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character); }
 
 const escapeAttribute = escapeHtml;
