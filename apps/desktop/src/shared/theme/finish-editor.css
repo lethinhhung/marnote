@@ -1,0 +1,54 @@
+.editor-frame .toolbar { min-height: 44px; flex-basis: 44px; gap: 8px; padding-inline: 24px; background: var(--marnote-surface); border-color: var(--marnote-line); }
+.editor-frame .toolbar-actions, .editor-frame .tool-group { gap: 8px; }
+.editor-frame .tool { width: 32px; height: 32px; border-radius: 6px; color: var(--marnote-muted); }
+.editor-frame .tool:hover:not(:disabled), .editor-frame .tool.active { background: var(--marnote-raised); color: var(--marnote-ink); }
+.editor-frame .tool-group > button svg { width: 16px; height: 16px; }
+.editor-frame .toolbar-group-divider, .editor-frame .tool-separator { border-color: var(--marnote-line); }
+.editor-frame .toolbar-action-menu summary { min-height: 32px; border-color: var(--marnote-line); border-radius: 7px; color: var(--marnote-secondary); font-size: 13px; }
+.editor-frame .toolbar-action-menu summary:hover { background: var(--marnote-raised); color: var(--marnote-ink); }
+.editor-frame .toolbar-action-menu-panel { gap: 4px; padding: 8px; }
+.editor-frame .toolbar-action-menu-panel .compact-tool { min-height: 32px; border-radius: 6px; font-size: 13px; }
+.editor-frame .note-heading { gap: 16px; width: min(800px, calc(100% - 48px)); padding: 40px 0 16px; border-color: var(--marnote-line); }
+.editor-frame .note-heading > .emoji-picker { margin-left: 0; }
+.editor-frame .note-heading > .emoji-picker > button { width: 32px; min-width: 32px; height: 32px; border-radius: 7px; font-size: 20px; }
+.editor-frame .title-field { line-height: 1.12; }
+.editor-frame .note-heading .title-input { color: var(--marnote-ink); font-family: Newsreader, Georgia, serif; font-size: clamp(36px, 3vw, 42px); font-weight: 500; letter-spacing: -.02em; }
+.editor-frame .title-extension { align-self: baseline; color: var(--marnote-muted); font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 400; letter-spacing: 0; }
+.editor-frame .note-meta { gap: 8px; padding-top: 8px; color: var(--marnote-muted); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+.editor-frame .note-meta-tag { padding: 3px 8px; border-color: var(--marnote-line); border-radius: 6px; background: var(--marnote-raised); color: var(--marnote-secondary); font-size: 12px; }
+.editor-frame .editor-prose, .editor-frame .markdown-source { width: min(800px, calc(100% - 48px)); padding: 28px 0 48px; color: var(--marnote-ink); font-size: 16px; line-height: 1.7; }
+.editor-frame .editor-prose h1, .editor-frame .editor-prose h2, .editor-frame .editor-prose h3 { color: var(--marnote-ink); font-weight: 500; letter-spacing: -.01em; }
+.editor-frame .editor-prose h1 { font-size: 32px; }
+.editor-frame .editor-prose h2 { font-size: 28px; }
+.editor-frame .editor-prose h3 { font-size: 22px; }
+.editor-frame .editor-prose h2 + p { margin-top: 16px; font-size: 19px; }
+.editor-frame .editor-prose p + h2, .editor-frame .editor-prose p + h3,
+.editor-frame .editor-prose ul + h2, .editor-frame .editor-prose ol + h2,
+.editor-frame .editor-prose blockquote + h1, .editor-frame .editor-prose blockquote + h2,
+.editor-frame .editor-prose blockquote + h3 { margin-top: 24px; }
+.editor-frame .editor-prose h2 + ul, .editor-frame .editor-prose h2 + ol,
+.editor-frame .editor-prose h3 + ul, .editor-frame .editor-prose h3 + blockquote { margin-top: 12px; }
+.editor-frame .editor-prose blockquote { border-color: var(--marnote-accent); color: var(--marnote-secondary); }
+.editor-frame .editor-prose a, .editor-frame .backlinks-panel button { color: var(--marnote-accent); }
+.editor-frame .editor-prose .column-resize-handle, .editor-frame .table-edge-add { background: var(--marnote-accent); }
+.editor-frame .editor-prose code { background: var(--marnote-raised); color: var(--marnote-accent); }
+.editor-frame .editor-prose pre { border-color: var(--marnote-line); border-radius: 10px; background: var(--marnote-paper); color: var(--marnote-secondary); }
+.backlinks-panel { max-width: 800px; margin: 32px auto 24px; padding-top: 16px; border-color: var(--marnote-line); color: var(--marnote-secondary); font-size: 13px; }
+.backlinks-panel h2 { margin-bottom: 12px; color: var(--marnote-ink); font-weight: 500; }
+.backlinks-panel ul { gap: 8px; }
+.backlinks-panel button { color: var(--marnote-accent); font-weight: 500; }
+:root[data-theme="dark"] .editor-frame .toolbar { background: var(--marnote-paper); border-color: var(--marnote-line); }
+:root[data-theme="dark"] .editor-frame .tool { color: var(--marnote-muted); }
+:root[data-theme="dark"] .editor-frame .tool:hover:not(:disabled), :root[data-theme="dark"] .editor-frame .tool.active { background: var(--marnote-raised); color: var(--marnote-ink); }
+:root[data-theme="dark"] .editor-frame .toolbar-action-menu summary { border-color: var(--marnote-line); color: var(--marnote-secondary); }
+:root[data-theme="dark"] .editor-frame .toolbar-action-menu summary:hover { background: var(--marnote-raised); color: var(--marnote-ink); }
+:root[data-theme="dark"] .editor-frame .note-heading { border-color: var(--marnote-line); }
+:root[data-theme="dark"] .editor-frame .title-input, :root[data-theme="dark"] .editor-frame .editor-prose { color: var(--marnote-ink); }
+:root[data-theme="dark"] .editor-frame .title-extension, :root[data-theme="dark"] .editor-frame .note-meta { color: var(--marnote-muted); }
+:root[data-theme="dark"] .editor-frame .note-meta-tag, :root[data-theme="dark"] .editor-frame .editor-prose code { background: var(--marnote-raised); color: var(--marnote-secondary); }
+:root[data-theme="dark"] .editor-frame .editor-prose pre { border-color: var(--marnote-line); background: var(--marnote-paper); color: var(--marnote-ink); }
+:root[data-theme="dark"] .editor-frame .editor-prose a, :root[data-theme="dark"] .backlinks-panel button { color: var(--marnote-accent); }
+:root[data-theme="dark"] .editor-frame .editor-prose .column-resize-handle { background: var(--marnote-accent); }
+:root[data-theme="dark"] .backlinks-panel { border-color: var(--marnote-line); color: var(--marnote-secondary); }
+:root[data-theme="dark"] .backlinks-panel h2 { color: var(--marnote-ink); }
+:root[data-theme="dark"] .backlinks-panel button { color: var(--marnote-accent); }

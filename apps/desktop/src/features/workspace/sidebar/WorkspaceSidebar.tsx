@@ -90,9 +90,9 @@ export function WorkspaceSidebar(props: Props) {
   return <aside ref={sidebarRef} id="workspace-explorer" className={`sidebar${props.peekOpen ? " explorer-peek" : ""}`} aria-label="Explorer" aria-hidden={hidden} style={hidden ? { width: 0, flexBasis: 0, padding: 0, borderWidth: 0 } : { width: props.width, flexBasis: props.width, ["--explorer-width" as string]: `${props.width}px` }}>
     <div className="sidebar-content">
     <button className="default-workspace" type="button" onClick={props.onDefault}><Home size={16} /> <span>My Notes</span></button>
-    <div className="sidebar-workspaces">{props.recent.length > 0 && <label className="recent-workspaces"><span>Recent Workspaces</span><span className="recent-workspace-select"><select aria-label="Switch workspace" value={tree?.path || ""} onChange={event => event.target.value && props.onOpen(event.target.value)}>{tree && <option value={tree.path}>{tree.name}</option>}{props.recent.filter(path => path !== tree?.path).map(path => <option key={path} value={path}>{path.split(/[\\/]/).filter(Boolean).pop()}</option>)}</select><ChevronsUpDown size={14} aria-hidden="true" /></span></label>}
+    <div className="sidebar-workspaces">{props.recent.length > 0 && <label className="recent-workspaces"><span>Recent workspaces</span><span className="recent-workspace-select"><select aria-label="Switch workspace" value={tree?.path || ""} onChange={event => event.target.value && props.onOpen(event.target.value)}>{tree && <option value={tree.path}>{tree.name}</option>}{props.recent.filter(path => path !== tree?.path).map(path => <option key={path} value={path}>{path.split(/[\\/]/).filter(Boolean).pop()}</option>)}</select><ChevronsUpDown size={14} aria-hidden="true" /></span></label>}
     <div className="workspace-open">
-      <button className="open-workspace" type="button" onClick={() => void browse()}><FolderOpen size={14} /> Open workspace...</button>
+      <button className="open-workspace" type="button" onClick={() => void browse()}><FolderOpen size={14} /> Open workspace</button>
       <button className="open-workspace" type="button" disabled={!tree} onClick={() => setTrashOpen(true)}><Trash2 size={14} /> Workspace trash</button>
       {browseError && <p className="sidebar-error" role="alert">{browseError}</p>}
     </div></div>

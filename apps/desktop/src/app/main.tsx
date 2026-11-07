@@ -5,6 +5,9 @@ import "../shared/theme/styles.css";
 import "../shared/theme/theme-dark.css";
 import "../shared/theme/note-tabs.css";
 import "../features/editor/note-footer-responsive.css";
+import "../shared/theme/finish-foundation.css";
+import "../shared/theme/finish-explorer.css";
+import "../shared/theme/finish-editor.css";
 
 const root = document.getElementById("root");
 
