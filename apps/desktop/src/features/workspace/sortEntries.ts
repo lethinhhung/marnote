@@ -27,7 +27,8 @@ export function getSiblingPathsInOrder(
 ): string[] {
   const siblings = siblingPaths(entries, parent);
   if (mode !== "manual") return siblings;
-  const manual = order[parent] ?? [];
+  const siblingSet = new Set(siblings);
+  const manual = (order[parent] ?? []).filter(path => siblingSet.has(path));
   const manualSet = new Set(manual);
   const remaining = siblings.filter(p => !manualSet.has(p)).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   return [...manual, ...remaining];
