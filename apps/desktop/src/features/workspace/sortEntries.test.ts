@@ -70,6 +70,15 @@ describe("getSiblingPathsInOrder", () => {
     const order = { "parent": ["parent/a.md", "parent/c.md"] };
     expect(getSiblingPathsInOrder(nestedEntries, "parent", "manual", order)).toEqual(["parent/a.md", "parent/c.md"]);
   });
+
+  it("excludes manual-order entries that are no longer siblings (deleted items are removed)", () => {
+    const entries: Entry[] = [
+      { name: "c.md", path: "c.md", kind: "file" },
+      { name: "a.md", path: "a.md", kind: "file" },
+    ];
+    const order = { "": ["c.md", "deleted.md", "a.md"] };
+    expect(getSiblingPathsInOrder(entries, "", "manual", order)).toEqual(["c.md", "a.md"]);
+  });
 });
 
 describe("sortEntries", () => {
