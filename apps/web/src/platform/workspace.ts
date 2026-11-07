@@ -1,106 +1,12 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type { WorkspaceTree, WorkspaceEntryMetadata } from "../shared/domain/workspace";
 import { normalizeWorkspacePath } from "@marnote/core";
 import { findEntry, updateEntryInTree, addEntryToTree, moveEntryInTree, removeEntryFromTree, updateEntryMetadataInTree } from "./workspace/treeMutations";
+import { getDB } from "./workspace/db";
+import { QuotaExceededError, isQuotaError } from "./workspace/quota";
 
-const DB_NAME = "marnote-web";
-const DB_VERSION = 1;
-
-export class QuotaExceededError extends Error {
-  constructor(message = "Storage quota exceeded") {
-    super(message);
-    this.name = "QuotaExceededError";
-  }
-}
-
-function isQuotaError(error: unknown): error is DOMException {
-  return error instanceof DOMException && (error.name === "QuotaExceededError" || error.code === 22);
-}
-
-interface MarnoteDB extends DBSchema {
-  workspace: {
-    key: string;
-    value: {
-      id: string;
-      tree: WorkspaceTree;
-      updatedAt: number;
-    };
-    indexes: { "by-updated": number };
-  };
-  files: {
-    key: string;
-    value: {
-      id: string;
-      workspaceId: string;
-      path: string;
-      content: string;
-      modifiedMs: number;
-    };
-    indexes: { "by-workspace": string; "by-path": string };
-  };
-  trash: {
-    key: string;
-    value: {
-      id: string;
-      workspaceId: string;
-      path: string;
-      kind: "file" | "directory";
-      content?: string;
-      metadata?: WorkspaceEntryMetadata;
-      deletedAt: number;
-      restorable: boolean;
-    };
-    indexes: { "by-workspace": string };
-  };
-  tags: {
-    key: string;
-    value: {
-      id: string;
-      workspaceId: string;
-      tags: Record<string, string>;
-    };
-    indexes: { "by-workspace": string };
-  };
-  manualOrder: {
-    key: string;
-    value: {
-      id: string;
-      workspaceId: string;
-      parent: string;
-      paths: string[];
-    };
-    indexes: { "by-workspace-parent": string };
-  };
-}
+export { QuotaExceededError } from "./workspace/quota";
 
 const DEFAULT_WORKSPACE_ID = "default";
-
-let dbPromise: Promise<IDBPDatabase<MarnoteDB>> | null = null;
-
-function getDB(): Promise<IDBPDatabase<MarnoteDB>> {
-  if (!dbPromise) {
-    dbPromise = openDB<MarnoteDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        const workspaceStore = db.createObjectStore("workspace", { keyPath: "id" });
-        workspaceStore.createIndex("by-updated", "updatedAt");
-
-        const filesStore = db.createObjectStore("files", { keyPath: "id" });
-        filesStore.createIndex("by-workspace", "workspaceId");
-        filesStore.createIndex("by-path", "path");
-
-        const trashStore = db.createObjectStore("trash", { keyPath: "id" });
-        trashStore.createIndex("by-workspace", "workspaceId");
-
-        const tagsStore = db.createObjectStore("tags", { keyPath: "id" });
-        tagsStore.createIndex("by-workspace", "workspaceId");
-
-        const orderStore = db.createObjectStore("manualOrder", { keyPath: "id" });
-        orderStore.createIndex("by-workspace-parent", "workspaceId");
-      },
-    });
-  }
-  return dbPromise;
-}
 
 export type ReadResult = { path: string; content: string; modifiedMs: number };
 export type TrashItem = { id: string; path: string; kind: "file" | "directory"; restorable: boolean };
