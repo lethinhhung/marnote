@@ -23,7 +23,6 @@ import { tagStyle } from "../../shared/ui/tagStyle";
 import { requestTagEdit } from "../../shared/ui/tagEditRequest";
 import { EmojiPicker } from "../../shared/ui/EmojiPicker";
 import { useEditorLinkPreview } from "./links/useEditorLinkPreview";
-import { normalizeLinkUrl, openExternalLink } from "./links/linkUrl";
 import { LinkDialog } from "./toolbar/dialogs/LinkDialog";
 import { WorkspaceLinkPalette } from "./toolbar/dialogs/WorkspaceLinkPalette";
 import { useSlashMenu } from "./slash-menu/useSlashMenu";
@@ -59,6 +58,7 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     cancelSlashLink,
     cancelWorkspaceLink,
     applyWorkspaceLink,
+    navigateHref,
   } = useSlashLink({ entries, path, onNavigate, editorRef });
 
   const editor = useEditor({ extensions: [StarterKit.configure({ codeBlock: false, link: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
@@ -81,7 +81,6 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     document.addEventListener("click", suppressEditorLinkClick, true);
     return () => document.removeEventListener("click", suppressEditorLinkClick, true);
   }, []);
-  const navigateHref = (value: string) => { const entry = entries.find(e => e.path === value) ?? entries.find(e => e.path === value.replace(/^https?:\/\//, "")); if (entry) { onNavigate(entry.path, entry.kind); return; } void openExternalLink(normalizeLinkUrl(value)); };
   const linkHover = useEditorLinkPreview({ editor, entries, path, goTo: navigateHref });
   useEffect(() => { if (editor && !horizontalScroll) clearColumnWidths(editor); }, [editor, horizontalScroll]);
   useEffect(() => { if (editor && editor.getMarkdown() !== value) editor.commands.setContent(value || "", { contentType: "markdown", emitUpdate: false }); }, [editor, value]);
