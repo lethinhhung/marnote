@@ -62,14 +62,18 @@ export function useWorkspace() {
   const dropNote = (root: string) => setNote(current => current && isSameOrDescendant(current.path, root) ? null : current);
   const refresh = async () => { if (tree) await run(async () => setTree(await listWorkspace(tree.path))); };
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
-  const renameOrMove = (p: string, n: string) => mutate(async () => { if (tree) await moveFile(tree.path, p, n); rebaseNote(p, n); });
+  const renameOrMove = (p: string, n: string) => run(async () => {
+    if (!tree) return;
+    await moveFile(tree.path, p, n);
+    try { setTree(await listWorkspace(tree.path)); rebaseNote(p, n); }
+    catch (e) { setError(String(e)); }
+  });
   const move = async (source: string, destination: string) => {
     if (!tree) return false;
     setError("");
     try { await moveFile(tree.path, source, destination); }
     catch (e) { setError(String(e)); return false; }
-    rebaseNote(source, destination);
-    try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); return false; }
+    try { setTree(await listWorkspace(tree.path)); rebaseNote(source, destination); } catch (e) { setError(String(e)); return false; }
     return true;
   };
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); dropNote(p); });
