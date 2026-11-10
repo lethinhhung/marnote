@@ -103,6 +103,32 @@ describe("searchWorkspace", () => {
     expect(results.notes[0].excerpt.toLocaleLowerCase()).toContain("quarter");
   });
 
+  it("generates excerpt for tag: filter when match source is Tag", () => {
+    const tree: Entry[] = [
+      dir("Notes", "Notes", [
+        taggedFile("Report.md", "Notes/Report.md", ["quarterly", "finance"]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "tag:quarterly", { "Notes/Report.md": "Sales went up this quarter" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Tag");
+    expect(results.notes[0].excerpt.toLocaleLowerCase()).toContain("quarterly");
+  });
+
+  it("generates excerpt for in: filter when match source is Folder", () => {
+    const tree: Entry[] = [
+      dir("Projects", "Projects", [
+        dir("Alpha", "Projects/Alpha", [
+          taggedFile("Notes.md", "Projects/Alpha/Notes.md", ["work"]),
+        ]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "in:Alpha", { "Projects/Alpha/Notes.md": "Generic content" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Folder");
+    expect(results.notes[0].excerpt).toContain("Alpha");
+  });
+
   it("matches folder by path segment, not substring (regression for MyNotes vs Notes)", () => {
     const tree: Entry[] = [
       dir("MyNotes", "MyNotes", [

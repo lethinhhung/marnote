@@ -75,7 +75,12 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
   const tagTextOriginal = tagNames.join(" ");
   const combinedText = `${titleText} ${pathText} ${tagTextOriginal} ${content}`;
   const sourceText = source === "Title" ? titleText : source === "Folder" ? pathText : source === "Tag" ? tagTextOriginal : combinedText;
-  return { entry, excerpt: makeExcerpt(sourceText, filter.text), score, source };
+  let excerptQuery = filter.text;
+  if (!excerptQuery) {
+    if (source === "Tag" && filter.tag) excerptQuery = filter.tag;
+    else if (source === "Folder" && filter.folder) excerptQuery = filter.folder;
+  }
+  return { entry, excerpt: makeExcerpt(sourceText, excerptQuery), score, source };
 }
 
 function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
