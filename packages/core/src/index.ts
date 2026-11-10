@@ -1,5 +1,6 @@
 export * from "./workspace.js";
 export * from "./links.js";
+export * from "./search.js";
 
 export function countWords(text: string): number {
   return text.trim() ? text.trim().split(/\s+/).length : 0;
