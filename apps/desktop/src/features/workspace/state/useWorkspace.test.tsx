@@ -5,6 +5,7 @@ import { useWorkspace } from "./useWorkspace";
 const workspaceOps = vi.hoisted(() => ({
   openWorkspace: vi.fn(),
   listWorkspace: vi.fn(),
+  readFile: vi.fn(),
   updateEntryMetadata: vi.fn(),
   saveWorkspaceTags: vi.fn(),
   saveManualOrder: vi.fn(),
@@ -14,6 +15,7 @@ const workspaceOps = vi.hoisted(() => ({
 vi.mock("../../../platform/workspace", () => ({
   openWorkspace: workspaceOps.openWorkspace,
   listWorkspace: workspaceOps.listWorkspace,
+  readFile: workspaceOps.readFile,
   updateEntryMetadata: workspaceOps.updateEntryMetadata,
   saveWorkspaceTags: workspaceOps.saveWorkspaceTags,
   saveManualOrder: workspaceOps.saveManualOrder,
@@ -101,5 +103,56 @@ describe("useWorkspace move", () => {
     expect(workspaceOps.moveFile).toHaveBeenCalledWith("/workspace", "A.md", "B.md");
     expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
     expect(success).toBe(false);
+  });
+
+  it("does not update note path when tree refresh fails after backend succeeds", async () => {
+    const initialTree = { name: "Notes", path: "/workspace", entries: [
+      { name: "A.md", path: "A.md", kind: "file" as const },
+    ] };
+    workspaceOps.openWorkspace.mockResolvedValue(initialTree);
+    workspaceOps.moveFile.mockResolvedValue(undefined);
+    workspaceOps.listWorkspace.mockRejectedValue(new Error("refresh failed"));
+    workspaceOps.readFile.mockResolvedValue({ path: "A.md", content: "test content", modifiedMs: 1000 });
+
+    const { result } = renderHook(() => useWorkspace());
+    await act(async () => { await result.current.open("/workspace"); });
+    await act(async () => { await result.current.select({ name: "A.md", path: "A.md", kind: "file" as const }); });
+
+    expect(result.current.note?.path).toBe("A.md");
+
+    const success = await act(async () => await result.current.move("A.md", "B.md"));
+
+    expect(success).toBe(false);
+    expect(result.current.note?.path).toBe("A.md");
+  });
+});
+
+describe("useWorkspace rename (alias for renameOrMove)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+  });
+
+  it("does not update note path when tree refresh fails after backend succeeds", async () => {
+    const initialTree = { name: "Notes", path: "/workspace", entries: [
+      { name: "A.md", path: "A.md", kind: "file" as const },
+    ] };
+    workspaceOps.openWorkspace.mockResolvedValue(initialTree);
+    workspaceOps.moveFile.mockResolvedValue(undefined);
+    workspaceOps.listWorkspace.mockRejectedValue(new Error("refresh failed"));
+    workspaceOps.readFile.mockResolvedValue({ path: "A.md", content: "test content", modifiedMs: 1000 });
+
+    const { result } = renderHook(() => useWorkspace());
+    await act(async () => { await result.current.open("/workspace"); });
+    await act(async () => { await result.current.select({ name: "A.md", path: "A.md", kind: "file" as const }); });
+
+    expect(result.current.note?.path).toBe("A.md");
+
+    await act(async () => { result.current.rename("A.md", "B.md"); });
+
+    expect(workspaceOps.moveFile).toHaveBeenCalledWith("/workspace", "A.md", "B.md");
+    expect(workspaceOps.listWorkspace).toHaveBeenCalled();
+    expect(result.current.error).toContain("refresh failed");
+    expect(result.current.note?.path).toBe("A.md");
   });
 });
