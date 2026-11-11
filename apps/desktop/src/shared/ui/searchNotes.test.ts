@@ -139,6 +139,13 @@ describe("searchWorkspace", () => {
     expect(result.notes[0].excerpt).toContain("roadmap");
   });
 
+  it("produces a non-empty excerpt for a pure type filter", () => {
+    const result = searchWorkspace(entries, "type:note", contents);
+    expect(result.notes).toHaveLength(4);
+    expect(result.notes.every((n) => n.excerpt.length > 0)).toBe(true);
+    expect(result.notes.every((n) => n.source === "Content")).toBe(true);
+  });
+
   it("produces a non-empty excerpt when words are distributed across title and path", () => {
     const result = searchWorkspace(entries, "alpha beta", contents);
     const distributedMatch = result.notes.find((n) => n.entry.name === "Alpha.md");
