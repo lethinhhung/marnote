@@ -7,7 +7,9 @@
 - Create, rename, move, and trash items without overwriting existing paths. Preserve metadata when moving.
 - Deletions go to hidden workspace-local `.marnote-trash`.
 - Restore trashed items to their original paths and permanently empty the workspace trash.
+- Automatically refresh the active tree when items are added, removed, or moved externally; provide manual refresh.
 - Detect external edits to the open note and let users load the disk version or keep their draft.
+- If an open note is removed or moved externally, preserve its draft and show that its path is unavailable.
 
 ## Implemented
 
