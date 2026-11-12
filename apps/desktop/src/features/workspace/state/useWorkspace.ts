@@ -61,16 +61,16 @@ export function useWorkspace() {
     return path === current.path ? current : { ...current, path };
   });
   const dropNote = (root: string) => setNote(current => current && isSameOrDescendant(current.path, root) ? null : current);
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (silent = false) => {
     if (!tree || refreshing.current) return;
     refreshing.current = true;
-    try { setTree(await listWorkspace(tree.path)); setError(""); }
-    catch (e) { setError(String(e)); }
+    try { setTree(await listWorkspace(tree.path)); if (!silent) setError(""); }
+    catch (e) { if (!silent) setError(String(e)); }
     finally { refreshing.current = false; }
   }, [tree?.path]);
   useEffect(() => {
     if (!tree) return;
-    const timer = window.setInterval(() => { void refresh(); }, 2500);
+    const timer = window.setInterval(() => { void refresh(true); }, 2500);
     return () => window.clearInterval(timer);
   }, [tree?.path, refresh]);
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
