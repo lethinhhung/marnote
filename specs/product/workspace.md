@@ -18,4 +18,5 @@
 - Create, move, rename, trash, restore, and empty trash use filesystem operations. Trash is hidden from the tree and managed through the Explorer.
 - Older trash entries without saved original paths can be permanently deleted but cannot be restored.
 - The open note is checked for external changes every 2.5 seconds; users can load the disk version or keep their draft.
+- The desktop tree refreshes automatically every 2.5 seconds and has a manual Refresh control. Missing open notes keep their draft, which can be saved as a new note or closed.
 - Git and configurable ignore rules are not exposed.

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../../platform/workspace";
 import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
@@ -14,6 +14,7 @@ export function useWorkspace() {
   const [error, setError] = useState("");
   const [recent, setRecent] = useState<string[]>(loadRecentWorkspaces);
   const [trash, setTrash] = useState<TrashItem[]>([]);
+  const refreshing = useRef(false);
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
   const remember = (path: string) => setRecent(current => rememberRecentWorkspace(current, path));
   const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); remember(path); });
@@ -60,7 +61,18 @@ export function useWorkspace() {
     return path === current.path ? current : { ...current, path };
   });
   const dropNote = (root: string) => setNote(current => current && isSameOrDescendant(current.path, root) ? null : current);
-  const refresh = async () => { if (tree) await run(async () => setTree(await listWorkspace(tree.path))); };
+  const refresh = useCallback(async () => {
+    if (!tree || refreshing.current) return;
+    refreshing.current = true;
+    try { setTree(await listWorkspace(tree.path)); setError(""); }
+    catch (e) { setError(String(e)); }
+    finally { refreshing.current = false; }
+  }, [tree?.path]);
+  useEffect(() => {
+    if (!tree) return;
+    const timer = window.setInterval(() => { void refresh(); }, 2500);
+    return () => window.clearInterval(timer);
+  }, [tree?.path, refresh]);
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
   const renameOrMove = (p: string, n: string) => run(async () => {
     if (!tree) return;
@@ -87,6 +99,15 @@ export function useWorkspace() {
     setTree(await listWorkspace(tree.path));
     setNote({ path: created.path, content: created.content });
   });
+  const saveAsNew = async (path: string, content: string) => {
+    if (!tree) return;
+    await run(async () => {
+      const createdPath = await createFile(tree.path, path, content);
+      const next = await listWorkspace(tree.path);
+      setTree(next);
+      setNote({ path: createdPath, content });
+    });
+  };
   const createDirectory = (path: string) => mutate(async () => {
     if (tree) await createFolder(tree.path, path);
   });
@@ -114,5 +135,5 @@ export function useWorkspace() {
     return true;
   };
   const clearNote = () => setNote(null);
-  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, reorder, remove, trash, refreshTrash, restore, empty };
+  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, saveAsNew, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, reorder, remove, trash, refreshTrash, restore, empty };
 }

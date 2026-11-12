@@ -53,6 +53,19 @@ describe("useWorkspace metadata updates", () => {
     expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
     expect(result.current.tree?.entries[0].metadata).toEqual(refreshedTree.entries[0].metadata);
   });
+
+  it("polls the active workspace tree for external changes", async () => {
+    const tree = { name: "Notes", path: "/workspace", entries: [] };
+    workspaceOps.openWorkspace.mockResolvedValue(tree);
+    workspaceOps.listWorkspace.mockResolvedValue(tree);
+    vi.useFakeTimers();
+    const { result, unmount } = renderHook(() => useWorkspace());
+    await act(async () => { await result.current.open("/workspace"); });
+    await act(async () => { await vi.advanceTimersByTimeAsync(2500); });
+    expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
+    unmount();
+    vi.useRealTimers();
+  });
 });
 
 describe("useWorkspace reorder", () => {
