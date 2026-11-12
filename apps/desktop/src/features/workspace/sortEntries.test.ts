@@ -28,6 +28,11 @@ describe("reorderedPaths", () => {
     expect(reorderedPaths(["a", "b", "c"], "a", "c", false)).toEqual(["b", "a", "c"]);
     expect(reorderedPaths(["a", "b", "c"], "a", "b", true)).toEqual(["b", "a", "c"]);
   });
+
+  it("appends the source when the target is not found", () => {
+    expect(reorderedPaths(["a", "b", "c"], "a", "missing", false)).toEqual(["b", "c", "a"]);
+    expect(reorderedPaths(["a", "b", "c"], "a", "missing", true)).toEqual(["b", "c", "a"]);
+  });
 });
 
 describe("getSiblingPathsInOrder", () => {

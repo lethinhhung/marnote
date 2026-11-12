@@ -15,6 +15,10 @@ export function siblingPaths(entries: Entry[], parent: string): string[] {
 export function reorderedPaths(paths: string[], source: string, target: string, after: boolean): string[] {
   const next = paths.filter(path => path !== source);
   const index = next.indexOf(target);
+  if (index === -1) {
+    next.push(source);
+    return next;
+  }
   next.splice(index + (after ? 1 : 0), 0, source);
   return next;
 }
