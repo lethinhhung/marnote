@@ -7,6 +7,7 @@ import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../../platform/workspace";
 import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
+import { DEFAULT_TAG_COLOR } from "@marnote/core";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
@@ -116,7 +117,7 @@ export function useWorkspace() {
       await updateEntryMetadata(tree.path, path, metadata);
       if (metadata.tags) {
         const tags = { ...(tree.tags ?? {}) };
-        metadata.tags.forEach(tag => { if (!tags[tag]) tags[tag] = "#74856b"; });
+        metadata.tags.forEach(tag => { if (!tags[tag]) tags[tag] = DEFAULT_TAG_COLOR; });
         await saveWorkspaceTags(tree.path, tags);
       }
     }
