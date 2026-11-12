@@ -360,3 +360,9 @@ body[data-block-dragging="true"], body[data-block-dragging="true"] * { cursor: g
 .search-results button small { grid-column: 2; overflow: hidden; color: #92968d; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .search-results p { margin: 0; padding: 10px; color: #92968d; font-size: 12px; }
 @media (max-width: 760px) { .topbar { gap: 9px; padding: 0 10px; } .address { min-width: 0; gap: 5px; } .address-part { gap: 5px; } .global-search { height: 24px; min-width: 0; flex-basis: 120px; } }
+.toast-notice { position: fixed; z-index: 130; top: max(14px, env(safe-area-inset-top)); left: 50%; display: flex; align-items: center; gap: 14px; width: max-content; max-width: min(520px, calc(100vw - 28px)); padding: 11px 14px 11px 16px; transform: translateX(-50%); border: 1px solid #e9c9c2; border-radius: 12px; background: #fff9f6; box-shadow: 0 8px 28px #292c2726; color: #814237; font-size: 13px; line-height: 1.45; overflow-wrap: anywhere; animation: toast-enter 180ms ease-out; }
+.toast-notice button { display: grid; flex: 0 0 26px; width: 26px; height: 26px; place-items: center; border: 0; border-radius: 7px; background: transparent; color: inherit; cursor: pointer; }
+.toast-notice button:hover { background: #f4e8e3; }
+.toast-notice button:focus-visible { outline: 2px solid currentColor; outline-offset: 1px; }
+@keyframes toast-enter { from { opacity: 0; transform: translate(-50%, -6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (prefers-reduced-motion: reduce) { .toast-notice { animation: none; } }
