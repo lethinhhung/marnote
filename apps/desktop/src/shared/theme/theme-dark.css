@@ -156,4 +156,5 @@
 :root[data-theme="dark"] .search-results button small, :root[data-theme="dark"] .search-results p { color: #8d948b; }
 :root[data-theme="dark"] .address-brand, :root[data-theme="dark"] .address-current { color: #f0f3ec; }
 :root[data-theme="dark"] .toast-notice { border-color: #69433b; background: #2b211f; color: #f0b8a8; box-shadow: 0 8px 28px #0008; }
-:root[data-theme="dark"] .toast-notice button:hover { background: #3a2926; }
+:root[data-theme="dark"] .toast-notice button { background: #54745c; color: #f5f7f1; }
+:root[data-theme="dark"] .toast-notice button:hover { background: #63856a; }
