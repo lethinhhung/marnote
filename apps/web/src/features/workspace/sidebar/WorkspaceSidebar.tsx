@@ -115,7 +115,7 @@ export function WorkspaceSidebar(props: Props) {
 
         {props.recent.length > 0 && <div className="sidebar-workspaces">
             <label className="recent-workspaces">
-              <span>Recent Workspaces</span>
+              <span>Recent workspaces</span>
               <span className="recent-workspace-select">
                 <select aria-label="Switch workspace" value={tree?.path || ""} onChange={event => event.target.value && props.onOpen(event.target.value)}>
                   {tree && <option value={tree.path}>{tree.name}</option>}

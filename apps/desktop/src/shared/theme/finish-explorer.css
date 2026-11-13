@@ -1,0 +1,49 @@
+.app-shell .sidebar.sidebar { border-color: var(--marnote-line); background: var(--marnote-paper); color: var(--marnote-secondary); }
+.app-shell .sidebar-content { gap: 16px; padding: 16px; }
+.app-shell .sidebar .default-workspace { min-height: 36px; border-color: var(--marnote-line); border-radius: 8px; background: var(--marnote-surface); font-size: 14px; font-weight: 500; letter-spacing: 0; box-shadow: none; }
+.app-shell .sidebar .default-workspace svg, .app-shell .sidebar .tree-item.selected,
+.app-shell .sidebar .tree-item.selected-folder { color: var(--marnote-accent); }
+.app-shell .sidebar .sidebar-workspaces { gap: 8px; }
+.app-shell .sidebar .recent-workspaces { gap: 8px; margin: 0; padding: 0; color: var(--marnote-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.app-shell .sidebar .recent-workspace-select, .app-shell .sidebar .recent-workspaces select { width: 100%; box-sizing: border-box; }
+.app-shell .sidebar .recent-workspaces select, .app-shell .sidebar .open-workspace { min-height: 32px; border-color: var(--marnote-line); border-radius: 8px; background: transparent; color: var(--marnote-secondary); font-size: 13px; font-weight: 400; }
+.app-shell .sidebar .open-workspace { justify-content: flex-start; gap: 8px; border-style: solid; }
+.app-shell .sidebar .open-workspace:hover, .app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: var(--marnote-raised); color: var(--marnote-ink); }
+.app-shell .sidebar .sidebar-tree-section { padding-top: 8px; }
+.app-shell .sidebar .sidebar-heading { grid-template-rows: auto auto; gap: 8px; min-height: 64px; margin: 0 0 8px; color: var(--marnote-secondary); font-size: 14px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.app-shell .sidebar .sidebar-heading > span { color: var(--marnote-ink); }
+.app-shell .sidebar .sidebar-heading div { gap: 4px; }
+.app-shell .sidebar .sidebar-heading button { flex-basis: 28px; width: 28px; height: 28px; border-radius: 6px; color: var(--marnote-muted); }
+.app-shell .sidebar .sidebar-heading .explorer-sort { height: 28px; padding: 0 8px; border-color: var(--marnote-line); border-radius: 6px; background: var(--marnote-surface); color: var(--marnote-secondary); font-size: 12px; }
+.app-shell .sidebar .file-tree { color: var(--marnote-ink); font-size: 14px; }
+.app-shell .sidebar .file-tree > li + li, .app-shell .sidebar .tree-children > li + li { margin-top: 2px; }
+.app-shell .sidebar .tree-item, .app-shell .sidebar .tree-item[data-kind="directory"] { height: 32px; gap: 8px; padding: 0 8px 0 4px; border-radius: 7px; color: var(--marnote-secondary); font-size: 13px; }
+.app-shell .sidebar .tree-children { margin-block: 4px; border-color: var(--marnote-line); }
+.app-shell .sidebar .tree-item > svg { flex-basis: 16px; width: 16px; height: 16px; color: var(--marnote-muted); }
+.app-shell .sidebar .tree-item:hover { background: var(--marnote-raised); color: var(--marnote-ink); }
+.app-shell .sidebar .tree-item.selected, .app-shell .sidebar .tree-item.selected-folder { border-color: transparent; background: var(--marnote-accent-soft); box-shadow: none; }
+.app-shell .sidebar .tree-item.selected .tree-item-name { color: var(--marnote-ink); font-weight: 500; }
+.app-shell .sidebar .tree-item.drop-target { border-color: var(--marnote-accent); background: var(--marnote-accent-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--marnote-accent) 18%, transparent); }
+.app-shell .sidebar .tree-item.drop-target::after, .app-shell .sidebar .tree-drop-blank-line { height: 2px; border-radius: 1px; background: var(--marnote-accent); box-shadow: none; }
+.app-shell .sidebar .tree-item.focus-pulse { outline: 2px solid var(--marnote-accent); outline-offset: 1px; background: var(--marnote-accent-soft); box-shadow: none; animation: none; }
+.app-shell .sidebar .tree-folder-tag { max-width: 72px; padding: 2px 6px; border-color: var(--marnote-line); background: var(--marnote-raised); color: var(--marnote-secondary); font-size: 11px; }
+.app-shell .sidebar .sidebar-empty { padding: 12px 4px; color: var(--marnote-muted); font-size: 13px; }
+.app-shell .sidebar .tree-edit-row { height: 32px; }
+.app-shell .sidebar .tree-edit-row input { height: 28px; border-color: var(--marnote-accent); border-radius: 6px; outline: 0; background: var(--marnote-surface); color: var(--marnote-ink); font-size: 13px; }
+.app-shell .sidebar .folder-context-menu button:hover { background: var(--marnote-raised); color: var(--marnote-accent); }
+:root[data-theme="dark"] .app-shell .sidebar.sidebar { border-color: var(--marnote-line); background: var(--marnote-paper); color: var(--marnote-secondary); }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace { border-color: var(--marnote-line); background: var(--marnote-surface); color: var(--marnote-ink); }
+:root[data-theme="dark"] .app-shell .sidebar .default-workspace svg { color: var(--marnote-accent); }
+:root[data-theme="dark"] .app-shell .sidebar .recent-workspaces select, :root[data-theme="dark"] .app-shell .sidebar .explorer-sort { border-color: var(--marnote-line); background: var(--marnote-surface); color: var(--marnote-secondary); }
+:root[data-theme="dark"] .app-shell .sidebar .sidebar-heading > span { color: var(--marnote-ink); }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace { border-color: var(--marnote-line); background: transparent; color: var(--marnote-secondary); }
+:root[data-theme="dark"] .app-shell .sidebar .open-workspace:hover, :root[data-theme="dark"] .app-shell .sidebar .sidebar-heading button:hover:not(:disabled) { background: var(--marnote-raised); color: var(--marnote-ink); }
+:root[data-theme="dark"] .app-shell .sidebar .tree-children { border-color: var(--marnote-line); }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item { color: var(--marnote-secondary); }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item:hover { background: var(--marnote-raised); color: var(--marnote-ink); }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected, :root[data-theme="dark"] .app-shell .sidebar .tree-item.selected-folder,
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.drop-target { border-color: transparent; background: var(--marnote-accent-soft); color: var(--marnote-ink); box-shadow: none; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.selected .tree-item-name { color: var(--marnote-ink); }
+:root[data-theme="dark"] .app-shell .sidebar .tree-item.focus-pulse { outline-color: var(--marnote-accent); background: var(--marnote-accent-soft); box-shadow: none; animation: none; }
+:root[data-theme="dark"] .app-shell .sidebar .tree-folder-tag { border-color: var(--marnote-line); background: var(--marnote-raised); color: var(--marnote-secondary); }
+:root[data-theme="dark"] .app-shell .sidebar .tree-drop-blank-line { background: var(--marnote-accent); }
