@@ -26,6 +26,10 @@ export function parseSearchQuery(query: string): SearchFilter {
 function makeExcerpt(sourceText: string, query: string): string {
   const body = sourceText.toLocaleLowerCase();
   const words = query.split(/\s+/).filter(Boolean);
+  if (!words.length) {
+    const trimmed = sourceText.replace(/\s+/g, " ").trim();
+    return trimmed.slice(0, 140) + (trimmed.length > 140 ? "…" : "");
+  }
   const matches = words.map(word => ({ word, index: body.indexOf(word) })).filter(m => m.index >= 0);
   if (!matches.length) return "";
   matches.sort((a, b) => a.index - b.index);
@@ -89,7 +93,7 @@ function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
     if (!folderMatches(entry.path, filter.folder) || (filter.type && filter.type !== "note")) continue;
     for (const tag of new Set(entry.metadata?.tags ?? [])) {
       const tagName = tag.toLocaleLowerCase();
-      if (filter.tag ? tagName === filter.tag : words.some(word => tagName.includes(word))) counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      if (filter.tag ? tagName === filter.tag : words.some(word => tagName.includes(word))) counts.set(tagName, (counts.get(tagName) ?? 0) + 1);
     }
   }
   return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
