@@ -85,4 +85,24 @@ describe("makeExcerpt", () => {
     expect(excerpt).toContain("target");
     expect(excerpt.endsWith("…")).toBe(false);
   });
+
+  it("includes context around the first match for a multi-word query", () => {
+    const excerpt = makeExcerpt("before alpha middle beta after", "alpha beta");
+    expect(excerpt).toContain("alpha");
+    expect(excerpt).toContain("beta");
+  });
+
+  it("centers the excerpt on the first found word when only some query words appear in the content", () => {
+    const excerpt = makeExcerpt("alpha beta gamma delta", "beta zeta");
+    expect(excerpt).toContain("beta");
+    expect(excerpt).not.toContain("zeta");
+  });
+
+  it("adds both leading and trailing ellipses when the match is in the middle of the content", () => {
+    const content = "A".repeat(100) + " target " + "B".repeat(100);
+    const excerpt = makeExcerpt(content, "target");
+    expect(excerpt).toContain("target");
+    expect(excerpt.startsWith("…")).toBe(true);
+    expect(excerpt.endsWith("…")).toBe(true);
+  });
 });
