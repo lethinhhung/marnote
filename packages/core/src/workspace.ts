@@ -91,6 +91,8 @@ export type WorkspaceTag = {
   color: string;
 };
 
+export const DEFAULT_TAG_COLOR = "#74856b";
+
 /** Type guard: true only for Markdown file entries. */
 export function isMarkdown(entry: Entry): boolean {
   return entry.kind === "file" && entry.path.toLocaleLowerCase().endsWith(".md");
