@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react() as unknown as Plugin],
+  envPrefix: ["VITE_", "TAURI_ENV_"],
   test: {
     globals: true,
     environment: "jsdom",
