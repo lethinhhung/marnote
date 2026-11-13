@@ -16,6 +16,8 @@ export type Choice = {
 
 const commands = ["Quick Capture new note…", "Copy internal link to note", "Copy relative path", "Copy full path"];
 
+const isIncompleteFilter = (title: string) => /^\s*(tag|in|type):/i.test(title);
+
 export function buildSearchChoices({
   matches,
   trimmed,
@@ -66,12 +68,14 @@ export function buildSearchChoices({
     });
   for (const tag of matches.tags.slice(0, 6))
     result.push({ id: `tag:${tag.name}`, label: `#${tag.name}`, count: tag.count, type: "tag", run: () => onTagSelect(tag.name) });
+  const isIncomplete = isIncompleteFilter(createTitle);
   if (
     tree &&
     createTitle &&
     !parsedQuery.tag &&
     !parsedQuery.folder &&
     !parsedQuery.type &&
+    !isIncomplete &&
     !createTitle.includes("/") &&
     !createTitle.includes("\\") &&
     createTitle.length < 100 &&
