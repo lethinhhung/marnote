@@ -26,6 +26,10 @@ export function parseSearchQuery(query: string): SearchFilter {
 function makeExcerpt(sourceText: string, query: string): string {
   const body = sourceText.toLocaleLowerCase();
   const words = query.split(/\s+/).filter(Boolean);
+  if (!words.length) {
+    const trimmed = sourceText.replace(/\s+/g, " ").trim();
+    return trimmed.slice(0, 140) + (trimmed.length > 140 ? "…" : "");
+  }
   const matches = words.map(word => ({ word, index: body.indexOf(word) })).filter(m => m.index >= 0);
   if (!matches.length) return "";
   matches.sort((a, b) => a.index - b.index);
