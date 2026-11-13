@@ -101,3 +101,5 @@
 :root[data-theme="dark"] .note-tab-menu button:focus-visible { background: var(--marnote-raised); color: var(--marnote-ink); }
 :root[data-theme="dark"] .emoji-picker-popover { border-color: var(--marnote-line); background: var(--marnote-surface); box-shadow: 0 8px 24px #0003; }
 :root[data-theme="dark"] .note-tab.active { border-color: var(--marnote-line); border-top: 1px solid var(--marnote-line); background: var(--marnote-surface); }
+:root .app-shell .topbar.mac-titlebar { background: #f8f7f4; border-color: #e5e2dc; }
+:root[data-theme="dark"] .app-shell .topbar.mac-titlebar { background: #161816; border-color: #292d29; }
