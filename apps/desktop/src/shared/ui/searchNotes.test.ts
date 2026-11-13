@@ -134,6 +134,15 @@ describe("searchWorkspace", () => {
     ]);
   });
 
+  it("counts tags case-insensitively and merges case variants", () => {
+    const mixed = [...entries, entry({ name: "C.md", path: "Docs/C.md", metadata: { tags: ["Work"] } })];
+    const result = searchWorkspace(mixed, "work docs", contents);
+    expect(result.tags.map((t) => ({ name: t.name, count: t.count }))).toEqual([
+      { name: "docs", count: 1 },
+      { name: "work", count: 3 },
+    ]);
+  });
+
   it("produces an excerpt around the matched term", () => {
     const result = searchWorkspace(entries, "roadmap", contents);
     expect(result.notes[0].excerpt).toContain("roadmap");
