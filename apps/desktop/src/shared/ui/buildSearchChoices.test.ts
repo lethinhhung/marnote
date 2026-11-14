@@ -106,4 +106,11 @@ describe("buildSearchChoices", () => {
     expect(buildSearchChoices({ ...base, createTitle: "x".repeat(101) }).find((c) => c.type === "create")).toBeUndefined();
     expect(buildSearchChoices({ ...base, createTitle: "" }).find((c) => c.type === "create")).toBeUndefined();
   });
+
+  it("omits the create choice when createTitle looks like an incomplete filter", () => {
+    expect(buildSearchChoices({ ...base, createTitle: "tag:" }).find((c) => c.type === "create")).toBeUndefined();
+    expect(buildSearchChoices({ ...base, createTitle: "in:" }).find((c) => c.type === "create")).toBeUndefined();
+    expect(buildSearchChoices({ ...base, createTitle: "type:" }).find((c) => c.type === "create")).toBeUndefined();
+    expect(buildSearchChoices({ ...base, createTitle: "tag:something" }).find((c) => c.type === "create")).toBeUndefined();
+  });
 });
