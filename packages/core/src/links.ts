@@ -29,3 +29,19 @@ export function extractNoteLinks(markdown: string, sourcePath: string): string[]
 function safeDecode(value: string): string | null {
   try { return decodeURIComponent(value); } catch { return null; }
 }
+
+const domain = /^(?:www\.)?(?:[a-z0-9-]+\.)+[a-z]{2,}(?::\d+)?(?:[/?#]|$)/i;
+const externalScheme = /^[a-z][a-z\d+.-]*:/i;
+
+/** Check if a value is an external URL (has a scheme or is protocol-relative). */
+export function isExternalUrl(value: string): boolean {
+  return externalScheme.test(value) || value.startsWith("//");
+}
+
+/** Normalize a link URL: pass through externals and absolute paths, normalize bare domains to HTTPS. */
+export function normalizeLinkUrl(value: string): string {
+  const href = value.trim();
+  if (isExternalUrl(href) || href.startsWith("/")) return href;
+  if (href.startsWith("./") || href.startsWith("../") || href.endsWith("/") || /(?:^|\/)\.{0,2}[^/]*\.md(?:[?#].*)?$/i.test(href)) return href;
+  return domain.test(href) ? `https://${href}` : href;
+}
