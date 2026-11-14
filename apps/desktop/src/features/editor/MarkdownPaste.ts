@@ -6,6 +6,8 @@ function containsMarkdown(text: string) {
 
 export function insertMarkdownPaste(text: string, parse: (text: string) => { content?: unknown } | undefined, insert: (content: unknown) => void) {
   if (!containsMarkdown(text)) return false;
-  insert(parse(text)?.content ?? text);
+  const parsed = parse(text);
+  const content = parsed?.content;
+  insert(Array.isArray(content) && content.length > 0 ? content : text);
   return true;
 }
