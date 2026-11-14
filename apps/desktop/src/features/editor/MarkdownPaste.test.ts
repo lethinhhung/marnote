@@ -34,4 +34,37 @@ describe("insertMarkdownPaste", () => {
     expect(parse).toHaveBeenCalledWith("- List item");
     expect(insert).toHaveBeenCalledWith("- List item");
   });
+
+  it("inserts the original text when parsing produces empty array content", () => {
+    const parse = vi.fn(() => ({ content: [] }));
+    const insert = vi.fn();
+
+    const handled = insertMarkdownPaste("- List item", parse, insert);
+
+    expect(handled).toBe(true);
+    expect(parse).toHaveBeenCalledWith("- List item");
+    expect(insert).toHaveBeenCalledWith("- List item");
+  });
+
+  it("inserts the original text when parsing produces null content", () => {
+    const parse = vi.fn(() => ({ content: null }));
+    const insert = vi.fn();
+
+    const handled = insertMarkdownPaste("- List item", parse, insert);
+
+    expect(handled).toBe(true);
+    expect(parse).toHaveBeenCalledWith("- List item");
+    expect(insert).toHaveBeenCalledWith("- List item");
+  });
+
+  it("inserts the original text when parsing produces undefined content", () => {
+    const parse = vi.fn(() => ({ content: undefined }));
+    const insert = vi.fn();
+
+    const handled = insertMarkdownPaste("- List item", parse, insert);
+
+    expect(handled).toBe(true);
+    expect(parse).toHaveBeenCalledWith("- List item");
+    expect(insert).toHaveBeenCalledWith("- List item");
+  });
 });
