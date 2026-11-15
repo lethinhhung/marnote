@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractNoteLinks, resolveNoteLink } from "./links";
+import { extractNoteLinks, isExternalUrl, normalizeLinkUrl, resolveNoteLink } from "./links";
 
 describe("resolveNoteLink", () => {
   it("resolves simple relative links", () => {
@@ -130,5 +130,47 @@ describe("extractNoteLinks", () => {
   it("extracts links from malformed markdown", () => {
     const markdown = "[broken](note.md [also broken](other.md)";
     expect(extractNoteLinks(markdown, "start.md")).toEqual(["note.md"]);
+  });
+});
+
+describe("isExternalUrl", () => {
+  it("treats values with a scheme or protocol-relative prefix as external", () => {
+    expect(isExternalUrl("https://example.com")).toBe(true);
+    expect(isExternalUrl("http://example.com")).toBe(true);
+    expect(isExternalUrl("mailto:test@example.com")).toBe(true);
+    expect(isExternalUrl("ftp://files.example.com")).toBe(true);
+    expect(isExternalUrl("//example.com")).toBe(true);
+  });
+
+  it("treats bare domains and plain text as not external", () => {
+    expect(isExternalUrl("example.com")).toBe(false);
+    expect(isExternalUrl("www.example.com")).toBe(false);
+    expect(isExternalUrl("some words")).toBe(false);
+    expect(isExternalUrl("")).toBe(false);
+  });
+});
+
+describe("normalizeLinkUrl", () => {
+  it("trims whitespace and adds HTTPS to bare domains", () => {
+    expect(normalizeLinkUrl("  www.example.com/path?q=1  ")).toBe("https://www.example.com/path?q=1");
+    expect(normalizeLinkUrl("example.co.uk")).toBe("https://example.co.uk");
+  });
+
+  it("preserves explicit schemes and protocol-relative URLs", () => {
+    expect(normalizeLinkUrl(" mailto:hello@example.com ")).toBe("mailto:hello@example.com");
+    expect(normalizeLinkUrl("//example.com/docs")).toBe("//example.com/docs");
+  });
+
+  it("preserves absolute and relative workspace paths", () => {
+    expect(normalizeLinkUrl("/images/photo.png")).toBe("/images/photo.png");
+    expect(normalizeLinkUrl("./note.md")).toBe("./note.md");
+    expect(normalizeLinkUrl("../notes/page.md#intro")).toBe("../notes/page.md#intro");
+    expect(normalizeLinkUrl("docs/guide.md")).toBe("docs/guide.md");
+    expect(normalizeLinkUrl("folder/")).toBe("folder/");
+  });
+
+  it("leaves plain text and localhost unchanged", () => {
+    expect(normalizeLinkUrl("some words")).toBe("some words");
+    expect(normalizeLinkUrl("localhost:3000/page")).toBe("localhost:3000/page");
   });
 });
