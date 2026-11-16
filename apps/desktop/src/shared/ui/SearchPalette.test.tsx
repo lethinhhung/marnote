@@ -41,4 +41,64 @@ describe("SearchPalette", () => {
     expect(onSelect).toHaveBeenCalledWith(note);
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it("highlights excerpt for in: filter query", async () => {
+    const note: Entry = { name: "meeting.md", path: "Notes/meeting.md", kind: "file", modifiedMs: 1 };
+    const tree: WorkspaceTree = {
+      name: "Workspace",
+      path: "/test/search-palette",
+      entries: [{ name: "Notes", path: "Notes", kind: "directory", children: [note] }],
+    };
+    const onSelect = vi.fn();
+    const onClose = vi.fn();
+
+    render(<SearchPalette
+      tree={tree}
+      currentPath=""
+      currentContent=""
+      onSelect={onSelect}
+      onCreate={vi.fn()}
+      onCapture={vi.fn()}
+      onCopy={vi.fn()}
+      onQuickAction={vi.fn()}
+      onClose={onClose}
+    />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Search notes, files, and actions" }), { target: { value: "in:Notes" } });
+    const option = await screen.findByRole("option", { name: /meeting\.md/ });
+    const excerpt = option.querySelector(".search-excerpt");
+    expect(excerpt).toBeInTheDocument();
+    expect(excerpt?.querySelector("mark")).toBeInTheDocument();
+    expect(excerpt?.textContent).toContain("Notes");
+  });
+
+  it("highlights excerpt for tag: filter query", async () => {
+    const note: Entry = { name: "meeting.md", path: "Notes/meeting.md", kind: "file", modifiedMs: 1, metadata: { tags: ["work"] } };
+    const tree: WorkspaceTree = {
+      name: "Workspace",
+      path: "/test/search-palette",
+      entries: [{ name: "Notes", path: "Notes", kind: "directory", children: [note] }],
+    };
+    const onSelect = vi.fn();
+    const onClose = vi.fn();
+
+    render(<SearchPalette
+      tree={tree}
+      currentPath=""
+      currentContent=""
+      onSelect={onSelect}
+      onCreate={vi.fn()}
+      onCapture={vi.fn()}
+      onCopy={vi.fn()}
+      onQuickAction={vi.fn()}
+      onClose={onClose}
+    />);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Search notes, files, and actions" }), { target: { value: "tag:work" } });
+    const option = await screen.findByRole("option", { name: /meeting\.md/ });
+    const excerpt = option.querySelector(".search-excerpt");
+    expect(excerpt).toBeInTheDocument();
+    expect(excerpt?.querySelector("mark")).toBeInTheDocument();
+    expect(excerpt?.textContent).toContain("work");
+  });
 });
