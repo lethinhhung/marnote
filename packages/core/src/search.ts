@@ -1,27 +1,9 @@
 import { flattenEntries, isMarkdown, type Entry } from "./workspace.js";
+import { parseSearchQuery, hasWords, folderMatches, type MatchSource, type SearchFilter } from "./searchQuery.js";
 
-export type MatchSource = "Title" | "Folder" | "Tag" | "Content";
 export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
 export type SearchResults = { notes: NoteMatch[]; folders: Entry[]; tags: { name: string; count: number }[] };
-export type SearchFilter = { text: string; tag: string; folder: string; type: string };
-
-export function parseSearchQuery(query: string): SearchFilter {
-  const filter: SearchFilter = { text: "", tag: "", folder: "", type: "" };
-  const words = query.trim().split(/\s+/).filter(Boolean);
-  for (const word of words) {
-    if (word.startsWith("#") && word.length > 1) {
-      filter.tag = word.slice(1).toLocaleLowerCase();
-      continue;
-    }
-    const match = /^(tag|in|type):(.+)$/i.exec(word);
-    if (match) {
-      const key = match[1].toLowerCase() === "in" ? "folder" : match[1].toLowerCase();
-      filter[key as "tag" | "folder" | "type"] = match[2].replace(/^#/, "").toLocaleLowerCase();
-    } else filter.text += `${filter.text ? " " : ""}${word.replace(/^#/, "")}`;
-  }
-  filter.text = filter.text.toLocaleLowerCase();
-  return filter;
-}
+export { type MatchSource, type SearchFilter, parseSearchQuery };
 
 function makeExcerpt(sourceText: string, query: string): string {
   const body = sourceText.toLocaleLowerCase();
@@ -39,13 +21,6 @@ function makeExcerpt(sourceText: string, query: string): string {
   const end = Math.min(sourceText.length, last.index + last.word.length + 85);
   return `${start ? "…" : ""}${sourceText.slice(start, end).replace(/\s+/g, " ").trim()}${end < sourceText.length ? "…" : ""}`;
 }
-
-const hasWords = (value: string, words: string[]) => words.every(word => value.includes(word));
-const folderMatches = (path: string, folder: string) => {
-  if (!folder) return true;
-  const lowerFolder = folder.toLocaleLowerCase();
-  return path.toLocaleLowerCase().split("/").some(segment => segment === lowerFolder);
-};
 
 export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
   if (!query.trim()) return { notes: [], folders: [], tags: [] };
