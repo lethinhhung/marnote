@@ -24,6 +24,7 @@
 - Workspace links open notes or focus folders in Explorer. If a target no longer exists, identify it as unavailable and allow editing or removing the link without redirecting it.
 - Hover or focus a link to show its destination: the address for web links, and the item name and path for workspace links. Offer **Open link**, destination-appropriate copy, **Edit**, and **Remove link** actions.
 - Heading and footer expose note metadata; the footer also shows path, save state, and note statistics.
+- With no note open, replace note-specific footer details with the workspace name; leave the footer empty when no workspace is open.
 
 ## Footer
 
