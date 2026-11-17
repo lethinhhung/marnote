@@ -8,6 +8,8 @@ type Props = {
   value: string;
   path: string;
   kind: "note" | "folder";
+  workspaceName?: string;
+  hasOpenNote?: boolean;
   saveStatus: "saved" | "saving" | "error";
   saveMode: "automatic" | "manual";
   dirty: boolean;
@@ -52,7 +54,7 @@ const TagsControl = ({ hasTagGroup, selectedTags, tags, updateMetadata, path }: 
   return updateMetadata && path ? <NoteFooterTags selectedTags={selectedTags} tags={tags ?? {}} updateMetadata={updateMetadata} path={path} /> : <span className="note-footer-tag-group" />;
 };
 
-export const NoteFooterContent = forwardRef<HTMLElement, Props>(({ value, path, kind, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {}, compact, positionFooterMenus }: Props) => {
+export const NoteFooterContent = forwardRef<HTMLElement, Props>(({ value, path, kind, workspaceName, hasOpenNote = true, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {}, compact, positionFooterMenus }: Props) => {
   const { words, characters, readingTimeMinutes } = calculateNoteStats(value);
   const selectedTags = metadata?.tags ?? [];
   const hasCreated = !!metadata?.createdMs;
@@ -60,6 +62,8 @@ export const NoteFooterContent = forwardRef<HTMLElement, Props>(({ value, path, 
   const hasTagGroup = !!(updateMetadata && path) || selectedTags.length > 0;
   const hasIconGroup = !!(updateMetadata && path);
   const handleToggleFavorite = () => { if (!updateMetadata || !path) return; updateMetadata(path, { favorite: !metadata?.favorite }); };
+
+  if (!hasOpenNote) return <footer className={`note-footer${compact ? " compact" : ""}`}>{workspaceName && <span className="note-footer-path" title={workspaceName}>{workspaceName}</span>}</footer>;
 
   return (
     <footer className={`note-footer${compact ? " compact" : ""}`}>

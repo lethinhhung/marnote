@@ -16,7 +16,7 @@ function positionFooterMenus(footer: HTMLElement): void {
   });
 }
 
-export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {} }: { value: string; path: string; kind: "note" | "folder"; saveStatus: "saved" | "saving" | "error"; saveMode: "automatic" | "manual"; dirty: boolean; onSaveModeChange: (mode: "automatic" | "manual") => void; metadata?: { createdMs?: number; updatedMs?: number; tags?: string[]; icon?: string; favorite?: boolean }; updateMetadata?: (path: string, metadata: { icon?: string; tags?: string[]; favorite?: boolean }) => void; tags?: Record<string, string> }) {
+export function NoteFooter({ value, path, kind, workspaceName, hasOpenNote = true, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {} }: { value: string; path: string; kind: "note" | "folder"; workspaceName?: string; hasOpenNote?: boolean; saveStatus: "saved" | "saving" | "error"; saveMode: "automatic" | "manual"; dirty: boolean; onSaveModeChange: (mode: "automatic" | "manual") => void; metadata?: { createdMs?: number; updatedMs?: number; tags?: string[]; icon?: string; favorite?: boolean }; updateMetadata?: (path: string, metadata: { icon?: string; tags?: string[]; favorite?: boolean }) => void; tags?: Record<string, string> }) {
   const footerRef = useRef<HTMLElement>(null);
   const resizeTimer = useRef<number | undefined>(undefined);
   const [compact, setCompact] = useState(false);
@@ -55,6 +55,8 @@ export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onS
       value={value}
       path={path}
       kind={kind}
+      workspaceName={workspaceName}
+      hasOpenNote={hasOpenNote}
       saveStatus={saveStatus}
       saveMode={saveMode}
       dirty={dirty}

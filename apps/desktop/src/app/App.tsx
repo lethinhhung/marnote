@@ -151,6 +151,6 @@ export function App() {
       </section>
     </div>
     {unsavedPrompt.dialog}
-    <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} saveStatus={saveStatus} saveMode={saveMode} dirty={!!path && draft !== workspace.note?.content} onSaveModeChange={setSaveMode} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
+    <NoteFooter value={footerTarget.kind === "note" && workspace.note ? draft : ""} path={targetPath} kind={footerTarget.kind} workspaceName={workspace.tree?.name} hasOpenNote={!!workspace.note} saveStatus={saveStatus} saveMode={saveMode} dirty={!!path && draft !== workspace.note?.content} onSaveModeChange={setSaveMode} metadata={targetMetadata} updateMetadata={workspace.updateMetadata} tags={workspace.tree?.tags} tagUsageCounts={tagUsageCounts} updateTagColor={workspace.updateTagColor} editTag={workspace.editTag} />
   </main>;
 }
