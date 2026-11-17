@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, openDefaultWorkspace, openWorkspace, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../../platform/workspace";
+import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../../platform/workspace";
 import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
-import { loadRecentWorkspaces, rememberRecentWorkspace } from "./recentWorkspaces";
+import { useWorkspaceRecent } from "./useWorkspaceRecent";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../../platform/workspace";
@@ -13,33 +13,10 @@ export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
   const [note, setNote] = useState<{ path: string; content: string } | null>(null);
   const [error, setError] = useState("");
-  const [recent, setRecent] = useState<string[]>(loadRecentWorkspaces);
   const [trash, setTrash] = useState<TrashItem[]>([]);
   const refreshing = useRef(false);
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
-  const remember = (path: string) => setRecent(current => rememberRecentWorkspace(current, path));
-  const open = (path: string) => run(async () => { setTree(await openWorkspace(path)); setNote(null); remember(path); });
-  const openDefault = () => run(async () => {
-    const workspace = await openDefaultWorkspace();
-    setTree(workspace);
-    setNote(null);
-    remember(workspace.path);
-  });
-  const openLastOrDefault = () => run(async () => {
-    const latest = loadRecentWorkspaces()[0];
-    if (latest) {
-      try {
-        setTree(await openWorkspace(latest));
-        setNote(null);
-        remember(latest);
-        return;
-      } catch { /* A missing or inaccessible recent workspace falls back to default. */ }
-    }
-    const fallback = await openDefaultWorkspace();
-    setTree(fallback);
-    setNote(null);
-    remember(fallback.path);
-  });
+  const { open, openDefault, openLastOrDefault, recent } = useWorkspaceRecent({ setTree, setNote, setError });
   const select = (entry: Entry) => run(async () => { if (!tree) return; const result = await readFile(tree.path, entry.path); setNote({ path: result.path, content: result.content }); });
   const save = async (path: string, content: string, expected: string): Promise<boolean> => {
     if (!tree) return false;
