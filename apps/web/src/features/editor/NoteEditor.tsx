@@ -45,14 +45,14 @@ export function NoteEditor({ value, onChange, source, heading, path = "", rootPa
 
   if (source) {
     const markdown = editor?.getMarkdown() ?? value;
-    return <div className="editor-canvas"><pre className="markdown-source" tabIndex={0} aria-label="Markdown source">{markdown}</pre><BacklinksPanel rootPath={rootPath} path={path} entries={entries} currentContent={value} onOpen={target => onNavigate(target, "file")} /></div>;
+    return <div className="editor-canvas"><pre className="markdown-source" tabIndex={0} aria-label="Markdown source">{markdown}</pre><BacklinksPanel rootPath={rootPath} path={path} entries={entries} onOpen={target => onNavigate(target, "file")} /></div>;
   }
 
   return (
     <div className="editor-canvas">
       <div className="note-heading">{heading}</div>
       {editor ? <EditorContent editor={editor} /> : <div>Loading editor…</div>}
-      <BacklinksPanel rootPath={rootPath} path={path} entries={entries} currentContent={value} onOpen={target => onNavigate(target, "file")} />
+      <BacklinksPanel rootPath={rootPath} path={path} entries={entries} onOpen={target => onNavigate(target, "file")} />
     </div>
   );
 }

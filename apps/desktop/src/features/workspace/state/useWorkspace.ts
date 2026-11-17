@@ -8,6 +8,7 @@ import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../../platform/workspace";
 import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
 import { DEFAULT_TAG_COLOR } from "@marnote/core";
+import { sameWorkspaceTree } from "./workspaceTreeSnapshot";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
@@ -42,7 +43,11 @@ export function useWorkspace() {
   const refresh = useCallback(async (silent = false) => {
     if (!tree || refreshing.current) return;
     refreshing.current = true;
-    try { setTree(await listWorkspace(tree.path)); if (!silent) setError(""); }
+    try {
+      const next = await listWorkspace(tree.path);
+      setTree(current => current && sameWorkspaceTree(current, next) ? current : next);
+      if (!silent) setError("");
+    }
     catch (e) { if (!silent) setError(String(e)); }
     finally { refreshing.current = false; }
   }, [tree?.path]);

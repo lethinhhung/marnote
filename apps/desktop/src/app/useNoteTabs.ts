@@ -15,6 +15,7 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
   const lastActive = useRef("");
   const hydratingDraft = useRef<{ path: string; value: string } | null>(null);
   const path = note?.path || "";
+  const rootPath = tree?.path || "";
   useEffect(() => {
     if (!tree) return;
     const available = new Set(notePaths(tree.entries));
@@ -38,6 +39,9 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
       const valid = current.filter(tab => available.has(tab));
       return valid.length === current.length ? current : valid;
     });
+  }, [tree, loadedRoot]);
+  useEffect(() => {
+    if (!rootPath || loadedRoot !== rootPath || restored.current !== rootPath) return;
     if (path && note) {
       setTabs(current => current.includes(path) ? current : [...current, path]);
       recent.current = [...recent.current.filter(item => item !== path), path];
@@ -49,7 +53,7 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
       hydratingDraft.current = { path, value };
       setDraft(value);
     }
-  }, [tree, path, note, loadedRoot]);
+  }, [rootPath, path, note, loadedRoot, setDraft]);
   useEffect(() => {
     if (!tree || loadedRoot !== tree.path || restored.current !== tree.path) return;
     const hydration = hydratingDraft.current;

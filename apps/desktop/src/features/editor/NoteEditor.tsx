@@ -31,8 +31,12 @@ import { useEditorZoom } from "./useEditorZoom";
 import { BacklinksPanel } from "./links/BacklinksPanel";
 import "./editor-reference.css";
 
+const EDITOR_EXTENSIONS = [StarterKit.configure({ codeBlock: false, link: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown];
+const EDITOR_PROPS = { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } };
+
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, heading, metadata, updateMetadata, path, rootPath = "", tagColors = {}, entries, onNavigate }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; rootPath?: string; tagColors?: Record<string, string>; entries: Entry[]; onNavigate: (path: string, kind: "file" | "directory") => void }) {
   const editorRef = useRef<Editor | null>(null);
+  const initialContent = useRef(value || initialMarkdown);
   const zoom = useEditorZoom();
 
   const {
@@ -61,7 +65,7 @@ export function NoteEditor({ value, onChange, source, horizontalScroll, onToggle
     navigateHref,
   } = useSlashLink({ entries, path, onNavigate, editorRef });
 
-  const editor = useEditor({ extensions: [StarterKit.configure({ codeBlock: false, link: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown], content: value || initialMarkdown, contentType: "markdown", editorProps: { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } }, onUpdate: ({ editor: current }) => {
+  const editor = useEditor({ extensions: EDITOR_EXTENSIONS, content: initialContent.current, contentType: "markdown", editorProps: EDITOR_PROPS, onUpdate: ({ editor: current }) => {
     onChange(current.getMarkdown());
     handleEditorUpdate();
   } });
