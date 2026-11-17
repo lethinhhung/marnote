@@ -6,8 +6,8 @@ import { readFile } from "../../../platform/workspace";
 
 type Backlink = { path: string; name: string };
 
-export function BacklinksPanel({ rootPath, path, entries, currentContent, onOpen }: {
-  rootPath: string; path: string; entries: Entry[]; currentContent: string; onOpen: (path: string) => void;
+export function BacklinksPanel({ rootPath, path, entries, onOpen }: {
+  rootPath: string; path: string; entries: Entry[]; onOpen: (path: string) => void;
 }) {
   const [links, setLinks] = useState<Backlink[]>([]);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export function BacklinksPanel({ rootPath, path, entries, currentContent, onOpen
       if (active) setLinks(results.filter((item): item is Backlink => item !== null));
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [rootPath, path, entries, currentContent]);
+  }, [rootPath, path, entries]);
 
   return <section className="backlinks-panel" aria-labelledby="backlinks-title">
     <h2 id="backlinks-title">Linked mentions</h2>
