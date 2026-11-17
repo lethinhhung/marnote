@@ -4,6 +4,7 @@ dist/
 .vite/
 coverage/
 artifacts/ui-review/
+artifacts/desktop-e2e/
 prompt/
 *.tsbuildinfo
 .codex/config.toml

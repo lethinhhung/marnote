@@ -1,0 +1,3 @@
+interface:
+  display_name: "Marnote App QA"
+  short_description: "Exercise Marnote workflows and diagnose app issues"

@@ -6,6 +6,8 @@ import "../shared/theme/theme-dark.css";
 import "../shared/theme/note-tabs.css";
 import "../features/editor/note-footer-responsive.css";
 
+if (import.meta.env.VITE_WDIO === "1") void import("@wdio/tauri-plugin");
+
 const root = document.getElementById("root");
 
 if (!root) throw new Error("Missing application root");

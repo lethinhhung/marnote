@@ -1,0 +1,6 @@
+{
+  "app": {
+    "withGlobalTauri": true,
+    "security": { "capabilities": ["default", "wdio"] }
+  }
+}

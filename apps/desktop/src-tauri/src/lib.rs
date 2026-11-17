@@ -2,6 +2,7 @@ mod create_name;
 mod files;
 mod folders;
 mod metadata;
+mod metadata_commands;
 mod tags;
 #[cfg(test)]
 mod tags_tests;
@@ -30,88 +31,26 @@ macro_rules! invoke_handler {
             $crate::files::file_restore_trash,
             $crate::files::file_empty_trash,
             $crate::folders::folder_create,
-            $crate::update_entry_metadata,
-            $crate::save_workspace_tags,
-            $crate::save_manual_order,
+            $crate::metadata_commands::update_entry_metadata,
+            $crate::metadata_commands::save_workspace_tags,
+            $crate::metadata_commands::save_manual_order,
             $crate::tags::rename_workspace_tag,
             $( $extra, )*
         ]
     };
 }
 
-#[tauri::command]
-fn update_entry_metadata(
-    root_path: String,
-    path: String,
-    tags: Option<Vec<String>>,
-    icon: Option<String>,
-    favorite: Option<bool>,
-) -> Result<(), String> {
-    let root = workspace::root(&root_path)?;
-    workspace::target(&root, &path, true)?;
-
-    let mut metadata = metadata::read_metadata(&root)?
-        .entries
-        .remove(&path)
-        .unwrap_or_default();
-    if let Some(tags) = tags {
-        metadata.tags = Some(tags);
-    }
-    if let Some(icon) = icon {
-        metadata.icon = if icon.trim().is_empty() {
-            None
-        } else {
-            Some(icon)
-        };
-    }
-    if let Some(favorite) = favorite {
-        metadata.favorite = Some(favorite);
-    }
-    metadata::update_metadata(&root, &path, metadata)
-}
-
-#[tauri::command]
-fn save_workspace_tags(
-    root_path: String,
-    tags: std::collections::HashMap<String, String>,
-) -> Result<(), String> {
-    let root = workspace::root(&root_path)?;
-    let mut store = metadata::read_metadata(&root)?;
-    store.tags = tags
-        .into_iter()
-        .filter(|(name, color)| !name.trim().is_empty() && color.starts_with('#'))
-        .collect();
-    metadata::write_metadata(&root, &store)
-}
-
-#[tauri::command]
-fn save_manual_order(root_path: String, parent: String, paths: Vec<String>) -> Result<(), String> {
-    let root = workspace::root(&root_path)?;
-    if !parent.is_empty() {
-        workspace::target(&root, &parent, true)?;
-    }
-    for path in &paths {
-        workspace::target(&root, path, true)?;
-        if std::path::Path::new(path)
-            .parent()
-            .unwrap_or(std::path::Path::new(""))
-            .to_string_lossy()
-            .replace('\\', "/")
-            != parent
-        {
-            return Err("Items must be siblings".into());
-        }
-    }
-    let mut store = metadata::read_metadata(&root)?;
-    store.manual_order.insert(parent, paths);
-    metadata::write_metadata(&root, &store)
-}
-
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_shell::init());
+    #[cfg(feature = "wdio")]
+    let builder = builder
+        .plugin(tauri_plugin_wdio::init())
+        .plugin(tauri_plugin_wdio_webdriver::init());
+
+    builder
         .invoke_handler(invoke_handler!())
         .run(tauri::generate_context!())
         .expect("failed to run Marnote");
@@ -144,7 +83,7 @@ mod tests {
         )
         .unwrap();
 
-        update_entry_metadata(
+        metadata_commands::update_entry_metadata(
             root.to_string_lossy().into_owned(),
             "note.md".into(),
             None,
