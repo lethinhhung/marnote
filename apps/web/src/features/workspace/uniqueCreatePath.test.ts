@@ -1,0 +1,83 @@
+import { describe, expect, it } from "vitest";
+import { uniqueCreatePath } from "./uniqueCreatePath";
+import type { Entry } from "./workspaceTypes";
+
+const file = (path: string): Entry => ({
+  name: path.split("/").pop() ?? path,
+  path,
+  kind: "file",
+});
+const folder = (path: string): Entry => ({
+  name: path.split("/").pop() ?? path,
+  path,
+  kind: "directory",
+});
+
+describe("uniqueCreatePath", () => {
+  it("keeps an unchanged path when there is no sibling conflict", () => {
+    expect(uniqueCreatePath([file("notes/existing.md")], "notes/new.md")).toBe("notes/new.md");
+  });
+
+  it("matches sibling conflicts without regard to case", () => {
+    expect(uniqueCreatePath([file("notes/REPORT.md")], "notes/report.md")).toBe("notes/report-1.md");
+  });
+
+  it("uses the first available numeric suffix", () => {
+    const entries = [file("notes/plan.md"), file("notes/plan-1.md"), file("notes/plan-2.md")];
+    expect(uniqueCreatePath(entries, "notes/plan.md")).toBe("notes/plan-3.md");
+  });
+
+  it("preserves the .md extension when adding a suffix", () => {
+    expect(uniqueCreatePath([file("notes/draft.md")], "notes/draft.md")).toBe("notes/draft-1.md");
+  });
+
+  it("handles root-level paths", () => {
+    expect(uniqueCreatePath([file("README.md")], "README.md")).toBe("README-1.md");
+  });
+
+  it("checks conflicts among entries in the same nested folder", () => {
+    const entries = [file("projects/alpha/brief.md"), file("projects/beta/brief.md")];
+    expect(uniqueCreatePath(entries, "projects/alpha/brief.md")).toBe("projects/alpha/brief-1.md");
+  });
+
+  it("detects conflicts in nested folders when given a tree with children", () => {
+    const entries: Entry[] = [
+      {
+        name: "projects",
+        path: "projects",
+        kind: "directory",
+        children: [
+          {
+            name: "alpha",
+            path: "projects/alpha",
+            kind: "directory",
+            children: [
+              { name: "brief.md", path: "projects/alpha/brief.md", kind: "file" },
+            ],
+          },
+        ],
+      },
+    ];
+    expect(uniqueCreatePath(entries, "projects/alpha/brief.md")).toBe("projects/alpha/brief-1.md");
+    expect(uniqueCreatePath(entries, "projects/alpha/new.md")).toBe("projects/alpha/new.md");
+  });
+});
+
+describe("uniqueCreatePath folder paths", () => {
+  it("keeps a folder path unchanged when there is no sibling conflict", () => {
+    expect(uniqueCreatePath([folder("projects/notes")], "projects/archive")).toBe("projects/archive");
+  });
+
+  it("matches folder conflicts without regard to case", () => {
+    expect(uniqueCreatePath([folder("projects/NOTES")], "projects/notes")).toBe("projects/notes-1");
+  });
+
+  it("uses the first available numeric suffix for folders", () => {
+    const entries = [folder("projects/plan"), folder("projects/plan-1"), folder("projects/plan-2")];
+    expect(uniqueCreatePath(entries, "projects/plan")).toBe("projects/plan-3");
+  });
+
+  it("handles root-level folders", () => {
+    expect(uniqueCreatePath([folder("Inbox")], "Inbox")).toBe("Inbox-1");
+  });
+});
