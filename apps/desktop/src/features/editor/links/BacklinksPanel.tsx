@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { extractNoteLinks } from "@marnote/core";
 import type { Entry } from "../../../shared/domain/workspace";
 import { flattenEntries } from "../../../shared/domain/workspace";
@@ -11,21 +11,28 @@ export function BacklinksPanel({ rootPath, path, entries, onOpen }: {
 }) {
   const [links, setLinks] = useState<Backlink[]>([]);
   const [loading, setLoading] = useState(false);
+  const hasLoaded = useRef(false);
+  const sources = useMemo(() => flattenEntries(entries).filter(entry => entry.kind === "file" && entry.path.toLowerCase().endsWith(".md") && entry.path !== path), [entries, path]);
+  const sourceKey = sources.map(entry => `${entry.path}:${entry.modifiedMs ?? 0}`).join("\u0000");
+  const currentSources = useRef(sources);
+  currentSources.current = sources;
 
   useEffect(() => {
     let active = true;
-    const sources = flattenEntries(entries).filter(entry => entry.kind === "file" && entry.path.toLowerCase().endsWith(".md") && entry.path !== path);
-    setLoading(true);
-    void Promise.all(sources.map(async entry => {
+    if (!hasLoaded.current) setLoading(true);
+    void Promise.all(currentSources.current.map(async entry => {
       try {
         const { content } = await readFile(rootPath, entry.path);
         return extractNoteLinks(content, entry.path).includes(path) ? { path: entry.path, name: entry.name.replace(/\.md$/i, "") } : null;
       } catch { return null; }
     })).then(results => {
-      if (active) setLinks(results.filter((item): item is Backlink => item !== null));
+      if (active) {
+        setLinks(results.filter((item): item is Backlink => item !== null));
+        hasLoaded.current = true;
+      }
     }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
-  }, [rootPath, path, entries]);
+  }, [rootPath, path, sourceKey]);
 
   return <section className="backlinks-panel" aria-labelledby="backlinks-title">
     <h2 id="backlinks-title">Linked mentions</h2>
