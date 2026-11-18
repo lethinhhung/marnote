@@ -15,7 +15,9 @@ export function setColumnAlignment(editor: Editor, align: TableAlignment) {
   const cellPos = $from.before(cellDepth);
   const map = TableMap.get(table);
   const cellIndex = cellPos - tablePos - 1;
-  const column = map.colCount(cellIndex);
+  const cellInfo = map.findCell(cellIndex);
+  if (!cellInfo) return false;
+  const column = cellInfo.left;
   const transaction = editor.state.tr;
   const updated = new Set<number>();
   for (let row = 0; row < map.height; row++) {

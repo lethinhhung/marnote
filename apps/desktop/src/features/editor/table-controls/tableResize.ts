@@ -25,14 +25,17 @@ export function resizeTarget(editor: Editor, host: HTMLElement, event: PointerEv
   const tablePos = $pos.before(tableDepth);
   const cellPos = $pos.before(cellDepth) - $pos.start(tableDepth);
   const map = TableMap.get(table);
-  const cellColumn = map.colCount(cellPos);
+  const cellInfo = map.findCell(cellPos);
+  if (!cellInfo) return null;
+  const cellColumn = cellInfo.left;
   const column = right ? cellColumn + $pos.node(cellDepth).attrs.colspan - 1 : cellColumn - 1;
   if (column < 0 || column >= map.width) return null;
-  const row = map.findCell(cellPos).top;
+  const row = cellInfo.top;
   const targetCellPos = map.map[row * map.width + column];
   const targetCell = table.nodeAt(targetCellPos);
   const targetDOM = editor.view.nodeDOM(tablePos + 1 + targetCellPos) as HTMLTableCellElement | null;
-  const widthIndex = column - map.colCount(targetCellPos);
+  const targetCellInfo = map.findCell(targetCellPos);
+  const widthIndex = targetCellInfo ? column - targetCellInfo.left : 0;
   const startWidth = targetCell?.attrs.colwidth?.[widthIndex] || targetDOM?.getBoundingClientRect().width || bounds.width;
   return { cellElement: targetDOM ?? cellElement, gesture: { tablePos, column, startWidth, startX: event.clientX } };
 }
@@ -49,7 +52,8 @@ export function applyColumnWidth(editor: Editor, gesture: ResizeGesture, width: 
     updated.add(cellPos);
     const cell = table.nodeAt(cellPos);
     if (!cell) continue;
-    const index = gesture.column - map.colCount(cellPos);
+    const cellInfo = map.findCell(cellPos);
+    const index = cellInfo ? gesture.column - cellInfo.left : 0;
     const colwidth = cell.attrs.colwidth ? [...cell.attrs.colwidth] : Array(cell.attrs.colspan).fill(0);
     colwidth[index] = Math.max(minWidth, Math.round(width));
     tr.setNodeMarkup(gesture.tablePos + 1 + cellPos, undefined, { ...cell.attrs, colwidth });
