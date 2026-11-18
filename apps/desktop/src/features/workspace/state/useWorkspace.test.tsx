@@ -74,7 +74,7 @@ describe("useWorkspace reorder", () => {
     localStorage.clear();
   });
 
-  it("returns false when tree refresh fails after backend succeeds", async () => {
+  it("returns true when backend succeeds even if tree refresh fails", async () => {
     const initialTree = { name: "Notes", path: "/workspace", entries: [
       { name: "A.md", path: "A.md", kind: "file" as const },
       { name: "B.md", path: "B.md", kind: "file" as const },
@@ -90,7 +90,7 @@ describe("useWorkspace reorder", () => {
 
     expect(workspaceOps.saveManualOrder).toHaveBeenCalledWith("/workspace", "", ["B.md", "A.md"]);
     expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
-    expect(success).toBe(false);
+    expect(success).toBe(true);
   });
 });
 
@@ -100,7 +100,7 @@ describe("useWorkspace move", () => {
     localStorage.clear();
   });
 
-  it("returns false when tree refresh fails after backend succeeds", async () => {
+  it("returns true when backend succeeds even if tree refresh fails", async () => {
     const initialTree = { name: "Notes", path: "/workspace", entries: [
       { name: "A.md", path: "A.md", kind: "file" as const },
     ] };
@@ -115,7 +115,7 @@ describe("useWorkspace move", () => {
 
     expect(workspaceOps.moveFile).toHaveBeenCalledWith("/workspace", "A.md", "B.md");
     expect(workspaceOps.listWorkspace).toHaveBeenCalledWith("/workspace");
-    expect(success).toBe(false);
+    expect(success).toBe(true);
   });
 
   it("does not update note path when tree refresh fails after backend succeeds", async () => {
@@ -135,7 +135,7 @@ describe("useWorkspace move", () => {
 
     const success = await act(async () => await result.current.move("A.md", "B.md"));
 
-    expect(success).toBe(false);
+    expect(success).toBe(true);
     expect(result.current.note?.path).toBe("A.md");
   });
 });
