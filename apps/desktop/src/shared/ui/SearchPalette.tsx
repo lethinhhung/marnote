@@ -41,9 +41,10 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
   const onTagSelect = useCallback((name: string) => setQuery(`tag:${name}`), [setQuery]);
   const choices = useMemo<Choice[]>(() => buildSearchChoices({ matches, trimmed, createTitle, parsedQuery, tree, currentPath, onSelect, onCreate, onCapture, onCopy, onTagSelect }), [matches, trimmed, createTitle, parsedQuery, tree, currentPath, onSelect, onCreate, onCapture, onCopy, onTagSelect]);
   const getExcerptQuery = (source: string | undefined) => {
+    if (parsedQuery.text) return parsedQuery.text;
     if (source === "Tag" && parsedQuery.tag) return parsedQuery.tag;
     if (source === "Folder" && parsedQuery.folder) return parsedQuery.folder;
-    return parsedQuery.text;
+    return "";
   };
   useEffect(() => setActive(0), [query]);
   useEffect(() => {

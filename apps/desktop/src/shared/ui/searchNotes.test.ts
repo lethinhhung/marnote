@@ -164,4 +164,21 @@ describe("searchWorkspace", () => {
     expect(distributedMatch!.excerpt.toLocaleLowerCase()).toContain("alpha");
     expect(distributedMatch!.excerpt.toLocaleLowerCase()).toContain("beta");
   });
+
+  it("uses text query for excerpt when tag filter + text query match in tag field", () => {
+    const tagged: Entry = entry({
+      name: "Tagged.md",
+      path: "Notes/Tagged.md",
+      modifiedMs: 400,
+      metadata: { tags: ["urgent", "work"] },
+    });
+    const taggedEntries = [...entries, tagged];
+    const taggedContents = { ...contents, "Notes/Tagged.md": "Project details" };
+    const result = searchWorkspace(taggedEntries, "#urgent work", taggedContents);
+    const match = result.notes.find((n) => n.entry.name === "Tagged.md");
+    expect(match).toBeDefined();
+    expect(match!.source).toBe("Tag");
+    expect(match!.excerpt.toLocaleLowerCase()).toContain("work");
+    expect(match!.excerpt.toLocaleLowerCase()).toContain("urgent");
+  });
 });
