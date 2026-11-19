@@ -1,10 +1,10 @@
 import type { WorkspaceTree, WorkspaceEntryMetadata } from "../shared/domain/workspace";
-import { normalizeWorkspacePath } from "@marnote/core";
 import { findEntry, updateEntryInTree, addEntryToTree, moveEntryInTree, removeEntryFromTree, updateEntryMetadataInTree } from "./workspace/treeMutations";
 import { getDB } from "./workspace/db";
 import { QuotaExceededError, isQuotaError } from "./workspace/quota";
 
 export { QuotaExceededError } from "./workspace/quota";
+export { exportWorkspace, importWorkspace, validateZipEntryPaths } from "./workspace/workspacePortability";
 
 const DEFAULT_WORKSPACE_ID = "default";
 
@@ -20,13 +20,13 @@ function normalizePath(path: string): string {
   return path.replace(/\\/g, "/").replace(/\/+/g, "/").replace(/^\/|\/$/g, "");
 }
 
-async function getWorkspaceTree(): Promise<WorkspaceTree | null> {
+export async function getWorkspaceTree(): Promise<WorkspaceTree | null> {
   const db = await getDB();
   const record = await db.get("workspace", DEFAULT_WORKSPACE_ID);
   return record?.tree ?? null;
 }
 
-async function saveWorkspaceTree(tree: WorkspaceTree): Promise<void> {
+export async function saveWorkspaceTree(tree: WorkspaceTree): Promise<void> {
   const db = await getDB();
   try {
     await db.put("workspace", {
@@ -52,7 +52,7 @@ async function getFile(workspaceId: string, path: string): Promise<{ content: st
   return null;
 }
 
-async function putFile(workspaceId: string, path: string, content: string, modifiedMs: number): Promise<void> {
+export async function putFile(workspaceId: string, path: string, content: string, modifiedMs: number): Promise<void> {
   const db = await getDB();
   const normalizedPath = normalizePath(path);
   const id = `${workspaceId}:${normalizedPath}`;
@@ -79,7 +79,7 @@ async function deleteFileRecord(workspaceId: string, path: string): Promise<void
   await db.delete("files", id);
 }
 
-async function listFiles(workspaceId: string): Promise<Array<{ path: string; content: string; modifiedMs: number }>> {
+export async function listFiles(workspaceId: string): Promise<Array<{ path: string; content: string; modifiedMs: number }>> {
   const db = await getDB();
   const records = await db.getAllFromIndex("files", "by-workspace", workspaceId);
   return records.map(r => ({ path: r.path, content: r.content, modifiedMs: r.modifiedMs }));
@@ -305,100 +305,7 @@ async function addToTrash(
       throw new QuotaExceededError("Failed to move to trash: storage quota exceeded");
     }
     throw error;
-  }
 }
-
-export async function exportWorkspace(): Promise<Blob> {
-  const tree = await getWorkspaceTree();
-  if (!tree) throw new Error("Workspace not initialized");
-  const files = await listFiles(tree.path);
-  const trash = await listTrash(tree.path);
-  const db = await getDB();
-  const tagsRecord = await db.getFromIndex("tags", "by-workspace", tree.path);
-  const orderRecords = await db.getAllFromIndex("manualOrder", "by-workspace-parent", tree.path);
-
-  const exportData = {
-    tree,
-    files: files.map(f => ({ path: f.path, content: f.content, modifiedMs: f.modifiedMs })),
-    trash: trash.map(t => t),
-    tags: tagsRecord?.tags ?? {},
-    manualOrder: Object.fromEntries(orderRecords.map(r => [r.parent, r.paths])),
-    exportedAt: Date.now(),
-    version: 1,
-  };
-
-  const JSZip = (await import("jszip")).default;
-  const zip = new JSZip();
-  zip.file("workspace.json", JSON.stringify(exportData, null, 2));
-  for (const file of files) {
-    zip.file(`notes/${file.path}`, file.content);
-  }
-  return zip.generateAsync({ type: "blob" });
-}
-
-export function validateZipEntryPaths(zip: { files: Record<string, { dir: boolean }> }): void {
-  for (const [zipPath, entry] of Object.entries(zip.files)) {
-    if (entry.dir) continue;
-    if (zipPath === "workspace.json") continue;
-
-    let relativePath: string;
-    if (zipPath.startsWith("notes/")) {
-      relativePath = zipPath.slice("notes/".length);
-    } else {
-relativePath = zipPath;
-    }
-    const normalized = normalizeWorkspacePath(relativePath);
-    if (!normalized) {
-      throw new Error(`Invalid path in archive: ${zipPath}`);
-    }
-  }
-}
-
-export async function importWorkspace(blob: Blob): Promise<void> {
-  const JSZip = (await import("jszip")).default;
-  const zip = await JSZip.loadAsync(blob);
-  const workspaceFile = zip.file("workspace.json");
-  if (!workspaceFile) throw new Error("Invalid workspace archive: missing workspace.json");
-  const json = await workspaceFile.async("string");
-  const data = JSON.parse(json);
-
-  if (!data.tree || !data.files) throw new Error("Invalid workspace archive: missing required data");
-
-  validateZipEntryPaths(zip);
-
-  const db = await getDB();
-  const tx = db.transaction(["workspace", "files", "trash", "tags", "manualOrder"], "readwrite");
-  await tx.objectStore("workspace").clear();
-  await tx.objectStore("files").clear();
-  await tx.objectStore("trash").clear();
-  await tx.objectStore("tags").clear();
-  await tx.objectStore("manualOrder").clear();
-  await tx.done;
-
-  await saveWorkspaceTree(data.tree);
-  for (const file of data.files) {
-    await putFile(data.tree.path, file.path, file.content, file.modifiedMs);
-  }
-  if (data.trash) {
-    for (const item of data.trash) {
-      try {
-        await db.put("trash", { ...item, workspaceId: data.tree.path, id: item.id });
-      } catch (error) {
-        if (isQuotaError(error)) {
-          throw new QuotaExceededError("Failed to import trash: storage quota exceeded");
-        }
-        throw error;
-      }
-    }
-  }
-  if (data.tags) {
-    await saveWorkspaceTags(data.tree.path, data.tags);
-  }
-  if (data.manualOrder) {
-    for (const [parent, paths] of Object.entries(data.manualOrder)) {
-      await saveManualOrder(data.tree.path, parent, paths as string[]);
-    }
-  }
 }
 
 export async function requestPersistentStorage(): Promise<boolean> {
