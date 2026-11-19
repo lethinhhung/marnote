@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Entry } from "../../../shared/domain/workspace";
-import { relativeWorkspaceLink, resolveWorkspaceLink } from "./workspaceLinks";
+import { findWorkspaceLink, relativeWorkspaceLink, resolveWorkspaceLink } from "./workspaceLinks";
 
 const file = (path: string): Entry => ({ name: path.split("/").pop() ?? path, path, kind: "file" });
 const directory = (path: string): Entry => ({ name: path.split("/").pop() ?? path, path, kind: "directory" });
@@ -70,5 +70,37 @@ describe("resolveWorkspaceLink", () => {
 
   it("rejects traversal that escapes the workspace", () => {
     expect(resolveWorkspaceLink("notes/a.md", "../../escape.md")).toBeNull();
+  });
+});
+
+describe("findWorkspaceLink", () => {
+  const note = (path: string, kind: Entry["kind"] = "file", children?: Entry[]): Entry => ({
+    name: path.split("/").at(-1)!, path, kind, children,
+  });
+
+  const workspace: Entry[] = [
+    note("projects", "directory", [
+      note("projects/plan.md"),
+      note("projects/research", "directory", [note("projects/research/notes.md")]),
+    ]),
+    note("archive.md"),
+  ];
+
+  it("resolves a same-origin absolute URL to the matching note", () => {
+    const target = workspace[0].children![0];
+    expect(findWorkspaceLink(workspace, "projects/research/notes.md", "http://localhost:3000/projects/plan.md")).toBe(target);
+  });
+
+  it("resolves an absolute URL on localhost regardless of port", () => {
+    const target = workspace[0].children![1].children![0];
+    expect(findWorkspaceLink(workspace, "projects/plan.md", "http://localhost:8080/projects/research/notes.md")).toBe(target);
+  });
+
+  it("returns undefined for an external absolute URL", () => {
+    expect(findWorkspaceLink(workspace, "projects/plan.md", "https://example.com/projects/plan.md")).toBeUndefined();
+  });
+
+  it("returns undefined when the absolute URL path matches no entry", () => {
+    expect(findWorkspaceLink(workspace, "projects/plan.md", "http://localhost:3000/nonexistent.md")).toBeUndefined();
   });
 });
