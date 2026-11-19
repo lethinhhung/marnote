@@ -68,7 +68,12 @@ export function useWorkspace() {
     setError("");
     try { await moveFile(tree.path, source, destination); }
     catch (e) { setError(String(e)); return false; }
-    try { setTree(await listWorkspace(tree.path)); rebaseNote(source, destination); } catch (e) { setError(String(e)); return false; }
+    try {
+      setTree(await listWorkspace(tree.path));
+      rebaseNote(source, destination);
+    } catch (e) {
+      setError(String(e));
+    }
     return true;
   };
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); dropNote(p); });
@@ -114,7 +119,7 @@ export function useWorkspace() {
     if (!tree) return false;
     try { await saveManualOrder(tree.path, parent, paths); }
     catch (e) { setError(String(e)); return false; }
-    try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); return false; }
+    try { setTree(await listWorkspace(tree.path)); } catch (e) { setError(String(e)); }
     return true;
   };
   const clearNote = () => setNote(null);
