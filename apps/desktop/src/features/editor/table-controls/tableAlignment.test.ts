@@ -14,7 +14,7 @@ const schema = new Schema({
     tableRow: { content: "tableCell+", tableRole: "row" },
     tableCell: {
       content: "block+", tableRole: "cell",
-      attrs: { align: { default: null } },
+      attrs: { align: { default: null }, colspan: { default: 1 }, rowspan: { default: 1 } },
     },
   },
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isSameOrDescendant, parentPath, rebasePath } from "./workspacePaths";
+import { ancestorPaths, isSameOrDescendant, parentPath, rebasePath } from "./workspacePaths";
 
 describe("rebasePath", () => {
   it("rebases an exact path when a workspace item is renamed or moved", () => {
@@ -43,5 +43,26 @@ describe("parentPath", () => {
   it("returns an empty parent for root-level items", () => {
     expect(parentPath("today.md")).toBe("");
     expect(parentPath("")).toBe("");
+  });
+});
+
+describe("ancestorPaths", () => {
+  it("returns ancestor folders from root to immediate parent, excluding the leaf", () => {
+    expect(ancestorPaths("notes/deep/today.md")).toEqual(["notes", "notes/deep"]);
+    expect(ancestorPaths("a/b/c/d.md")).toEqual(["a", "a/b", "a/b/c"]);
+  });
+
+  it("includes the leaf path when includeLeaf is true", () => {
+    expect(ancestorPaths("notes/today.md", true)).toEqual(["notes", "notes/today.md"]);
+    expect(ancestorPaths("a/b/c.md", true)).toEqual(["a", "a/b", "a/b/c.md"]);
+  });
+
+  it("returns an empty array for root-level items with no ancestors", () => {
+    expect(ancestorPaths("today.md")).toEqual([]);
+    expect(ancestorPaths("")).toEqual([]);
+  });
+
+  it("returns just the leaf for a root-level item when includeLeaf is true", () => {
+    expect(ancestorPaths("today.md", true)).toEqual(["today.md"]);
   });
 });

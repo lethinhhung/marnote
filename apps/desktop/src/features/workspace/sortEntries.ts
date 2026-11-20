@@ -15,6 +15,10 @@ export function siblingPaths(entries: Entry[], parent: string): string[] {
 export function reorderedPaths(paths: string[], source: string, target: string, after: boolean): string[] {
   const next = paths.filter(path => path !== source);
   const index = next.indexOf(target);
+  if (index === -1) {
+    next.push(source);
+    return next;
+  }
   next.splice(index + (after ? 1 : 0), 0, source);
   return next;
 }
@@ -27,7 +31,8 @@ export function getSiblingPathsInOrder(
 ): string[] {
   const siblings = siblingPaths(entries, parent);
   if (mode !== "manual") return siblings;
-  const manual = order[parent] ?? [];
+  const siblingSet = new Set(siblings);
+  const manual = (order[parent] ?? []).filter(path => siblingSet.has(path));
   const manualSet = new Set(manual);
   const remaining = siblings.filter(p => !manualSet.has(p)).sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
   return [...manual, ...remaining];

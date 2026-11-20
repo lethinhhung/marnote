@@ -1,16 +1,15 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, FileText, Folder, Link2, Plus, Search, Zap } from "lucide-react";
 import { readFile } from "../../platform/workspace";
 import { flattenEntries, type Entry, type WorkspaceTree } from "../domain/workspace";
 import { parseSearchQuery, searchWorkspace } from "./searchNotes";
 import { loadSearchIndex, updateSearchIndexContent } from "./searchIndex";
 import type { CopyNoteValue, SearchTargetAction } from "./searchActions";
+import { buildSearchChoices, type Choice } from "./buildSearchChoices";
 import { SearchActionsMenu } from "./SearchActionsMenu";
 import "./search-palette.css";
 
 type Props = { tree: WorkspaceTree | null; currentPath: string; currentContent: string; onSelect: (entry: Entry) => void; onCreate: (title: string) => void; onCapture: () => void; onCopy: (value: CopyNoteValue) => void; onQuickAction: (entry: Entry, action: SearchTargetAction, content?: string) => boolean | void; onClose: () => void };
-type Choice = { id: string; label: string; run: () => void; type: "note" | "folder" | "command" | "tag" | "create"; entry?: Entry; subtitle?: string; excerpt?: string; source?: string; count?: number };
-const commands = ["Quick Capture new note…", "Copy internal link to note", "Copy relative path", "Copy full path"];
 const sameGroup = (left: Choice["type"], right: Choice["type"]) => (left === "note" || left === "folder") ? right === "note" || right === "folder" : left === right;
 
 export function SearchPalette({ tree, currentPath, currentContent, onSelect, onCreate, onCapture, onCopy, onQuickAction, onClose }: Props) {
@@ -39,15 +38,14 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
   const trimmed = query.trim();
   const parsedQuery = parseSearchQuery(query);
   const createTitle = parsedQuery.text.trim();
-  const choices = useMemo<Choice[]>(() => {
-    const result: Choice[] = [];
-    for (const item of matches.notes.slice(0, 6)) result.push({ id: item.entry.path, label: item.entry.name, subtitle: item.entry.path, excerpt: item.excerpt, source: item.source, type: "note", entry: item.entry, run: () => onSelect(item.entry) });
-    for (const entry of matches.folders.slice(0, 3)) result.push({ id: entry.path, label: entry.name, subtitle: entry.path, type: "folder", entry, run: () => onSelect(entry) });
-    for (const command of commands.filter(label => (label.startsWith("Quick") ? !!tree : !!currentPath) && (!trimmed || label.toLocaleLowerCase().includes(trimmed.toLocaleLowerCase())))) result.push({ id: command, label: command, type: "command", run: command.startsWith("Quick") ? onCapture : () => onCopy(command.includes("internal link") ? "link" : command.includes("relative") ? "relative-path" : "full-path") });
-    for (const tag of matches.tags.slice(0, 6)) result.push({ id: `tag:${tag.name}`, label: `#${tag.name}`, count: tag.count, type: "tag", run: () => setQuery(`tag:${tag.name}`) });
-    if (tree && createTitle && !parsedQuery.tag && !parsedQuery.folder && !parsedQuery.type && !createTitle.includes("/") && !createTitle.includes("\\") && createTitle.length < 100 && !matches.notes.some(item => item.entry.name.replace(/\.md$/i, "").toLocaleLowerCase() === createTitle.toLocaleLowerCase())) result.push({ id: "create", label: `Create new note “${createTitle}”`, type: "create", run: () => onCreate(createTitle) });
-    return result;
-  }, [matches, trimmed, createTitle, tree, currentPath, onSelect, onCreate, onCapture, onCopy]);
+  const onTagSelect = useCallback((name: string) => setQuery(`tag:${name}`), [setQuery]);
+  const choices = useMemo<Choice[]>(() => buildSearchChoices({ matches, trimmed, createTitle, parsedQuery, tree, currentPath, onSelect, onCreate, onCapture, onCopy, onTagSelect }), [matches, trimmed, createTitle, parsedQuery, tree, currentPath, onSelect, onCreate, onCapture, onCopy, onTagSelect]);
+  const getExcerptQuery = (source: string | undefined) => {
+    if (parsedQuery.text) return parsedQuery.text;
+    if (source === "Tag" && parsedQuery.tag) return parsedQuery.tag;
+    if (source === "Folder" && parsedQuery.folder) return parsedQuery.folder;
+    return "";
+  };
   useEffect(() => setActive(0), [query]);
   useEffect(() => {
     const panel = results.current;
@@ -85,7 +83,7 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
         <>
         {choices.map((choice, index) => <Fragment key={choice.id}>{(index === 0 || !sameGroup(choice.type, choices[index - 1].type)) && <Group title={choice.type === "note" || choice.type === "folder" ? "Notes & Files" : choice.type === "command" ? "Commands & Actions" : choice.type === "tag" ? "Tags" : "Create"} count={choice.type === "note" || choice.type === "folder" ? `${matches.notes.length + matches.folders.length} matches` : ""} />}<button type="button" role="option" aria-selected={active === index} className={`search-choice ${active === index ? "selected" : ""}`} onMouseMove={event => { if (!event.movementX && !event.movementY) return; setKeyboardNavigation(false); setActive(index); }} onContextMenu={event => { if (!choice.entry) return; event.preventDefault(); setActive(index); setKeyboardNavigation(false); openQuickActions(choice.entry, { x: event.clientX, y: event.clientY }); }} onClick={() => choose(choice)}>
           {choice.type === "note" ? <FileText size={16} /> : choice.type === "folder" ? <Folder size={16} /> : choice.type === "command" ? (choice.label.startsWith("Quick") ? <Zap size={16} /> : <Link2 size={16} />) : choice.type === "create" ? <Plus size={16} /> : <span className="search-tag">#</span>}
-          <span className="choice-label"><Highlighted text={choice.label} query={parsedQuery.text} />{choice.count !== undefined && <small>{choice.count} notes</small>}{choice.subtitle && <small><Highlighted text={choice.subtitle} query={parsedQuery.text} /></small>}{choice.source && <small className="search-match-source">Matched in {choice.source}</small>}{choice.excerpt && <small className="search-excerpt">“<Highlighted text={choice.excerpt} query={parsedQuery.text} />”</small>}</span>
+          <span className="choice-label"><Highlighted text={choice.label} query={parsedQuery.text} />{choice.count !== undefined && <small>{choice.count} notes</small>}{choice.subtitle && <small><Highlighted text={choice.subtitle} query={parsedQuery.text} /></small>}{choice.source && <small className="search-match-source">Matched in {choice.source}</small>}{choice.excerpt && <small className="search-excerpt">“<Highlighted text={choice.excerpt} query={getExcerptQuery(choice.source)} />”</small>}</span>
           {active === index && <kbd>{choice.entry ? "⌘/Ctrl+↵" : "↵"}</kbd>}
         </button></Fragment>)}
         {loading && <p className="search-palette-empty">Indexing workspace notes…</p>}

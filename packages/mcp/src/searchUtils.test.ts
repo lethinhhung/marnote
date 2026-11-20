@@ -70,8 +70,17 @@ describe("makeExcerpt", () => {
     expect(makeExcerpt("# Hello\n\nworld", "missing")).toBe("");
   });
 
-  it("returns an empty string for an empty query", () => {
-    expect(makeExcerpt("# Hello\n\nworld", "")).toBe("");
+  it("returns an excerpt for an empty query", () => {
+    const excerpt = makeExcerpt("# Hello\n\nworld", "");
+    expect(excerpt).toContain("Hello");
+    expect(excerpt).toContain("world");
+  });
+
+  it("returns at most 141 characters for an empty query (140 + ellipsis)", () => {
+    const longContent = "A".repeat(200) + " target";
+    const excerpt = makeExcerpt(longContent, "");
+    expect(excerpt.length).toBe(141);
+    expect(excerpt.endsWith("…")).toBe(true);
   });
 
   it("omits the leading ellipsis when the match is at the start of the content", () => {
@@ -84,5 +93,32 @@ describe("makeExcerpt", () => {
     const excerpt = makeExcerpt("head tail target", "target");
     expect(excerpt).toContain("target");
     expect(excerpt.endsWith("…")).toBe(false);
+  });
+
+  it("includes context around all matches for a multi-word query", () => {
+    const excerpt = makeExcerpt("before alpha middle beta after", "alpha beta");
+    expect(excerpt).toContain("alpha");
+    expect(excerpt).toContain("beta");
+  });
+
+  it("centers the excerpt on the first found word when only some query words appear in the content", () => {
+    const excerpt = makeExcerpt("alpha beta gamma delta", "beta zeta");
+    expect(excerpt).toContain("beta");
+    expect(excerpt).not.toContain("zeta");
+  });
+
+  it("includes the last match word in the excerpt", () => {
+    const content = "alpha " + "x".repeat(150) + " zeta";
+    const excerpt = makeExcerpt(content, "alpha zeta");
+    expect(excerpt).toContain("alpha");
+    expect(excerpt).toContain("zeta");
+  });
+
+  it("adds both leading and trailing ellipses when the match is in the middle of the content", () => {
+    const content = "A".repeat(100) + " target " + "B".repeat(100);
+    const excerpt = makeExcerpt(content, "target");
+    expect(excerpt).toContain("target");
+    expect(excerpt.startsWith("…")).toBe(true);
+    expect(excerpt.endsWith("…")).toBe(true);
   });
 });

@@ -23,7 +23,7 @@ async function createTestWorkspace(root: string): Promise<ResolvedWorkspace> {
   await fs.mkdir(join(root, "projects"), { recursive: true });
   await fs.writeFile(join(root, "projects", "roadmap.md"), "# Roadmap\n\nFuture plans for alpha and beta.");
   await fs.writeFile(join(root, "draft.txt"), "not markdown");
-
+  
   const marnoteDir = join(root, ".marnote");
   await fs.mkdir(marnoteDir, { recursive: true });
   const metadata = {

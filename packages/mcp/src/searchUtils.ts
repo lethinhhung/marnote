@@ -42,17 +42,16 @@ export function makeExcerpt(content: string, query: string): string {
     .split(/\s+/)
     .filter(Boolean)
     .map(normalize);
-  const positions = words
-    .map((word) => body.indexOf(word))
-    .filter((pos) => pos >= 0)
-    .sort((a, b) => a - b);
-
-  if (positions.length === 0) return "";
-
-  const index = positions[0];
-  const start = Math.max(0, index - 55);
-  const end = Math.min(content.length, index + query.length + 85);
-  const prefix = start > 0 ? "…" : "";
-  const suffix = end < content.length ? "…" : "";
-  return `${prefix}${content.slice(start, end).replace(/\s+/g, " ").trim()}${suffix}`;
+  if (words.length === 0) {
+    const trimmed = content.replace(/\s+/g, " ").trim();
+    return trimmed.slice(0, 140) + (trimmed.length > 140 ? "…" : "");
+  }
+  const matches = words.map(word => ({ word, index: body.indexOf(word) })).filter(m => m.index >= 0);
+  if (matches.length === 0) return "";
+  matches.sort((a, b) => a.index - b.index);
+  const first = matches[0];
+  const last = matches[matches.length - 1];
+  const start = Math.max(0, first.index - 55);
+  const end = Math.min(content.length, last.index + last.word.length + 85);
+  return `${start ? "…" : ""}${content.slice(start, end).replace(/\s+/g, " ").trim()}${end < content.length ? "…" : ""}`;
 }

@@ -15,6 +15,7 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
   const lastActive = useRef("");
   const hydratingDraft = useRef<{ path: string; value: string } | null>(null);
   const path = note?.path || "";
+  const rootPath = tree?.path || "";
   useEffect(() => {
     if (!tree) return;
     const available = new Set(notePaths(tree.entries));
@@ -38,6 +39,9 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
       const valid = current.filter(tab => available.has(tab));
       return valid.length === current.length ? current : valid;
     });
+  }, [tree, loadedRoot]);
+  useEffect(() => {
+    if (!rootPath || loadedRoot !== rootPath || restored.current !== rootPath) return;
     if (path && note) {
       setTabs(current => current.includes(path) ? current : [...current, path]);
       recent.current = [...recent.current.filter(item => item !== path), path];
@@ -49,7 +53,7 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
       hydratingDraft.current = { path, value };
       setDraft(value);
     }
-  }, [tree, path, note, loadedRoot]);
+  }, [rootPath, path, note, loadedRoot, setDraft]);
   useEffect(() => {
     if (!tree || loadedRoot !== tree.path || restored.current !== tree.path) return;
     const hydration = hydratingDraft.current;
@@ -102,9 +106,10 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
     lastActive.current = target;
     select(entry);
   }, [tree, saveCurrent, manual, path, note, draft, select]);
-  const closeTabs = useCallback(async (targets: string[]) => {
-    if (!await saveCurrent()) return;
+  const closeTabs = useCallback(async (targets: string[], discard = false) => {
+    if (!discard && !await saveCurrent()) return;
     const closing = new Set(targets);
+    if (discard) for (const target of closing) { delete drafts.current[target]; delete originals.current[target]; dirtyDrafts.current.delete(target); }
     const remaining = tabs.filter(tab => !closing.has(tab));
     setTabs(remaining);
     recent.current = recent.current.filter(tab => remaining.includes(tab));
@@ -118,5 +123,5 @@ export function useNoteTabs({ tree, note, draft, setDraft, save, select, clear, 
     }
   }, [path, saveCurrent, tabs, select, tree, clear]);
   const reorder = (from: string, to: string) => setTabs(current => { const next = [...current]; const source = next.indexOf(from); const target = next.indexOf(to); if (source < 0 || target < 0) return current; next.splice(target, 0, ...next.splice(source, 1)); return next; });
-  return { tabs, selectTab, closeTab: (target: string) => closeTabs([target]), closeOthers: (target: string) => closeTabs(tabs.filter(tab => tab !== target)), closeAll: () => closeTabs(tabs), saveCurrent, updateDraft, reorder, create: async () => { if (await saveCurrent()) document.dispatchEvent(new CustomEvent("marnote-create-note")); } };
+  return { tabs, selectTab, closeTab: (target: string) => closeTabs([target]), closeUnavailableTab: (target: string) => closeTabs([target], true), closeOthers: (target: string) => closeTabs(tabs.filter(tab => tab !== target)), closeAll: () => closeTabs(tabs), saveCurrent, updateDraft, reorder, create: async () => { if (await saveCurrent()) document.dispatchEvent(new CustomEvent("marnote-create-note")); } };
 }

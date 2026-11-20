@@ -1,0 +1,116 @@
+import { describe, it, expect } from "vitest";
+import { searchWorkspace } from "./searchNotes";
+import type { Entry } from "../domain/workspace";
+
+function dir(name: string, path: string, children: Entry[] = []): Entry {
+  return { name, path, kind: "directory", children };
+}
+
+function file(name: string, path: string): Entry {
+  return { name, path, kind: "file" };
+}
+
+function taggedFile(name: string, path: string, tags: string[]): Entry {
+  return { name, path, kind: "file", metadata: { tags } };
+}
+
+describe("searchWorkspace excerpts", () => {
+  it("generates excerpt from title when match source is Title", () => {
+    const tree: Entry[] = [
+      dir("Notes", "Notes", [
+        file("Meeting Notes.md", "Notes/Meeting Notes.md"),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "Meeting", { "Notes/Meeting Notes.md": "Discussed project timeline and budget" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Title");
+    expect(results.notes[0].excerpt).toContain("Meeting Notes");
+  });
+
+  it("generates excerpt from folder path when match source is Folder", () => {
+    const tree: Entry[] = [
+      dir("Projects", "Projects", [
+        dir("Alpha", "Projects/Alpha", [
+          file("Notes.md", "Projects/Alpha/Notes.md"),
+        ]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "Alpha", { "Projects/Alpha/Notes.md": "Generic content" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Folder");
+    expect(results.notes[0].excerpt).toContain("Alpha");
+  });
+
+  it("generates excerpt from tags when match source is Tag", () => {
+    const tree: Entry[] = [
+      dir("Notes", "Notes", [
+        taggedFile("Report.md", "Notes/Report.md", ["quarterly", "finance"]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "quarterly", { "Notes/Report.md": "Sales went up this quarter" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Tag");
+    expect(results.notes[0].excerpt.toLocaleLowerCase()).toContain("quarterly");
+  });
+
+  it("generates excerpt from content when match source is Content", () => {
+    const tree: Entry[] = [
+      dir("Notes", "Notes", [
+        file("Report.md", "Notes/Report.md"),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "quarter", { "Notes/Report.md": "Sales went up this quarter" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Content");
+    expect(results.notes[0].excerpt.toLocaleLowerCase()).toContain("quarter");
+  });
+
+  it("generates excerpt for tag: filter when match source is Tag", () => {
+    const tree: Entry[] = [
+      dir("Notes", "Notes", [
+        taggedFile("Report.md", "Notes/Report.md", ["quarterly", "finance"]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "tag:quarterly", { "Notes/Report.md": "Sales went up this quarter" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Tag");
+    expect(results.notes[0].excerpt.toLocaleLowerCase()).toContain("quarterly");
+  });
+
+  it("generates excerpt for in: filter when match source is Folder", () => {
+    const tree: Entry[] = [
+      dir("Projects", "Projects", [
+        dir("Alpha", "Projects/Alpha", [
+          taggedFile("Notes.md", "Projects/Alpha/Notes.md", ["work"]),
+        ]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "in:Alpha", { "Projects/Alpha/Notes.md": "Generic content" });
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].source).toBe("Folder");
+    expect(results.notes[0].excerpt).toContain("Alpha");
+  });
+
+  it("matches folder by path segment, not substring (regression for MyNotes vs Notes)", () => {
+    const tree: Entry[] = [
+      dir("MyNotes", "MyNotes", [
+        file("File.md", "MyNotes/File.md"),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "in:Notes", {});
+    expect(results.notes).toHaveLength(0);
+  });
+
+  it("matches nested folder by path segment", () => {
+    const tree: Entry[] = [
+      dir("Projects", "Projects", [
+        dir("Notes", "Projects/Notes", [
+          file("Meeting.md", "Projects/Notes/Meeting.md"),
+        ]),
+      ]),
+    ];
+    const results = searchWorkspace(tree, "in:Notes", {});
+    expect(results.notes).toHaveLength(1);
+    expect(results.notes[0].entry.path).toBe("Projects/Notes/Meeting.md");
+  });
+});

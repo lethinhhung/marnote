@@ -28,6 +28,11 @@ describe("reorderedPaths", () => {
     expect(reorderedPaths(["a", "b", "c"], "a", "c", false)).toEqual(["b", "a", "c"]);
     expect(reorderedPaths(["a", "b", "c"], "a", "b", true)).toEqual(["b", "a", "c"]);
   });
+
+  it("appends the source when the target is not found", () => {
+    expect(reorderedPaths(["a", "b", "c"], "a", "missing", false)).toEqual(["b", "c", "a"]);
+    expect(reorderedPaths(["a", "b", "c"], "a", "missing", true)).toEqual(["b", "c", "a"]);
+  });
 });
 
 describe("getSiblingPathsInOrder", () => {
@@ -69,6 +74,15 @@ describe("getSiblingPathsInOrder", () => {
     ];
     const order = { "parent": ["parent/a.md", "parent/c.md"] };
     expect(getSiblingPathsInOrder(nestedEntries, "parent", "manual", order)).toEqual(["parent/a.md", "parent/c.md"]);
+  });
+
+  it("excludes manual-order entries that are no longer siblings (deleted items are removed)", () => {
+    const entries: Entry[] = [
+      { name: "c.md", path: "c.md", kind: "file" },
+      { name: "a.md", path: "a.md", kind: "file" },
+    ];
+    const order = { "": ["c.md", "deleted.md", "a.md"] };
+    expect(getSiblingPathsInOrder(entries, "", "manual", order)).toEqual(["c.md", "a.md"]);
   });
 });
 

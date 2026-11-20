@@ -1,0 +1,23 @@
+.note-footer-left { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; overflow: hidden; }
+.note-footer-left > * { flex: 0 0 auto; }
+.note-footer.compact { height: 26px; align-items: center; flex-wrap: nowrap; gap: 8px; padding: 0 10px; }
+.note-footer.compact > * { position: relative; top: 2px; }
+.note-footer.compact .note-footer-path { flex: 1 1 auto; }
+.note-footer.compact .note-footer-path { min-width: 0; }
+.note-footer.compact .note-footer-save { flex: 0 0 auto; }
+.note-footer.compact .note-footer-stats { flex: 0 1 auto; gap: 3px; margin-left: 0; font-size: 9px; }
+.note-footer-menu { position: relative; display: flex; flex: 0 0 20px; align-self: center; align-items: center; width: 20px; height: 20px; }
+.note-footer-menu > summary { display: grid; box-sizing: border-box; width: 20px; height: 20px; margin: 0; padding: 0; place-items: center; border-radius: 4px; cursor: pointer; list-style: none; }
+.note-footer-menu > summary svg { display: block; }
+.note-footer-menu > summary::-webkit-details-marker { display: none; }
+.note-footer-menu > summary:hover, .note-footer-menu[open] > summary { background: #eff1eb; color: #435c48; }
+.note-footer-popup { position: fixed; z-index: 100; top: 0; left: 0; display: grid; justify-items: start; gap: 9px; min-width: 180px; max-width: calc(100vw - 20px); max-height: calc(100dvh - 50px); overflow: auto; padding: 10px; border: 1px solid #e5e2dc; border-radius: 8px; background: #fffdf9; box-shadow: 0 8px 24px #24261f2b; }
+.note-footer-menu[open] .note-footer-popup:not([data-positioned]) { visibility: hidden; }
+.note-footer-info .note-footer-popup { min-width: min(220px, calc(100vw - 20px)); }
+.note-footer-popup .note-footer-tag-group, .note-footer-popup .note-footer-icon-group { display: flex; align-items: center; gap: 8px; }
+.note-footer-icon-group .emoji-picker > button { width: auto; min-width: 0; flex: 0 0 auto; gap: 5px; padding: 0 6px; font-size: 10px; white-space: nowrap; }
+.note-footer-icon-group .emoji-picker > button:hover { border-color: transparent; background: #eff1eb; color: #435c48; }
+.note-footer-icon-group > button.note-footer-action { box-sizing: border-box; width: 20px; min-width: 20px; max-width: 20px; height: 20px; min-height: 20px; max-height: 20px; flex: 0 0 20px; padding: 0; aspect-ratio: 1; }
+.note-footer-popup .note-footer-tags { flex-wrap: wrap; }
+.note-footer-popup .note-footer-timestamp { white-space: normal; }
+:root[data-theme="dark"] .note-footer-popup { border-color: #333a33; background: #202320; }

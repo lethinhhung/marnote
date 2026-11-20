@@ -210,7 +210,7 @@ describe("ExplorerSplitter", () => {
       expect(mockProps.onToggle).toHaveBeenCalledTimes(1);
     });
 
-
+    
   });
 
   describe("accessibility attributes", () => {
