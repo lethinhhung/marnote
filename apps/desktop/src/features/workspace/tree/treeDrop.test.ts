@@ -31,4 +31,9 @@ describe("dropDestination", () => {
     expect(dropDestination("projects", "projects", "directory")).toBeNull();
     expect(dropDestination("projects", "projects/archive", "directory")).toBeNull();
   });
+
+  it("treats undefined kind as folder target", () => {
+    expect(dropDestination("projects", "archive", undefined)).toBe("archive/projects");
+    expect(dropDestination("notes/draft.md", "archive", undefined)).toBe("archive/draft.md");
+  });
 });

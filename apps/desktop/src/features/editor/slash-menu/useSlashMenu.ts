@@ -16,7 +16,9 @@ export function useSlashMenu({
     const editor = editorRef.current;
     if (!editor) return;
     const { $from } = editor.state.selection;
-    const match = $from.parent.type.name === "paragraph" && $from.parent.textContent.match(/(?:^|\s)\/([\w-]*)$/);
+    if ($from.parent.type.name !== "paragraph") { setSlash(null); return; }
+    const textBeforeCursor = $from.parent.textContent.slice(0, $from.parentOffset);
+    const match = textBeforeCursor.match(/(?:^|\s)\/([\w-]*)$/);
     if (!match) { setSlash(null); return; }
     const from = $from.pos - match[1].length - 1;
     setSlash({ query: match[1], from, to: $from.pos, ...slashPosition(editor, $from.pos, match[1]) });

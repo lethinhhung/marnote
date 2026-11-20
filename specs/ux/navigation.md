@@ -2,6 +2,7 @@
 
 ## Workspace
 
+- Web header: keep the Explorer toggle near the left edge; preserve breadcrumb spacing and match download/import/export controls to other header actions.
 - Startup opens the latest workspace or falls back to **My Notes**. Use **Open workspace…** or recent workspaces to switch.
 - The header shows the workspace name or active note path. When a note is open, show a copy menu beside its path with actions for an internal link, workspace-relative path, and full path.
 - Keep the breadcrumb inline while its full path fits. Collapse it into a path menu when the actual segment names and count overflow the available header space; the menu lists each folder and focuses it in Explorer when selected.
@@ -9,6 +10,7 @@
 
 ## Notes
 
+- Show the Marnote mark when no note is open, including in an empty workspace.
 - Tree items, tabs, and workspace links navigate to notes; folder links focus the folder.
 - Focusing a folder from the path scrolls it into view and briefly highlights it; clicking in the editor clears the highlight.
 - Closing the active tab selects the most recent remaining tab. Closing the last shows the empty-note prompt.

@@ -24,6 +24,9 @@
 - Organize desktop UI code by feature, keeping app composition, shared UI, and platform adapters separate as the app grows.
 - Keep domain logic independent of the desktop platform so it can be reused by future mobile clients.
 - UI and MCP operations must use the same workspace and filesystem services.
+- The web MVP uses a browser storage adapter backed by IndexedDB; it does not access arbitrary workspace folders.
+- Keep browser storage behind platform services so the UI does not depend directly on IndexedDB.
+- Web workspace portability uses explicit Markdown and ZIP import/export as defined in [Web MVP](../product/web.md).
 
 ## Indexing and File Changes
 

@@ -9,6 +9,6 @@ export default tseslint.config(
   {
     files: ["**/*.{ts,tsx}"] ,
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
-    rules: { "no-console": "warn" }
+    rules: { "no-console": "warn", "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }] }
   }
 );

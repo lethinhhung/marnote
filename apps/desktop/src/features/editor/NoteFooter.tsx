@@ -29,7 +29,7 @@ function positionFooterMenus(footer: HTMLElement): void {
   });
 }
 
-export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {}, tagUsageCounts = {}, updateTagColor, editTag }: { value: string; path: string; kind: "note" | "folder"; saveStatus: "saved" | "saving" | "error"; saveMode: "automatic" | "manual"; dirty: boolean; onSaveModeChange: (mode: "automatic" | "manual") => void; metadata?: WorkspaceEntryMetadata; updateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void; tags?: Record<string, string>; tagUsageCounts?: Record<string, number>; updateTagColor?: (name: string, color: string) => void; editTag?: (oldName: string, newName: string, color: string) => void }) {
+export function NoteFooter({ value, path, kind, workspaceName, hasOpenNote = true, saveStatus, saveMode, dirty, onSaveModeChange, metadata, updateMetadata, tags = {}, tagUsageCounts = {}, updateTagColor, editTag }: { value: string; path: string; kind: "note" | "folder"; workspaceName?: string; hasOpenNote?: boolean; saveStatus: "saved" | "saving" | "error"; saveMode: "automatic" | "manual"; dirty: boolean; onSaveModeChange: (mode: "automatic" | "manual") => void; metadata?: WorkspaceEntryMetadata; updateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void; tags?: Record<string, string>; tagUsageCounts?: Record<string, number>; updateTagColor?: (name: string, color: string) => void; editTag?: (oldName: string, newName: string, color: string) => void }) {
   const footerRef = useRef<HTMLElement>(null);
   const resizeTimer = useRef<number | undefined>(undefined);
   const [compact, setCompact] = useState(false);
@@ -82,6 +82,7 @@ export function NoteFooter({ value, path, kind, saveStatus, saveMode, dirty, onS
   const saveOptions = <span className="save-mode-control" role="group" aria-label="Save mode"><button type="button" aria-pressed={saveMode === "automatic"} onClick={() => onSaveModeChange("automatic")}>Automatic</button><button type="button" aria-pressed={saveMode === "manual"} onClick={() => onSaveModeChange("manual")}>Manual</button></span>;
   const stats = <div className="note-footer-stats"><span>{words.toLocaleString()} words</span><b>·</b><span>{characters.toLocaleString()} characters</span><b>·</b><span>{readingTimeMinutes} min read</span></div>;
   const compactStats = <div className="note-footer-stats"><span>{words.toLocaleString()} words</span><b>·</b><span>{characters.toLocaleString()} chars</span><b>·</b><span>{readingTimeMinutes} min</span></div>;
+  if (!hasOpenNote) return <footer ref={footerRef} className={`note-footer${compact ? " compact" : ""}`}>{workspaceName && <span className="note-footer-path" title={workspaceName}>{workspaceName}</span>}</footer>;
   return <footer ref={footerRef} className={`note-footer${compact ? " compact" : ""}`}>
     {compact ? <>
       {kind === "note" && saveStatusView}

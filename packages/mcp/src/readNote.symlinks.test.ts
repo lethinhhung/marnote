@@ -35,4 +35,16 @@ describe("readNote - symlink exclusions", () => {
       await cleanupTempDir(targetDir);
     }
   });
+
+  it("rejects a symlink to a markdown file inside the workspace", async () => {
+    const temp = await createTempDir();
+    try {
+      await fs.writeFile(join(temp, "target.md"), "# Target");
+      await fs.symlink(join(temp, "target.md"), join(temp, "link.md"));
+      await expect(readNote(temp, "link.md")).rejects.toThrow(WorkspaceError);
+      await expect(readNote(temp, "link.md")).rejects.toThrow("Expected a Markdown file");
+    } finally {
+      await cleanupTempDir(temp);
+    }
+  });
 });

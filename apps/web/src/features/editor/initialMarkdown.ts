@@ -1,0 +1,1 @@
+export { initialMarkdown } from "@marnote/core";

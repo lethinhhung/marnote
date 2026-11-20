@@ -36,6 +36,15 @@ describe("WorkspaceSidebar", () => {
     expect(screen.getByRole("button", { name: "Show folders without notes" })).toHaveAttribute("aria-pressed", "true");
   });
 
+  it("refreshes the active workspace on request", async () => {
+    const onRefresh = vi.fn();
+    isDesktop.mockReturnValue(true);
+    const user = userEvent.setup();
+    render(<WorkspaceSidebar {...makeProps({ onRefresh })} />);
+    await user.click(screen.getByRole("button", { name: "Refresh workspace" }));
+    expect(onRefresh).toHaveBeenCalledOnce();
+  });
+
   it("creates a note under the selected note's parent", async () => {
     const user = userEvent.setup();
     const onCreate = vi.fn();

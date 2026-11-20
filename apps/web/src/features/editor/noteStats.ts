@@ -1,0 +1,1 @@
+export { countWords, countCharacters, calculateReadingTime, type NoteStats, calculateNoteStats } from "@marnote/core";

@@ -1,5 +1,5 @@
 import { useEditorState, type Editor } from "@tiptap/react";
-import { useEffect, useRef, useState, type MouseEvent, type SyntheticEvent } from "react";
+import { useRef, type SyntheticEvent } from "react";
 import { createPortal } from "react-dom";
 import { AlignLeft, AlignCenter, AlignRight, Bold, ChevronDown, Folder, Link2, MoveHorizontal, MoreHorizontal, Pilcrow, Save, Table2 } from "lucide-react";
 import "./toolbar-responsive.css";
@@ -8,8 +8,8 @@ import { setColumnAlignment } from "../table-controls/tableAlignment";
 import { actions, actionGroups, moreActions, toolbarGlyph } from "../toolbarActions";
 import type { Entry } from "../../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./dialogs/WorkspaceLinkPalette";
-import { relativeWorkspaceLink } from "../links/workspaceLinks";
 import { EditorZoom } from "./EditorZoom";
+import { useEditorLinkDialogs } from "./useEditorLinkDialogs";
 
 type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[]; zoom?: number; onZoomDecrease?: () => void; onZoomIncrease?: () => void; onZoomReset?: () => void };
 
@@ -17,20 +17,18 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
   const activeActions = useEditorState({ editor, selector: ({ editor: current }) => actions.map(action => !!current && !!action.active?.(current)) });
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
-  const [linkOpen, setLinkOpen] = useState(false);
-  const [href, setHref] = useState("");
-  const [linkText, setLinkText] = useState("");
-  const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  const selection = useRef({ from: 0, to: 0 });
   const toolbar = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!editor) return;
-    const closeMenus = () => toolbar.current?.querySelectorAll<HTMLDetailsElement>("details[open]").forEach(menu => { menu.open = false; });
-    const editLink = (event: Event) => { const detail = (event as CustomEvent<{ href: string; text: string; from: number; to: number }>).detail; if (!detail) return; selection.current = { from: detail.from, to: detail.to }; setHref(detail.href); setLinkText(detail.text); if (!/^[a-z][a-z\d+.-]*:/i.test(detail.href) && !detail.href.startsWith("//")) { setLinkOpen(false); setWorkspaceOpen(true); } else { setWorkspaceOpen(false); setLinkOpen(true); } };
-    editor.on("focus", closeMenus);
-    document.addEventListener("marnote-edit-link", editLink);
-    return () => { editor.off("focus", closeMenus); document.removeEventListener("marnote-edit-link", editLink); };
-  }, [editor, entries, path]);
+  const {
+    linkDialog,
+    workspaceLink,
+    openLinkDialog,
+    openWorkspaceLinkPicker,
+    cancelLinkDialog,
+    closeWorkspacePicker,
+    applyLink,
+    applyWorkspaceLink,
+  } = useEditorLinkDialogs({ editor, path });
+
   const keepOnlyOpenMenu = (event: SyntheticEvent<HTMLDetailsElement>) => {
     if (!event.currentTarget.open) return;
     toolbar.current?.querySelectorAll<HTMLDetailsElement>("details[open]").forEach(menu => {
@@ -42,10 +40,8 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     const selected = activeActions?.[index] ?? false;
     return <button type="button" key={label} className={`${selected ? "tool active" : "tool"}${compact ? ` compact-tool compact-tool-action-${index}` : ""}`} title={label} aria-label={label} aria-pressed={selected} disabled={!editor} onClick={() => { if (editor) run(editor); }}><span className={`tool-glyph tool-glyph-${index}`}>{toolbarGlyph(index)}</span><Icon className="tool-icon" size={14} strokeWidth={1.8} />{compact && <span>{label}</span>}</button>;
   };
-  const renderLinkAction = (compact = false) => <button type="button" className={`tool toolbar-link-action${compact ? " compact-tool toolbar-link-menu-item" : " toolbar-link-desktop"}${linkOpen ? " active" : ""}`} title="Add web address link" aria-label="Add web address link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) { const range = editor.state.selection; selection.current = range; setHref(editor.getAttributes("link").href ?? ""); setLinkText(editor.state.doc.textBetween(range.from, range.to, " ")); } }} onClick={() => { setWorkspaceOpen(false); setLinkOpen(open => !open); }}><Link2 size={14} />{compact && <span>Add web address link</span>}</button>;
-  const renderWorkspaceLinkAction = (compact = false) => <button type="button" className={`tool${compact ? " compact-tool" : ""}${workspaceOpen ? " active" : ""}`} title="Link to a note or folder" aria-label="Link to a note or folder" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) { const range = editor.state.selection; selection.current = range; setLinkText(editor.state.doc.textBetween(range.from, range.to, " ")); } }} onClick={() => { setLinkOpen(false); setWorkspaceOpen(open => !open); }}><Folder size={14} />{compact && <span>Link to a note or folder</span>}</button>;
-  const cancelLinkDialog = () => { setLinkOpen(false); if (editor) editor.chain().focus().setTextSelection(selection.current).run(); };
-  const closeWorkspacePicker = () => { setWorkspaceOpen(false); if (editor) editor.chain().focus().setTextSelection(selection.current).run(); };
+  const renderLinkAction = (compact = false) => <button type="button" className={`tool toolbar-link-action${compact ? " compact-tool toolbar-link-menu-item" : " toolbar-link-desktop"}${linkDialog.open ? " active" : ""}`} title="Add web address link" aria-label="Add web address link" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) { const range = editor.state.selection; openLinkDialog(editor.getAttributes("link").href ?? "", editor.state.doc.textBetween(range.from, range.to, " ")); } }} onClick={() => openLinkDialog("", "")}><Link2 size={14} />{compact && <span>Add web address link</span>}</button>;
+  const renderWorkspaceLinkAction = (compact = false) => <button type="button" className={`tool${compact ? " compact-tool" : ""}${workspaceLink.open ? " active" : ""}`} title="Link to a note or folder" aria-label="Link to a note or folder" disabled={!editor} onMouseDown={event => { event.preventDefault(); if (editor) { const range = editor.state.selection; openWorkspaceLinkPicker(editor.state.doc.textBetween(range.from, range.to, " ")); } }} onClick={() => openWorkspaceLinkPicker("")}><Folder size={14} />{compact && <span>Link to a note or folder</span>}</button>;
   const actionMenu = (label: string, Icon: typeof Pilcrow, indexes: number[], className = "") => <details className={`toolbar-action-menu ${className}`} key={label} onToggle={keepOnlyOpenMenu} onClick={event => { if ((event.target as HTMLElement).closest("button")) event.currentTarget.open = false; }}><summary aria-label={label} title={label}><Icon size={14} /><span>{label}</span><ChevronDown size={12} /></summary><div className="toolbar-action-menu-panel">{indexes.map(index => renderAction(index, true))}</div></details>;
   const tableControls = <>
     {([ ["left", AlignLeft], ["center", AlignCenter], ["right", AlignRight] ] as const).map(([align, Icon]) => <button type="button" className="table-align-button" key={align} title={`Align current column ${align}`} aria-label={`Align current column ${align}`} onMouseDown={keepEditorSelection} onClick={() => editor && setColumnAlignment(editor, align)}><Icon size={11} /><span>{align[0].toUpperCase() + align.slice(1)}</span></button>)}
@@ -56,25 +52,6 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
     <button type="button" title="Toggle header row" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().toggleHeaderRow().run()}>Header</button>
     <button type="button" title="Delete table" onMouseDown={keepEditorSelection} onClick={() => editor?.chain().focus().deleteTable().run()}>Delete</button>
   </>;
-  const addLink = (text: string, url: string) => {
-    if (!editor || !url) return;
-    const range = selection.current;
-    const label = text || url;
-    const chain = editor.chain().focus().setTextSelection(range);
-    if (range.from === range.to && editor.isActive("link")) chain.extendMarkRange("link").setLink({ href: url }).run();
-    else chain.insertContent({ type: "text", text: label, marks: [{ type: "link", attrs: { href: url } }] }).run();
-    setLinkOpen(false);
-    setHref("");
-    setLinkText("");
-  };
-  const addWorkspaceLink = (entry: Entry) => {
-    if (!editor) return;
-    const range = selection.current;
-    const text = linkText.trim() || entry.name;
-    editor.chain().focus().setTextSelection(range).insertContent({ type: "text", text, marks: [{ type: "link", attrs: { href: relativeWorkspaceLink(path, entry) } }] }).run();
-    setWorkspaceOpen(false);
-    setLinkText("");
-  };
   return <div ref={toolbar} className="toolbar" role="toolbar" aria-label="Formatting">
     <div className="toolbar-actions">
       <div className="tool-group toolbar-expanded-controls">
@@ -89,8 +66,8 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
       </div>
       {inTable && <><details className="table-actions-menu" onToggle={keepOnlyOpenMenu} onClick={event => { if ((event.target as HTMLElement).closest("button")) event.currentTarget.open = false; }}><summary aria-label="Table actions" title="Table actions"><Table2 size={14} /><span>Table Actions</span><ChevronDown size={12} /></summary><div className="table-actions-menu-panel"><div className="table-actions" role="group" aria-label="Table controls">{tableControls}</div></div></details><div className="table-actions table-actions-expanded" role="group" aria-label="Table controls">{tableControls}</div></>}
     </div>
-    {linkOpen && <LinkDialog initialText={linkText} initialHref={href} onCancel={cancelLinkDialog} onApply={addLink} />}
-    {workspaceOpen && createPortal(<WorkspaceLinkPalette entries={entries} onClose={closeWorkspacePicker} onSelect={addWorkspaceLink} />, document.body)}
+    {linkDialog.open && <LinkDialog initialText={linkDialog.text} initialHref={linkDialog.href} onCancel={cancelLinkDialog} onApply={applyLink} />}
+    {workspaceLink.open && createPortal(<WorkspaceLinkPalette entries={entries} onClose={closeWorkspacePicker} onSelect={applyWorkspaceLink} />, document.body)}
     <span className="toolbar-spacer" />
     <div className="toolbar-utility">
       <EditorZoom value={zoom} onDecrease={onZoomDecrease} onIncrease={onZoomIncrease} onReset={onZoomReset} />
@@ -100,4 +77,4 @@ export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizo
   </div>;
 }
 
-function keepEditorSelection(event: MouseEvent<HTMLButtonElement>) { event.preventDefault(); }
+function keepEditorSelection(event: React.MouseEvent<HTMLButtonElement>) { event.preventDefault(); }

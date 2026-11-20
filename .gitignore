@@ -15,3 +15,4 @@ apps/desktop/src-tauri/gen/schemas/linux-schema.json
 .strata.toml
 docs/temps/
 memory/
+.vercel
