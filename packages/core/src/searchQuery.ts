@@ -23,7 +23,11 @@ const hasWords = (value: string, words: string[]) => words.every(word => value.i
 const folderMatches = (path: string, folder: string) => {
   if (!folder) return true;
   const lowerFolder = folder.toLocaleLowerCase();
-  return path.toLocaleLowerCase().split("/").some(segment => segment === lowerFolder);
+  const lowerPath = path.toLocaleLowerCase();
+  if (lowerFolder.includes("/")) {
+    return lowerPath === lowerFolder || lowerPath.startsWith(lowerFolder + "/");
+  }
+  return lowerPath.split("/").some((segment) => segment === lowerFolder);
 };
 
 export { hasWords, folderMatches };

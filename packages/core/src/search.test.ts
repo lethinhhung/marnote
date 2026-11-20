@@ -92,4 +92,28 @@ describe("searchWorkspace", () => {
     expect(results.notes.map((n) => n.entry.name)).toEqual(["meeting-notes.md"]);
     expect(results.notes[0]?.source).toBe("Content");
   });
+
+  it("matches notes in nested folder with in: filter", () => {
+    const nestedEntries: Entry[] = [
+      { name: "note.md", path: "work/subfolder/note.md", kind: "file", modifiedMs: 100 },
+      { name: "work", path: "work", kind: "directory" },
+      { name: "subfolder", path: "work/subfolder", kind: "directory" },
+    ];
+    const contents = { "work/subfolder/note.md": "content" };
+    const results = searchWorkspace(nestedEntries, "in:work/subfolder", contents);
+    expect(results.notes.map((n) => n.entry.path)).toEqual(["work/subfolder/note.md"]);
+    expect(results.folders.map((f) => f.path)).toEqual(["work/subfolder"]);
+  });
+
+  it("matches nested folder contents with parent in: filter", () => {
+    const nestedEntries: Entry[] = [
+      { name: "note.md", path: "work/subfolder/note.md", kind: "file", modifiedMs: 100 },
+      { name: "work", path: "work", kind: "directory" },
+      { name: "subfolder", path: "work/subfolder", kind: "directory" },
+    ];
+    const contents = { "work/subfolder/note.md": "content" };
+    const results = searchWorkspace(nestedEntries, "in:work", contents);
+    expect(results.notes.map((n) => n.entry.path)).toEqual(["work/subfolder/note.md"]);
+    expect(results.folders.map((f) => f.path).sort()).toEqual(["work", "work/subfolder"]);
+  });
 });
