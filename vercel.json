@@ -5,8 +5,6 @@
   "buildCommand": "pnpm --filter @marnote/web build",
   "outputDirectory": "apps/web/dist",
   "git": {
-    "deploymentEnabled": {
-      "main": false
-    }
+    "deploymentEnabled": false
   }
 }
