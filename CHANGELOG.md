@@ -4,6 +4,22 @@ Notable user-facing changes are recorded here for each release. Add a dated vers
 
 ## Unreleased
 
+## [0.4.1] - 2026-11-20
+
+### Added
+
+- Use Marnote in a browser with local, offline-capable notes, Markdown export, and workspace import and export.
+- Open a backlinks panel to find notes that link to the current note.
+
+### Improved
+
+- Refresh workspaces when files change outside Marnote, show workspace names when no note is open, and improve notification and editor behavior.
+- Deploy the web demo from stable releases on `main`.
+
+### Compatibility
+
+- Desktop workspaces need no migration. Web notes are stored in the browser profile for that site and do not sync with desktop workspaces; export a backup to move them between browsers. macOS builds remain ad-hoc signed and not notarized, so first launch may require approval in Privacy & Security settings.
+
 ## [0.4.0] - 2026-11-03
 
 ### Added
