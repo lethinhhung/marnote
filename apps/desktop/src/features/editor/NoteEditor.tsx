@@ -3,14 +3,7 @@ import { createPortal } from "react-dom";
 import type { CSSProperties, ReactNode } from "react";
 import { File, FileText } from "lucide-react";
 import { EditorContent, useEditor, type Editor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { CodeBlockWithCopy } from "./code-block-copy/CodeBlockWithCopy";
-import TaskList from "@tiptap/extension-task-list";
-import TaskItem from "@tiptap/extension-task-item";
-import Link from "@tiptap/extension-link";
-import Placeholder from "@tiptap/extension-placeholder";
-import { TableKit } from "@tiptap/extension-table";
-import { Markdown } from "@tiptap/markdown";
+import { EDITOR_EXTENSIONS, EDITOR_PROPS } from "./editorExtensions";
 import { insertMarkdownPaste } from "./MarkdownPaste";
 import { EditorToolbar } from "./toolbar/EditorToolbar";
 import { SlashMenu } from "./slash-menu/SlashMenu";
@@ -29,9 +22,6 @@ import { useSlashLink } from "./links/useSlashLink";
 import { useEditorZoom } from "./useEditorZoom";
 import { BacklinksPanel } from "./links/BacklinksPanel";
 import "./editor-reference.css";
-
-const EDITOR_EXTENSIONS = [StarterKit.configure({ codeBlock: false, link: false }), CodeBlockWithCopy, TaskList, TaskItem.configure({ nested: true }), TableKit.configure({ table: { cellMinWidth: 120 } }), Link.configure({ openOnClick: false }), Placeholder.configure({ placeholder: "Write something…" }), Markdown];
-const EDITOR_PROPS = { attributes: { class: "editor-prose", "aria-label": "Markdown note editor" } };
 
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, heading, metadata, updateMetadata, path, rootPath = "", tagColors = {}, entries, onNavigate }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; rootPath?: string; tagColors?: Record<string, string>; entries: Entry[]; onNavigate: (path: string, kind: "file" | "directory") => void }) {
   const editorRef = useRef<Editor | null>(null);
