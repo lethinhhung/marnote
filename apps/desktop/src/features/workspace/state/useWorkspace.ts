@@ -60,7 +60,8 @@ export function useWorkspace() {
   const renameOrMove = (p: string, n: string) => run(async () => {
     if (!tree) return;
     await moveFile(tree.path, p, n);
-    try { setTree(await listWorkspace(tree.path)); rebaseNote(p, n); }
+    rebaseNote(p, n);
+    try { setTree(await listWorkspace(tree.path)); }
     catch (e) { setError(String(e)); }
   });
   const move = async (source: string, destination: string) => {
@@ -68,9 +69,9 @@ export function useWorkspace() {
     setError("");
     try { await moveFile(tree.path, source, destination); }
     catch (e) { setError(String(e)); return false; }
+    rebaseNote(source, destination);
     try {
       setTree(await listWorkspace(tree.path));
-      rebaseNote(source, destination);
     } catch (e) {
       setError(String(e));
     }
