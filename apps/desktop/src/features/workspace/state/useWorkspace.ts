@@ -57,13 +57,7 @@ export function useWorkspace() {
     return () => window.clearInterval(timer);
   }, [tree?.path, refresh]);
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
-  const renameOrMove = (p: string, n: string) => run(async () => {
-    if (!tree) return;
-    await moveFile(tree.path, p, n);
-    try { setTree(await listWorkspace(tree.path)); rebaseNote(p, n); }
-    catch (e) { setError(String(e)); }
-  });
-  const move = async (source: string, destination: string) => {
+  const move = async (source: string, destination: string): Promise<boolean> => {
     if (!tree) return false;
     setError("");
     try { await moveFile(tree.path, source, destination); }
@@ -76,6 +70,8 @@ export function useWorkspace() {
     }
     return true;
   };
+  /** Renaming a note or folder is a move to a new path; share one code path. */
+  const rename = move;
   const remove = (p: string) => mutate(async () => { if (tree) await deleteFile(tree.path, p); dropNote(p); });
   const refreshTrash = useCallback(async () => { setTrash([]); if (tree) try { setTrash(await listTrash(tree.path)); } catch (e) { setError(String(e)); } }, [tree?.path]);
   const restore = async (id: string) => { if (!tree) return; try { await restoreTrash(tree.path, id); await refresh(); await refreshTrash(); } catch (e) { setError(String(e)); } };
@@ -123,5 +119,5 @@ export function useWorkspace() {
     return true;
   };
   const clearNote = () => setNote(null);
-  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, saveAsNew, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor, editTag, rename: renameOrMove, move, reorder, remove, trash, refreshTrash, restore, empty };
+  return { tree, note, error, setError, open, openDefault, openLastOrDefault, recent, select, clearNote, save, saveAsNew, acceptExternal, refresh, create, createDirectory, updateMetadata, updateTagColor,     editTag, rename, move, reorder, remove, trash, refreshTrash, restore, empty };
 }
