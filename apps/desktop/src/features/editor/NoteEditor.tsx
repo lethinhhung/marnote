@@ -6,7 +6,6 @@ import { EditorContent, useEditor, type Editor } from "@tiptap/react";
 import { EDITOR_EXTENSIONS, EDITOR_PROPS } from "./editorExtensions";
 import { insertMarkdownPaste } from "./MarkdownPaste";
 import { EditorToolbar } from "./toolbar/EditorToolbar";
-import { initialMarkdown } from "./initialMarkdown";
 import { SlashMenu } from "./slash-menu/SlashMenu";
 import { BlockDragHandle } from "./block-dnd/BlockDragHandle";
 import { TableEdgeControls } from "./table-controls/TableEdgeControls";
@@ -26,7 +25,7 @@ import "./editor-reference.css";
 
 export function NoteEditor({ value, onChange, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, heading, metadata, updateMetadata, path, rootPath = "", tagColors = {}, entries, onNavigate }: { value: string; onChange: (value: string) => void; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; heading: ReactNode; metadata?: WorkspaceEntryMetadata; updateMetadata: (path: string, metadata: { icon?: string }) => void; path: string; rootPath?: string; tagColors?: Record<string, string>; entries: Entry[]; onNavigate: (path: string, kind: "file" | "directory") => void }) {
   const editorRef = useRef<Editor | null>(null);
-  const initialContent = useRef(value || initialMarkdown);
+  const initialContent = useRef(value);
   const zoom = useEditorZoom();
 
   const {
