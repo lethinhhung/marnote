@@ -12,7 +12,8 @@ export function parseSearchQuery(query: string): SearchFilter {
     const match = /^(tag|in|type):(.+)$/i.exec(word);
     if (match) {
       const key = match[1].toLowerCase() === "in" ? "folder" : match[1].toLowerCase();
-      filter[key as "tag" | "folder" | "type"] = match[2].replace(/^#/, "").toLocaleLowerCase();
+      const value = match[2].toLocaleLowerCase();
+      filter[key as "tag" | "folder" | "type"] = key === "tag" ? value.replace(/^#/, "") : value;
     } else filter.text += `${filter.text ? " " : ""}${word.replace(/^#/, "")}`;
   }
   filter.text = filter.text.toLocaleLowerCase();
