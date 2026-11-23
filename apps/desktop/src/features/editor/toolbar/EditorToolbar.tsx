@@ -9,25 +9,34 @@ import { actions, actionGroups, moreActions, toolbarGlyph } from "../toolbarActi
 import type { Entry } from "../../../shared/domain/workspace";
 import { WorkspaceLinkPalette } from "./dialogs/WorkspaceLinkPalette";
 import { EditorZoom } from "./EditorZoom";
-import { useEditorLinkDialogs } from "./useEditorLinkDialogs";
+import { useEditorLinkDialogs, type LinkDialogState, type WorkspaceLinkState } from "./useEditorLinkDialogs";
 
-type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[]; zoom?: number; onZoomDecrease?: () => void; onZoomIncrease?: () => void; onZoomReset?: () => void };
+type Props = { editor: Editor | null; source: boolean; horizontalScroll: boolean; onToggleHorizontalScroll: () => void; onSave: () => void; dirty: boolean; saving: boolean; path: string; entries: Entry[]; zoom?: number; onZoomDecrease?: () => void; onZoomIncrease?: () => void; onZoomReset?: () => void; linkDialog?: LinkDialogState; workspaceLink?: WorkspaceLinkState; openLinkDialog?: (href: string, text: string) => void; openWorkspaceLinkPicker?: (text: string) => void; cancelLinkDialog?: () => void; closeWorkspacePicker?: () => void; applyLink?: (text: string, url: string) => void; applyWorkspaceLink?: (entry: Entry) => void };
 
-export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, path, entries, zoom = 100, onZoomDecrease = () => {}, onZoomIncrease = () => {}, onZoomReset = () => {} }: Props) {
+export function EditorToolbar({ editor, source, horizontalScroll, onToggleHorizontalScroll, onSave, dirty, saving, path, entries, zoom = 100, onZoomDecrease = () => {}, onZoomIncrease = () => {}, onZoomReset = () => {}, linkDialog: propsLinkDialog, workspaceLink: propsWorkspaceLink, openLinkDialog: propsOpenLinkDialog, openWorkspaceLinkPicker: propsOpenWorkspaceLinkPicker, cancelLinkDialog: propsCancelLinkDialog, closeWorkspacePicker: propsCloseWorkspacePicker, applyLink: propsApplyLink, applyWorkspaceLink: propsApplyWorkspaceLink }: Props) {
   const activeActions = useEditorState({ editor, selector: ({ editor: current }) => actions.map(action => !!current && !!action.active?.(current)) });
   const inTable = useEditorState({ editor, selector: ({ editor: current }) => !!current?.isActive("table") }) ?? false;
   const supportsWideContent = useEditorState({ editor, selector: ({ editor: current }) => !!current && (current.isActive("table") || current.isActive("codeBlock")) }) ?? false;
   const toolbar = useRef<HTMLDivElement>(null);
   const {
-    linkDialog,
-    workspaceLink,
-    openLinkDialog,
-    openWorkspaceLinkPicker,
-    cancelLinkDialog,
-    closeWorkspacePicker,
-    applyLink,
-    applyWorkspaceLink,
+    linkDialog: hookLinkDialog,
+    workspaceLink: hookWorkspaceLink,
+    openLinkDialog: hookOpenLinkDialog,
+    openWorkspaceLinkPicker: hookOpenWorkspaceLinkPicker,
+    cancelLinkDialog: hookCancelLinkDialog,
+    closeWorkspacePicker: hookCloseWorkspacePicker,
+    applyLink: hookApplyLink,
+    applyWorkspaceLink: hookApplyWorkspaceLink,
   } = useEditorLinkDialogs({ editor, path });
+
+  const linkDialog = propsLinkDialog ?? hookLinkDialog;
+  const workspaceLink = propsWorkspaceLink ?? hookWorkspaceLink;
+  const openLinkDialog = propsOpenLinkDialog ?? hookOpenLinkDialog;
+  const openWorkspaceLinkPicker = propsOpenWorkspaceLinkPicker ?? hookOpenWorkspaceLinkPicker;
+  const cancelLinkDialog = propsCancelLinkDialog ?? hookCancelLinkDialog;
+  const closeWorkspacePicker = propsCloseWorkspacePicker ?? hookCloseWorkspacePicker;
+  const applyLink = propsApplyLink ?? hookApplyLink;
+  const applyWorkspaceLink = propsApplyWorkspaceLink ?? hookApplyWorkspaceLink;
 
   const keepOnlyOpenMenu = (event: SyntheticEvent<HTMLDetailsElement>) => {
     if (!event.currentTarget.open) return;

@@ -5,8 +5,12 @@ import { slashPosition } from "./slashPosition";
 
 export function useSlashMenu({
   editorRef,
+  onLink,
+  onWorkspaceLink,
 }: {
   editorRef: RefObject<Editor | null>;
+  onLink?: () => void;
+  onWorkspaceLink?: () => void;
 }) {
   const [slash, setSlash] = useState<SlashState | null>(null);
   const [selected, setSelected] = useState(0);
@@ -63,6 +67,16 @@ export function useSlashMenu({
   const insert = (id: string) => {
     const editor = editorRef.current;
     if (!editor || !slash) return;
+    if (id === "link") {
+      onLink?.();
+      setSlash(null);
+      return;
+    }
+    if (id === "workspace-link") {
+      onWorkspaceLink?.();
+      setSlash(null);
+      return;
+    }
     const chain = editor.chain().focus().deleteRange({ from: slash.from, to: slash.to });
     if (id === "paragraph") chain.setParagraph().run();
     else if (id.startsWith("heading")) chain.setHeading({ level: Number(id.slice(-1)) as 1 | 2 | 3 }).run();
