@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractNoteLinks, isExternalUrl, normalizeLinkUrl, resolveNoteLink } from "./links";
+import { extractNoteLinks, isExternalUrl, normalizeLinkUrl, relativeWorkspaceLink, resolveNoteLink, resolveWorkspaceLink } from "./links";
 
 describe("resolveNoteLink", () => {
   it("resolves simple relative links", () => {
@@ -130,6 +130,90 @@ describe("extractNoteLinks", () => {
   it("extracts links from malformed markdown", () => {
     const markdown = "[broken](note.md [also broken](other.md)";
     expect(extractNoteLinks(markdown, "start.md")).toEqual(["note.md"]);
+  });
+});
+
+describe("relativeWorkspaceLink", () => {
+  const file = (path: string) => ({ name: path.split("/").pop() ?? path, path, kind: "file" as const });
+  const directory = (path: string) => ({ name: path.split("/").pop() ?? path, path, kind: "directory" as const });
+
+  it("links to a file in the same directory", () => {
+    expect(relativeWorkspaceLink("docs/start.md", file("docs/other.md"))).toBe("other.md");
+  });
+
+  it("links to a file in a nested directory", () => {
+    expect(relativeWorkspaceLink("docs/start.md", file("docs/sub/deep.md"))).toBe("sub/deep.md");
+  });
+
+  it("links to a file in a parent directory", () => {
+    expect(relativeWorkspaceLink("docs/guide/start.md", file("docs/other.md"))).toBe("../other.md");
+  });
+
+  it("links to a directory with a trailing slash", () => {
+    expect(relativeWorkspaceLink("docs/start.md", directory("docs/sub"))).toBe("sub/");
+  });
+
+  it("links across top-level directories", () => {
+    expect(relativeWorkspaceLink("a/x.md", file("b/y.md"))).toBe("../b/y.md");
+  });
+
+  it("links from the workspace root", () => {
+    expect(relativeWorkspaceLink("start.md", file("other.md"))).toBe("other.md");
+  });
+
+  it("percent-encodes segment names with spaces", () => {
+    expect(relativeWorkspaceLink("a.md", file("my note.md"))).toBe("my%20note.md");
+  });
+});
+
+describe("resolveWorkspaceLink", () => {
+  it("resolves a relative file link from the source folder", () => {
+    expect(resolveWorkspaceLink("docs/start.md", "other.md")).toEqual({ path: "docs/other.md", kind: "file" });
+  });
+
+  it("resolves parent directory references", () => {
+    expect(resolveWorkspaceLink("docs/guide/start.md", "../other.md")).toEqual({ path: "docs/other.md", kind: "file" });
+  });
+
+  it("resolves nested traversal without escaping the workspace", () => {
+    expect(resolveWorkspaceLink("a/b/c.md", "../../d.md")).toEqual({ path: "d.md", kind: "file" });
+  });
+
+  it("resolves a directory link with a trailing slash", () => {
+    expect(resolveWorkspaceLink("docs/start.md", "sub/")).toEqual({ path: "docs/sub", kind: "directory" });
+  });
+
+  it("strips query parameters and fragments", () => {
+    expect(resolveWorkspaceLink("start.md", "other.md?q=1#sec")).toEqual({ path: "other.md", kind: "file" });
+  });
+
+  it("decodes percent-encoded targets", () => {
+    expect(resolveWorkspaceLink("start.md", "my%20note.md")).toEqual({ path: "my note.md", kind: "file" });
+  });
+
+  it("treats an absolute path as workspace-rooted", () => {
+    expect(resolveWorkspaceLink("start.md", "/absolute.md")).toEqual({ path: "absolute.md", kind: "file" });
+  });
+
+  it("resolves dot segments", () => {
+    expect(resolveWorkspaceLink("docs/start.md", "./other.md")).toEqual({ path: "docs/other.md", kind: "file" });
+  });
+
+  it("rejects external URLs", () => {
+    expect(resolveWorkspaceLink("start.md", "https://example.com")).toBeNull();
+  });
+
+  it("rejects fragment-only links", () => {
+    expect(resolveWorkspaceLink("start.md", "#section")).toBeNull();
+  });
+
+  it("rejects empty targets", () => {
+    expect(resolveWorkspaceLink("start.md", "")).toBeNull();
+  });
+
+  it("rejects traversal that escapes the workspace", () => {
+    expect(resolveWorkspaceLink("start.md", "../../escape.md")).toBeNull();
+    expect(resolveWorkspaceLink("docs/start.md", "../../../outside.md")).toBeNull();
   });
 });
 

@@ -116,4 +116,22 @@ describe("searchWorkspace", () => {
     expect(results.notes.map((n) => n.entry.path)).toEqual(["work/subfolder/note.md"]);
     expect(results.folders.map((f) => f.path).sort()).toEqual(["work", "work/subfolder"]);
   });
+
+  it("matches folder starting with # via in: filter", () => {
+    const hashEntries: Entry[] = [
+      { name: "note.md", path: "#work/note.md", kind: "file", modifiedMs: 100 },
+      { name: "#work", path: "#work", kind: "directory" },
+    ];
+    const results = searchWorkspace(hashEntries, "in:#work");
+    expect(results.notes.map((n) => n.entry.path)).toEqual(["#work/note.md"]);
+    expect(results.folders.map((f) => f.path)).toEqual(["#work"]);
+  });
+
+  it("parses in: filter with leading # as literal folder name", () => {
+    expect(parseSearchQuery("in:#work")).toEqual({ text: "", tag: "", folder: "#work", type: "" });
+  });
+
+  it("parses tag: filter with leading # as tag name without #", () => {
+    expect(parseSearchQuery("tag:#work")).toEqual({ text: "", tag: "work", folder: "", type: "" });
+  });
 });
