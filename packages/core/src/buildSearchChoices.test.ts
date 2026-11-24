@@ -150,4 +150,24 @@ describe("buildSearchChoices", () => {
     const choices = runChoices({ tree: baseTree, createTitle: "tag:work" });
     expect(choices.some((c) => c.type === "create")).toBe(false);
   });
+
+  it("does not add a create choice when a folder filter is active", () => {
+    const choices = runChoices({ tree: baseTree, createTitle: "My Note", parsedQuery: { text: "", tag: "", folder: "work", type: "" } });
+    expect(choices.some((c) => c.type === "create")).toBe(false);
+  });
+
+  it("does not add a create choice when a type filter is active", () => {
+    const choices = runChoices({ tree: baseTree, createTitle: "My Note", parsedQuery: { text: "", tag: "", folder: "", type: "note" } });
+    expect(choices.some((c) => c.type === "create")).toBe(false);
+  });
+
+  it("does not add a create choice when no workspace tree is provided", () => {
+    const choices = runChoices({ createTitle: "My Note" });
+    expect(choices.some((c) => c.type === "create")).toBe(false);
+  });
+
+  it("does not add a create choice when the title is empty", () => {
+    const choices = runChoices({ tree: baseTree, createTitle: "" });
+    expect(choices.some((c) => c.type === "create")).toBe(false);
+  });
 });
