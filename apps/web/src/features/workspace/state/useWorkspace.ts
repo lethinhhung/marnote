@@ -21,11 +21,9 @@ import {
 } from "../../../platform/workspace";
 import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
-import { saveWorkspace } from "./saveWorkspace";
-import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
+import { DEFAULT_TAG_COLOR, saveWorkspace, updateEntryEmptiness, updateSavedEntry } from "@marnote/core";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import type { TrashItem } from "../../../platform/workspace";
-import { DEFAULT_TAG_COLOR } from "@marnote/core";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
