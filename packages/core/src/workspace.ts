@@ -108,7 +108,12 @@ function updateEntries(entries: Entry[], path: string, mutate: (entry: Entry) =>
 }
 
 export function updateSavedEntry(entries: Entry[], path: string, isEmpty: boolean, updatedMs: number): Entry[] {
-  return updateEntries(entries, path, (e) => ({ ...e, isEmpty, metadata: { ...e.metadata, createdMs: e.metadata?.createdMs ?? updatedMs, updatedMs } }));
+  return updateEntries(entries, path, (e) => ({
+    ...e,
+    isEmpty,
+    modifiedMs: updatedMs,
+    metadata: { ...e.metadata, createdMs: e.metadata?.createdMs ?? updatedMs, updatedMs },
+  }));
 }
 
 export function updateEntryEmptiness(entries: Entry[], path: string, isEmpty: boolean): Entry[] {
