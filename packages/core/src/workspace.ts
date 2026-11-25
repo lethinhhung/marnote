@@ -103,14 +103,5 @@ export function flattenEntries(entries: Entry[] = []): Entry[] {
   return entries.flatMap((entry) => [entry, ...flattenEntries(entry.children)]);
 }
 
-function updateEntries(entries: Entry[], path: string, mutate: (entry: Entry) => Entry): Entry[] {
-  return entries.map((e) => e.path === path ? mutate(e) : { ...e, children: e.children ? updateEntries(e.children, path, mutate) : undefined });
-}
-
-export function updateSavedEntry(entries: Entry[], path: string, isEmpty: boolean, updatedMs: number): Entry[] {
-  return updateEntries(entries, path, (e) => ({ ...e, isEmpty, metadata: { ...e.metadata, createdMs: e.metadata?.createdMs ?? updatedMs, updatedMs } }));
-}
-
-export function updateEntryEmptiness(entries: Entry[], path: string, isEmpty: boolean): Entry[] {
-  return updateEntries(entries, path, (e) => ({ ...e, isEmpty }));
-}
+export { saveWorkspace, updateEntryEmptiness, updateSavedEntry } from "./workspaceMutations.js";
+export type { SaveResult, WriteWorkspaceFile } from "./workspaceMutations.js";

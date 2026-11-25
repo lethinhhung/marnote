@@ -5,6 +5,7 @@ import {
   isDocumentationPath,
   isMarkdown,
   normalizeWorkspacePath,
+  updateSavedEntry,
   type Entry,
   type WorkspaceFile,
 } from "./workspace";
@@ -265,5 +266,16 @@ describe("flattenEntries", () => {
   it("returns an empty array for no input", () => {
     expect(flattenEntries()).toEqual([]);
     expect(flattenEntries([])).toEqual([]);
+  });
+});
+
+describe("updateSavedEntry", () => {
+  it("updates the sort timestamp and metadata after saving", () => {
+    const entries: Entry[] = [{ name: "note.md", path: "note.md", kind: "file", modifiedMs: 10 }];
+    const updated = updateSavedEntry(entries, "note.md", false, 2000);
+
+    expect(updated[0]?.modifiedMs).toBe(2000);
+    expect(updated[0]?.metadata?.createdMs).toBe(2000);
+    expect(updated[0]?.metadata?.updatedMs).toBe(2000);
   });
 });
