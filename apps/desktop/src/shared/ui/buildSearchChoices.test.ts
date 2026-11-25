@@ -81,7 +81,7 @@ describe("buildSearchChoices", () => {
   it("builds tag choices that call onTagSelect", () => {
     const choices = buildSearchChoices(base) as Choice[];
     const tagChoice = choices.find((c) => c.type === "tag");
-    expect(tagChoice?.label).toBe("#work");
+    expect(tagChoice?.label).toBe("work");
     expect(tagChoice?.count).toBe(2);
     tagChoice?.run();
     expect(base.onTagSelect).toHaveBeenCalledWith("work");

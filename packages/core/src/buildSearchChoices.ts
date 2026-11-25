@@ -68,7 +68,7 @@ export function buildSearchChoices({
       run: command.startsWith("Quick") ? onCapture : () => onCopy(command.includes("internal link") ? "link" : command.includes("relative") ? "relative-path" : "full-path"),
     });
   for (const tag of matches.tags.slice(0, 6))
-    result.push({ id: `tag:${tag.name}`, label: `#${tag.name}`, count: tag.count, type: "tag", run: () => onTagSelect(tag.name) });
+    result.push({ id: `tag:${tag.name}`, label: tag.name, count: tag.count, type: "tag", run: () => onTagSelect(tag.name) });
   const isIncomplete = isIncompleteFilter(createTitle);
   if (
     tree &&

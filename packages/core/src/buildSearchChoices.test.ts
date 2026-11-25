@@ -108,7 +108,7 @@ describe("buildSearchChoices", () => {
     const choices = runChoices({ matches: { notes: [], folders: [], tags } });
     const tagChoices = choices.filter((c) => c.type === "tag");
     expect(tagChoices).toHaveLength(6);
-    expect(tagChoices[0]).toMatchObject({ id: "tag:tag 0", label: "#tag 0", count: 1, type: "tag" });
+    expect(tagChoices[0]).toMatchObject({ id: "tag:tag 0", label: "tag 0", count: 1, type: "tag" });
     tagChoices[0].run?.();
     expect(defaults.onTagSelect).toHaveBeenCalledWith("tag 0");
   });
