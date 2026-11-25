@@ -51,6 +51,9 @@
 :root[data-theme="dark"] .folder-emoji-action { color: #e2e5de; }
 :root[data-theme="dark"] .folder-emoji-action:hover { background: #202320; color: #e2e5de; }
 :root[data-theme="dark"] .emoji-picker-popover { border-color: #292d29; background: #1c1e1c; }
+:root[data-theme="dark"] .inline-emoji-menu { border-color: #292d29; background: #1c1e1c; }
+:root[data-theme="dark"] .inline-emoji-menu > button:not(.inline-emoji-close) { color: #e2e5de; }
+:root[data-theme="dark"] .inline-emoji-menu > button[aria-selected="true"], :root[data-theme="dark"] .inline-emoji-menu > button:not(.inline-emoji-close):hover { background: #202320; }
 :root[data-theme="dark"] .emoji-picker-toolbar { background: #1c1e1c; }
 :root[data-theme="dark"] .emoji-picker-remove { color: #e2e5de; }
 :root[data-theme="dark"] .emoji-picker-remove:hover { background: #202320; color: #e2e5de; }
