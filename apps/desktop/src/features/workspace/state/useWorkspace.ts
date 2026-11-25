@@ -4,10 +4,8 @@ import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
 import { useWorkspaceRecent } from "./useWorkspaceRecent";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
-import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../../platform/workspace";
-import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
-import { DEFAULT_TAG_COLOR } from "@marnote/core";
+import { DEFAULT_TAG_COLOR, saveWorkspace, updateEntryEmptiness, updateSavedEntry } from "@marnote/core";
 import { sameWorkspaceTree } from "./workspaceTreeSnapshot";
 
 export function useWorkspace() {
