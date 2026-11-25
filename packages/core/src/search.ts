@@ -21,6 +21,13 @@ export function searchWorkspace(entries: Entry[] = [], query: string, contents: 
   return { notes, folders, tags };
 }
 
+export function excerptQueryFor(filter: SearchFilter, source: string | undefined): string {
+  if (filter.text) return filter.text;
+  if (source === "Tag" && filter.tag) return filter.tag;
+  if (source === "Folder" && filter.folder) return filter.folder;
+  return "";
+}
+
 function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, content: string): NoteMatch | null {
   const title = entry.name.replace(/\.md$/i, "").toLocaleLowerCase();
   const path = entry.path.toLocaleLowerCase();
@@ -38,11 +45,7 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
   const tagTextOriginal = tagNames.join(" ");
   const combinedText = `${titleText} ${pathText} ${tagTextOriginal} ${content}`;
   const sourceText = source === "Title" ? titleText : source === "Folder" ? pathText : source === "Tag" ? tagTextOriginal : combinedText;
-  let excerptQuery = filter.text;
-  if (!excerptQuery) {
-    if (source === "Tag" && filter.tag) excerptQuery = filter.tag;
-    else if (source === "Folder" && filter.folder) excerptQuery = filter.folder;
-  }
+  const excerptQuery = excerptQueryFor(filter, source);
   return { entry, excerpt: makeExcerpt(sourceText, excerptQuery), score, source };
 }
 
