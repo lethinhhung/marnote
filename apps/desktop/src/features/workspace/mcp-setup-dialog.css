@@ -1,0 +1,22 @@
+.mcp-setup-backdrop { position: fixed; z-index: 120; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(23, 26, 23, .42); }
+.mcp-setup-dialog { width: min(520px, 100%); max-height: min(680px, 90vh); overflow: auto; padding: 24px; border: 1px solid var(--border, #e5e2dc); border-radius: 12px; background: var(--surface, #fffdf9); color: var(--text, #292c27); box-shadow: 0 20px 60px rgba(20, 25, 20, .2); }
+.mcp-setup-dialog > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.mcp-setup-dialog > header h2 { margin: 2px 0 0; font-size: 20px; font-weight: 650; letter-spacing: -.02em; }
+.mcp-setup-dialog > header button { display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 6px; background: transparent; color: inherit; cursor: pointer; }
+.mcp-setup-eyebrow { margin: 0; color: var(--muted, #777d73); font-size: 10px; font-weight: 700; letter-spacing: .11em; }
+.mcp-setup-intro { margin: 16px 0; color: var(--muted, #666d63); font-size: 13px; line-height: 1.55; }
+.mcp-workspace-path { display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; align-items: center; padding: 12px; border: 1px solid var(--border, #e5e2dc); border-radius: 8px; background: var(--subtle, #f7f7f3); }
+.mcp-workspace-path > span { grid-column: 1 / -1; color: var(--muted, #777d73); font-size: 11px; font-weight: 600; }
+.mcp-workspace-path code { overflow: hidden; color: inherit; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.mcp-workspace-path button, .mcp-setup-dialog footer > button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid var(--border, #e5e2dc); border-radius: 6px; background: var(--surface, #fffdf9); color: inherit; font-size: 12px; cursor: pointer; }
+.mcp-setup-steps { display: grid; gap: 15px; margin: 22px 0; padding-left: 21px; font-size: 12px; }
+.mcp-setup-steps li { padding-left: 3px; }
+.mcp-setup-steps b, .mcp-setup-steps span { display: block; }
+.mcp-setup-steps span { margin-top: 3px; color: var(--muted, #666d63); line-height: 1.5; }
+.mcp-setup-steps code { font-size: 11px; }
+.mcp-setup-note { padding: 10px 12px; border-left: 2px solid #79927b; background: var(--subtle, #f7f7f3); color: var(--muted, #666d63); font-size: 11px; line-height: 1.5; }
+.mcp-setup-dialog footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
+.mcp-setup-dialog footer > a { color: var(--accent, #526b58); font-size: 12px; font-weight: 600; }
+.mcp-setup-dialog footer > button { padding-inline: 16px; background: #526b58; border-color: #526b58; color: white; }
+@media (max-width: 520px) { .mcp-setup-backdrop { padding: 10px; } .mcp-setup-dialog { padding: 18px; } .mcp-workspace-path { grid-template-columns: minmax(0, 1fr); } .mcp-workspace-path > span { grid-column: auto; } .mcp-workspace-path button { justify-self: start; } }
+:root[data-theme="dark"] .mcp-setup-dialog { --surface: #1c1e1c; --subtle: #242824; --text: #e2e5de; --muted: #a2a99f; --border: #333a33; }
