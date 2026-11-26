@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, FileText, Folder, Link2, Plus, Search, Zap } from "
 import { readFile } from "../../platform/workspace";
 import { flattenEntries, type Entry, type WorkspaceTree } from "../domain/workspace";
 import { parseSearchQuery, searchWorkspace } from "./searchNotes";
+import { excerptQueryFor } from "@marnote/core";
 import { loadSearchIndex, updateSearchIndexContent } from "./searchIndex";
 import type { CopyNoteValue, SearchTargetAction } from "./searchActions";
 import { buildSearchChoices, type Choice } from "./buildSearchChoices";
@@ -40,12 +41,6 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
   const createTitle = parsedQuery.text.trim();
   const onTagSelect = useCallback((name: string) => setQuery(`tag:${name}`), [setQuery]);
   const choices = useMemo<Choice[]>(() => buildSearchChoices({ matches, trimmed, createTitle, parsedQuery, tree, currentPath, onSelect, onCreate, onCapture, onCopy, onTagSelect }), [matches, trimmed, createTitle, parsedQuery, tree, currentPath, onSelect, onCreate, onCapture, onCopy, onTagSelect]);
-  const getExcerptQuery = (source: string | undefined) => {
-    if (parsedQuery.text) return parsedQuery.text;
-    if (source === "Tag" && parsedQuery.tag) return parsedQuery.tag;
-    if (source === "Folder" && parsedQuery.folder) return parsedQuery.folder;
-    return "";
-  };
   useEffect(() => setActive(0), [query]);
   useEffect(() => {
     const panel = results.current;
@@ -83,7 +78,7 @@ export function SearchPalette({ tree, currentPath, currentContent, onSelect, onC
         <>
         {choices.map((choice, index) => <Fragment key={choice.id}>{(index === 0 || !sameGroup(choice.type, choices[index - 1].type)) && <Group title={choice.type === "note" || choice.type === "folder" ? "Notes & Files" : choice.type === "command" ? "Commands & Actions" : choice.type === "tag" ? "Tags" : "Create"} count={choice.type === "note" || choice.type === "folder" ? `${matches.notes.length + matches.folders.length} matches` : ""} />}<button type="button" role="option" aria-selected={active === index} className={`search-choice ${active === index ? "selected" : ""}`} onMouseMove={event => { if (!event.movementX && !event.movementY) return; setKeyboardNavigation(false); setActive(index); }} onContextMenu={event => { if (!choice.entry) return; event.preventDefault(); setActive(index); setKeyboardNavigation(false); openQuickActions(choice.entry, { x: event.clientX, y: event.clientY }); }} onClick={() => choose(choice)}>
           {choice.type === "note" ? <FileText size={16} /> : choice.type === "folder" ? <Folder size={16} /> : choice.type === "command" ? (choice.label.startsWith("Quick") ? <Zap size={16} /> : <Link2 size={16} />) : choice.type === "create" ? <Plus size={16} /> : <span className="search-tag">#</span>}
-          <span className="choice-label"><Highlighted text={choice.label} query={parsedQuery.text} />{choice.count !== undefined && <small>{choice.count} notes</small>}{choice.subtitle && <small><Highlighted text={choice.subtitle} query={parsedQuery.text} /></small>}{choice.source && <small className="search-match-source">Matched in {choice.source}</small>}{choice.excerpt && <small className="search-excerpt">“<Highlighted text={choice.excerpt} query={getExcerptQuery(choice.source)} />”</small>}</span>
+          <span className="choice-label"><Highlighted text={choice.label} query={parsedQuery.text} />{choice.count !== undefined && <small>{choice.count} notes</small>}{choice.subtitle && <small><Highlighted text={choice.subtitle} query={parsedQuery.text} /></small>}{choice.source && <small className="search-match-source">Matched in {choice.source}</small>}{choice.excerpt && <small className="search-excerpt">“<Highlighted text={choice.excerpt} query={excerptQueryFor(parsedQuery, choice.source)} />”</small>}</span>
           {active === index && <kbd>{choice.entry ? "⌘/Ctrl+↵" : "↵"}</kbd>}
         </button></Fragment>)}
         {loading && <p className="search-palette-empty">Indexing workspace notes…</p>}

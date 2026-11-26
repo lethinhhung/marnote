@@ -33,6 +33,19 @@ export function getWelcomeMessage(): string {
   return "A calm place for your notes, files, and ideas.";
 }
 
+const emojiByShortcode: Record<string, string> = {
+  smile: "😄", grin: "😁", joy: "😂", laugh: "😆", wink: "😉", heart: "❤️",
+  thumbsup: "👍", thumbsdown: "👎", clap: "👏", pray: "🙏", fire: "🔥",
+  star: "⭐", tada: "🎉", rocket: "🚀", eyes: "👀", thinking: "🤔",
+  sob: "😭", cry: "😢", wave: "👋", check: "✅", x: "❌", warning: "⚠️",
+  coffee: "☕", sun: "☀️", moon: "🌙", dog: "🐶", cat: "🐱", pizza: "🍕",
+};
+
+export const emojiShortcodes = Object.keys(emojiByShortcode);
+export const emojiShortcodeMap = emojiByShortcode;
+export const emojiForShortcode = (shortcode: string) => emojiByShortcode[shortcode.toLowerCase()];
+export const matchingEmojiShortcodes = (query: string) => emojiShortcodes.filter(name => name.includes(query.toLowerCase())).slice(0, 8);
+
 export const initialMarkdown = `## Welcome to your note
 
 This is your **Markdown editor**. Start typing, or use the toolbar to shape your thoughts.

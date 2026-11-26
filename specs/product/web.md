@@ -27,3 +27,7 @@
 - Exclude multiple workspaces, arbitrary filesystem workspaces, sync, Git, and MCP from the web MVP.
 - Browser directory access may be evaluated later; it must not be required for the MVP.
 - Do not describe browser storage as equivalent to direct filesystem storage or as a substitute for backups.
+
+## Public web metadata
+
+- The web build provides a descriptive page title, search description, Open Graph and Twitter share metadata, and crawler access. It uses `https://marnote.vercel.app` for canonical URLs and the sitemap by default; set `VITE_SITE_URL` to override it. The desktop app has no public page metadata.

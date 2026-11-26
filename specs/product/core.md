@@ -98,23 +98,12 @@
 
 - Marnote exposes an MCP server for external AI and coding tools.
 - Target clients include Claude Code, Codex, Cursor, and OpenCode.
-- AI tools should be able to retrieve relevant context without reading the entire workspace.
-- The first delivery is a local, read-only stdio server configured for one workspace, as defined in [Integrations](integrations.md).
-- MCP retrieval should support:
-  - Browse workspace structure.
-  - Read notes.
-  - Search notes.
-  - Find linked notes.
-  - Retrieve backlinks.
-  - Retrieve relevant notes for a query.
-- MCP write operations should support:
-  - Create.
-  - Update.
-  - Rename or move.
-  - Delete.
+- The delivered milestone is a local, read-only stdio server configured for one workspace, as defined in [Integrations](integrations.md).
+- Its tools browse visible workspace entries, read notes, and search titles, paths, tags, and content with bounded results.
+- Future MCP milestones may add linked-note and backlink retrieval, relevance-based retrieval, and explicit, auditable create, update, move, and delete operations.
 - MCP must reuse the same workspace and file services as the UI.
 - No separate AI-only representation of notes.
-- Writes must be explicit and auditable.
+- Any future writes must be explicit and auditable.
 
 ## Git
 

@@ -1,0 +1,12 @@
+{
+  "name": "Marnote — Your notes, in Markdown, on your device",
+  "short_name": "Marnote",
+  "description": "A calm, local-first workspace for everyday notes and project docs.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f5f2",
+  "theme_color": "#f6f5f2",
+  "icons": [
+    { "src": "/brand/mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

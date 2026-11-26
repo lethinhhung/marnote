@@ -1,5 +1,7 @@
 import { promises as fs } from "fs";
-import { validateWorkspaceRelativePath, isMarkdownFile, WorkspaceError } from "./workspace.js";
+import { validateWorkspaceRelativePath, assertWorkspacePath, isMarkdownFile, WorkspaceError } from "./workspace.js";
+
+const MAX_NOTE_BYTES = 64 * 1024;
 
 export interface ReadNoteResult {
   path: string;
@@ -13,6 +15,13 @@ export async function readNote(root: string, relativePath: string): Promise<Read
     throw new WorkspaceError("Expected a Markdown file");
   }
 
+  try {
+    await assertWorkspacePath(root, canonicalPath);
+  } catch (error) {
+    if (error instanceof WorkspaceError) throw error;
+    throw new WorkspaceError("Note not found");
+  }
+
   let stats: Awaited<ReturnType<typeof fs.stat>>;
   try {
     stats = await fs.stat(canonicalPath);
@@ -24,25 +33,17 @@ export async function readNote(root: string, relativePath: string): Promise<Read
     throw new WorkspaceError("Expected a Markdown file");
   }
 
-  const realRoot = await fs.realpath(root);
-  const realPath = await fs.realpath(canonicalPath);
-  if (!realPath.startsWith(realRoot)) {
-    throw new WorkspaceError("Path escapes workspace");
-  }
-
-  if (await isSymlink(canonicalPath)) {
-    throw new WorkspaceError("Expected a Markdown file");
-  }
-
-  const content = await fs.readFile(canonicalPath, "utf-8");
-  return { path: relativePath, content };
-}
-
-async function isSymlink(path: string): Promise<boolean> {
+  const handle = await fs.open(canonicalPath, "r");
   try {
-    const stats = await fs.lstat(path);
-    return stats.isSymbolicLink();
-  } catch {
-    return false;
+    const buffer = Buffer.alloc(MAX_NOTE_BYTES + 1);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    const truncated = bytesRead > MAX_NOTE_BYTES;
+    const content = buffer.subarray(0, Math.min(bytesRead, MAX_NOTE_BYTES)).toString("utf-8");
+    return {
+      path: relativePath,
+      content: truncated ? `${content}\n\n[Note truncated at 64 KiB]` : content,
+    };
+  } finally {
+    await handle.close();
   }
 }

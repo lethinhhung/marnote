@@ -102,3 +102,6 @@ export function isMarkdown(entry: Entry): boolean {
 export function flattenEntries(entries: Entry[] = []): Entry[] {
   return entries.flatMap((entry) => [entry, ...flattenEntries(entry.children)]);
 }
+
+export { saveWorkspace, updateEntryEmptiness, updateSavedEntry } from "./workspaceMutations.js";
+export type { SaveResult, WriteWorkspaceFile } from "./workspaceMutations.js";

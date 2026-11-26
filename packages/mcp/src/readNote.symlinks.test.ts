@@ -15,7 +15,7 @@ describe("readNote - symlink exclusions", () => {
     try {
       await fs.symlink(join(targetDir, "target.md"), join(temp, "link.md"));
       await expect(readNote(temp, "link.md")).rejects.toThrow(WorkspaceError);
-      await expect(readNote(temp, "link.md")).rejects.toThrow(/Expected a Markdown file|Path escapes workspace/);
+      await expect(readNote(temp, "link.md")).rejects.toThrow("Path must not contain symlinks");
     } finally {
       await cleanupTempDir(temp);
       await cleanupTempDir(targetDir);
@@ -42,7 +42,7 @@ describe("readNote - symlink exclusions", () => {
       await fs.writeFile(join(temp, "target.md"), "# Target");
       await fs.symlink(join(temp, "target.md"), join(temp, "link.md"));
       await expect(readNote(temp, "link.md")).rejects.toThrow(WorkspaceError);
-      await expect(readNote(temp, "link.md")).rejects.toThrow("Expected a Markdown file");
+      await expect(readNote(temp, "link.md")).rejects.toThrow("Path must not contain symlinks");
     } finally {
       await cleanupTempDir(temp);
     }

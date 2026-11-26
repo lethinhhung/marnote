@@ -41,9 +41,9 @@ describe("searchNotes - excerpts & missing metadata", () => {
         expect(e.toLowerCase()).toContain("discussed"); expect(e).toContain("…");
       } finally { await cleanupTempDir(d); }
     });
-    it("has empty excerpt for title matches", async () => { expect(getExcerpts(await searchNotes(ws, "note1"))[0]).toBe(""); });
-    it("has empty excerpt for path matches", async () => { expect(getExcerpts(await searchNotes(ws, "projects"))[0]).toBe(""); });
-    it("has empty excerpt for tag matches", async () => { expect(getExcerpts(await searchNotes(ws, "active"))[0]).toBe(""); });
+    it("falls back to note text for title matches", async () => { expect(getExcerpts(await searchNotes(ws, "note1"))[0]).toContain("Project Alpha"); });
+    it("falls back to note text for path matches", async () => { expect(getExcerpts(await searchNotes(ws, "projects"))[0]).toContain("Roadmap"); });
+    it("falls back to note text for tag matches", async () => { expect(getExcerpts(await searchNotes(ws, "active"))[0]).toContain("Project Alpha"); });
   });
 
   describe("handles missing metadata gracefully", () => {

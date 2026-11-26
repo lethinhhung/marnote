@@ -30,23 +30,12 @@ describe("listWorkspace - structure and sorting", () => {
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
 
-      const names = entries.map((e) => e.name).sort();
-      expect(names).toEqual(["README.MD", "folder", "note.md"]);
-
-      const folder = entries.find((e) => e.name === "folder");
-      expect(folder?.kind).toBe("directory");
-      expect(folder?.path).toBe("folder");
-      expect(folder?.children?.length).toBe(2);
-
-      const childNames = folder?.children?.map((c) => c.name).sort();
-      expect(childNames).toEqual(["inner.md", "nested"]);
-
-      const nested = folder?.children?.find((c) => c.name === "nested");
-      expect(nested?.kind).toBe("directory");
-      expect(nested?.path).toBe("folder/nested");
-      expect(nested?.children?.length).toBe(1);
-      expect(nested?.children?.[0].name).toBe("deep.md");
-      expect(nested?.children?.[0].path).toBe("folder/nested/deep.md");
+      expect(entries.entries.map((entry) => entry.path)).toEqual([
+        "folder", "folder/inner.md", "folder/nested", "folder/nested/deep.md",
+        "note.md", "README.MD",
+      ]);
+      expect(entries.entries.find((entry) => entry.path === "folder")?.kind).toBe("directory");
+      expect(entries.entries.find((entry) => entry.path === "folder/nested/deep.md")?.kind).toBe("file");
     } finally {
       await cleanupTempDir(temp);
     }
@@ -63,7 +52,7 @@ describe("listWorkspace - structure and sorting", () => {
 
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      const names = entries.map((e) => e.name);
+      const names = entries.entries.map((e) => e.name);
       expect(names).toEqual(["alpha.md", "Beta.md", "Delta", "gamma", "zebra.md"]);
     } finally {
       await cleanupTempDir(temp);
