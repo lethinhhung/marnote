@@ -36,9 +36,9 @@
 
 ## MCP
 
-- Provide an MCP server for workspace browsing, reading, searching, and writing.
+- The delivered MCP server supports local read-only workspace browsing, reading, and searching.
 - MCP operations use the same Markdown and filesystem model as the UI.
-- Writes must be explicit and auditable.
+- Future write tools must use shared file services and make changes explicit and auditable.
 
 ## Git and Data Safety
 

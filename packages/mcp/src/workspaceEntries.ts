@@ -3,14 +3,16 @@ import { resolve } from "path";
 import { isMarkdownFile } from "./workspacePaths.js";
 import type { WorkspaceEntry } from "./workspaceTypes.js";
 
-const EXCLUDED_NAMES = new Set([".marnote-trash", ".marnote"]);
+export function isHiddenWorkspaceEntry(name: string): boolean {
+  return name.startsWith(".");
+}
 
 export async function collectWorkspaceEntries(dir: string, base: string): Promise<WorkspaceEntry[]> {
   const entries: WorkspaceEntry[] = [];
   try {
     const items = await fs.readdir(dir, { withFileTypes: true });
     for (const item of items) {
-      if (item.isSymbolicLink() || EXCLUDED_NAMES.has(item.name)) continue;
+      if (item.isSymbolicLink() || isHiddenWorkspaceEntry(item.name)) continue;
       const fullPath = resolve(dir, item.name);
       const relativePath = fullPath.replace(base, "").replace(/^\/+/, "").replace(/\\/g, "/");
       const isDirectory = item.isDirectory();

@@ -53,18 +53,36 @@ To run the web shell during UI development, use `pnpm dev`. To check the project
 
 ### MCP server
 
-Advanced users can configure an MCP client to start Marnote's local stdio server. From the repository root, use this generic client configuration and replace the workspace path with the folder to open:
+Marnote's MCP server runs locally over stdio and uses one workspace path per server entry. Build it once from the repository root after installing dependencies:
+
+```sh
+pnpm install
+pnpm --filter @marnote/mcp build
+```
+
+Replace `/absolute/path/to/marnote` with this repository's path and `/absolute/path/to/workspace` with the workspace directory. Use an absolute Node executable path if your MCP client does not inherit your shell's `PATH`.
+
+**Claude Code**
+
+```sh
+claude mcp add --transport stdio --scope user marnote -- node /absolute/path/to/marnote/packages/mcp/dist/cli.js /absolute/path/to/workspace
+```
+
+**Codex CLI**
+
+```sh
+codex mcp add marnote -- node /absolute/path/to/marnote/packages/mcp/dist/cli.js /absolute/path/to/workspace
+```
+
+**Cursor** — add this to `.cursor/mcp.json` in the project where you use the server:
 
 ```json
 {
   "mcpServers": {
     "marnote": {
-      "command": "pnpm",
+      "command": "node",
       "args": [
-        "--filter",
-        "@marnote/mcp",
-        "start",
-        "--",
+        "/absolute/path/to/marnote/packages/mcp/dist/cli.js",
         "/absolute/path/to/workspace"
       ]
     }
@@ -72,7 +90,26 @@ Advanced users can configure an MCP client to start Marnote's local stdio server
 }
 ```
 
-The server provides three read-only tools: `list_workspace` lists Markdown notes and folders, `read_note` reads a note, and `search_notes` searches notes by their content and metadata.
+**OpenCode** — add this under `mcp.servers` in `opencode.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "marnote": {
+        "type": "local",
+        "command": [
+          "node",
+          "/absolute/path/to/marnote/packages/mcp/dist/cli.js",
+          "/absolute/path/to/workspace"
+        ]
+      }
+    }
+  }
+}
+```
+
+The read-only tools are `list_workspace` (browse visible Markdown files and folders, 200 entries per page by default), `read_note` (read up to 64 KiB), and `search_notes` (search titles, paths, tags, and content; 20 results by default, 100 maximum). Hidden dot-prefixed entries and symlinks are omitted. Restart or reconnect the client after changing its configuration.
 
 ## Project layout
 

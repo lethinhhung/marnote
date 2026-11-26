@@ -27,7 +27,7 @@ describe("listWorkspace - markdown filtering and empty workspace", () => {
 
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      expect(entries).toEqual([]);
+      expect(entries.entries).toEqual([]);
     } finally {
       await cleanupTempDir(temp);
     }
@@ -42,7 +42,7 @@ describe("listWorkspace - markdown filtering and empty workspace", () => {
 
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      const names = entries.map((e) => e.name);
+      const names = entries.entries.map((e) => e.name);
       expect(names).toEqual(["note.md"]);
     } finally {
       await cleanupTempDir(temp);
@@ -54,7 +54,7 @@ describe("listWorkspace - markdown filtering and empty workspace", () => {
     try {
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      expect(entries).toEqual([]);
+      expect(entries.entries).toEqual([]);
     } finally {
       await cleanupTempDir(temp);
     }

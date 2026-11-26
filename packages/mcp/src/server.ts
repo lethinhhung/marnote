@@ -33,17 +33,18 @@ export async function initializeServer(config: ServerConfig): Promise<McpServer>
     "list_workspace",
     {
       title: "List Workspace",
-      description: "List visible Markdown files and folders in the workspace",
-      inputSchema: {},
+      description: "List workspace Markdown files and folders; use nextOffset to continue",
+      inputSchema: {
+        offset: z.number().int().nonnegative().optional().describe("Entry offset from a previous page"),
+        limit: z.number().int().positive().max(500).optional().describe("Entries per page (default 200, max 500)"),
+      },
     },
-    async () => {
+    async ({ offset, limit }) => {
       if (!resolvedWorkspace) {
         throw new Error("Workspace not initialized");
       }
-      const entries = await listWorkspace(resolvedWorkspace);
-      return {
-        content: [{ type: "text", text: JSON.stringify(entries, null, 2) }],
-      };
+      const page = await listWorkspace(resolvedWorkspace, offset, limit);
+      return { content: [{ type: "text", text: JSON.stringify(page, null, 2) }] };
     }
   );
 
