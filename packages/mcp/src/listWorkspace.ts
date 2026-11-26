@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import { resolve } from "path";
 import { isMarkdownFile, ResolvedWorkspace } from "./workspace.js";
+import { isHiddenWorkspaceEntry } from "./workspaceEntries.js";
 
 export interface ListedEntry {
   name: string;
@@ -37,7 +38,7 @@ export async function listWorkspace(
     items.sort((a, b) => a.name.localeCompare(b.name));
     for (const item of items) {
       if (collected.length >= targetCount) return;
-      if (item.isSymbolicLink() || item.name === ".marnote" || item.name === ".marnote-trash") continue;
+      if (item.isSymbolicLink() || isHiddenWorkspaceEntry(item.name)) continue;
       const path = parent ? `${parent}/${item.name}` : item.name;
       if (item.isDirectory()) {
         collected.push({ name: item.name, path, kind: "directory" });
