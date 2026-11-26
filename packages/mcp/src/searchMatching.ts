@@ -19,6 +19,11 @@ export interface SearchOptions {
   limit?: number;
 }
 
+export interface SearchPage {
+  matches: SearchMatch[];
+  total: number;
+}
+
 export { normalize, parseQuery, hasWords };
 
 const DEFAULT_LIMIT = 20;
@@ -60,10 +65,18 @@ export function searchWorkspace(
   query: string,
   options: SearchOptions = {}
 ): SearchMatch[] {
+  return searchWorkspacePage(entries, query, options).matches;
+}
+
+export function searchWorkspacePage(
+  entries: WorkspaceEntry[],
+  query: string,
+  options: SearchOptions = {}
+): SearchPage {
   const { tags, contents, limit = DEFAULT_LIMIT } = options;
   const words = parseQuery(query);
 
-  if (words.length === 0) return [];
+  if (words.length === 0) return { matches: [], total: 0 };
 
   const clampedLimit = Math.min(Math.max(1, limit), MAX_LIMIT);
   const searchableEntries = collectSearchableEntries(entries, tags, contents);
@@ -75,7 +88,7 @@ export function searchWorkspace(
 
     const source = determineMatchSource(se.title, se.path, se.tagText, se.normalizedContent, words);
     const score = scoreForSource(source);
-    const excerpt = source === "Content" ? makeExcerpt(se.content, query) : "";
+    const excerpt = makeExcerpt(se.content, query) || makeExcerpt(se.content, "");
 
     matches.push({
       path: se.entry.path,
@@ -88,5 +101,5 @@ export function searchWorkspace(
 
   matches.sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
 
-  return matches.slice(0, clampedLimit);
+  return { matches: matches.slice(0, clampedLimit), total: matches.length };
 }
