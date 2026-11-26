@@ -11,7 +11,7 @@ function editorFor(text: string) {
   insertContentAt.mockReturnValue(commands);
   setTextSelection.mockReturnValue(commands);
   const chain = vi.fn(() => commands);
-  const editor = { state: { selection: { empty: true, $from: { parent: { type: { name: "paragraph" }, textContent: text }, parentOffset: text.length, pos: text.length + 1 } } }, view: { coordsAtPos: () => ({ bottom: 20, left: 30 }) }, chain } as unknown as Editor;
+  const editor = { state: { selection: { empty: true, $from: { parent: { type: { name: "paragraph" }, isTextblock: true, textContent: text }, parentOffset: text.length, pos: text.length + 1 } } }, view: { coordsAtPos: () => ({ bottom: 20, left: 30 }) }, chain } as unknown as Editor;
   return { editor, insertContentAt, setTextSelection, run };
 }
 
