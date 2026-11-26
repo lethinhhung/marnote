@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import { resolve } from "path";
 import { collectWorkspaceEntries, ResolvedWorkspace, WorkspaceEntry } from "./workspace.js";
-import { searchWorkspace, SearchMatch } from "./searchMatching.js";
+import { searchWorkspacePage, SearchMatch } from "./searchMatching.js";
 
 export interface SearchNotesResult {
   results: SearchMatch[];
@@ -71,14 +71,14 @@ export async function searchNotes(
   const tags = extractTags(metadata);
   const contents = await readMarkdownContents(entries, workspace.root);
 
-  const matches = searchWorkspace(entries, query, {
+  const page = searchWorkspacePage(entries, query, {
     tags,
     contents,
     limit,
   });
 
   return {
-    results: matches,
-    total: matches.length,
+    results: page.matches,
+    total: page.total,
   };
 }

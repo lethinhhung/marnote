@@ -118,7 +118,7 @@ describe("useWorkspace move", () => {
     expect(success).toBe(true);
   });
 
-  it("does not update note path when tree refresh fails after backend succeeds", async () => {
+  it("updates note path optimistically when tree refresh fails after backend succeeds", async () => {
     const initialTree = { name: "Notes", path: "/workspace", entries: [
       { name: "A.md", path: "A.md", kind: "file" as const },
     ] };
@@ -136,7 +136,8 @@ describe("useWorkspace move", () => {
     const success = await act(async () => await result.current.move("A.md", "B.md"));
 
     expect(success).toBe(true);
-    expect(result.current.note?.path).toBe("A.md");
+    expect(result.current.note?.path).toBe("B.md");
+    expect(result.current.error).toContain("refresh failed");
   });
 });
 
@@ -146,7 +147,7 @@ describe("useWorkspace rename (alias for renameOrMove)", () => {
     localStorage.clear();
   });
 
-  it("does not update note path when tree refresh fails after backend succeeds", async () => {
+  it("updates note path optimistically when tree refresh fails after backend succeeds", async () => {
     const initialTree = { name: "Notes", path: "/workspace", entries: [
       { name: "A.md", path: "A.md", kind: "file" as const },
     ] };
@@ -166,6 +167,6 @@ describe("useWorkspace rename (alias for renameOrMove)", () => {
     expect(workspaceOps.moveFile).toHaveBeenCalledWith("/workspace", "A.md", "B.md");
     expect(workspaceOps.listWorkspace).toHaveBeenCalled();
     expect(result.current.error).toContain("refresh failed");
-    expect(result.current.note?.path).toBe("A.md");
+    expect(result.current.note?.path).toBe("B.md");
   });
 });

@@ -4,10 +4,8 @@ import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
 import { useWorkspaceRecent } from "./useWorkspaceRecent";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
-import { saveWorkspace } from "./saveWorkspace";
 import type { TrashItem } from "../../../platform/workspace";
-import { updateSavedEntry, updateEntryEmptiness } from "./workspaceEntries";
-import { DEFAULT_TAG_COLOR } from "@marnote/core";
+import { DEFAULT_TAG_COLOR, saveWorkspace, updateEntryEmptiness, updateSavedEntry } from "@marnote/core";
 import { sameWorkspaceTree } from "./workspaceTreeSnapshot";
 
 export function useWorkspace() {
@@ -60,7 +58,8 @@ export function useWorkspace() {
   const renameOrMove = (p: string, n: string) => run(async () => {
     if (!tree) return;
     await moveFile(tree.path, p, n);
-    try { setTree(await listWorkspace(tree.path)); rebaseNote(p, n); }
+    rebaseNote(p, n);
+    try { setTree(await listWorkspace(tree.path)); }
     catch (e) { setError(String(e)); }
   });
   const move = async (source: string, destination: string) => {
@@ -68,9 +67,9 @@ export function useWorkspace() {
     setError("");
     try { await moveFile(tree.path, source, destination); }
     catch (e) { setError(String(e)); return false; }
+    rebaseNote(source, destination);
     try {
       setTree(await listWorkspace(tree.path));
-      rebaseNote(source, destination);
     } catch (e) {
       setError(String(e));
     }

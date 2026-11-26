@@ -4,5 +4,7 @@
 - Keep each code file under 120 lines. Generated files, package/configuration files, and other machine-maintained files are exempt.
 - Split code into focused modules when a file approaches the limit.
 - Follow the product and architecture constraints in `specs/`.
+- For every behavior change or bug fix, add or update automated tests that cover the changed behavior and relevant edge cases.
+- Before considering code work complete, run the relevant tests and checks (at minimum the affected package's tests and typecheck); fix failures and report any check that could not be run.
 - For shared features or fixes, inspect both `apps/desktop` and `apps/web` and implement the behavior on both platforms. Follow explicit platform-specific scope or exclusions in `specs/`; document intentional differences there.
 - Keep specs concise; prefer simple, clear guidance over complicated or redundant detail.

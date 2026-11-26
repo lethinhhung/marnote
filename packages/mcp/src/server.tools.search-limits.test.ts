@@ -36,7 +36,7 @@ describe("initializeServer - search_notes limits and paths", () => {
       const data = JSON.parse((await getTools(server).search_notes.handler({ query: "note" })).content[0].text);
 
       expect(data.results.length).toBe(20);
-      expect(data.total).toBe(20);
+      expect(data.total).toBe(25);
     } finally {
       await cleanupTempDir(tempDir2);
     }
@@ -56,7 +56,7 @@ describe("initializeServer - search_notes limits and paths", () => {
       const data = JSON.parse((await getTools(server).search_notes.handler({ query: "note", limit: 200 })).content[0].text);
 
       expect(data.results.length).toBe(100);
-      expect(data.total).toBe(100);
+      expect(data.total).toBe(120);
     } finally {
       await cleanupTempDir(tempDir2);
     }

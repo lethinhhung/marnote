@@ -1,26 +1,10 @@
 import { flattenEntries, isMarkdown, type Entry } from "./workspace.js";
 import { parseSearchQuery, hasWords, folderMatches, type MatchSource, type SearchFilter } from "./searchQuery.js";
+import { makeExcerpt } from "./searchUtils.js";
 
 export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
 export type SearchResults = { notes: NoteMatch[]; folders: Entry[]; tags: { name: string; count: number }[] };
 export { type MatchSource, type SearchFilter, parseSearchQuery };
-
-function makeExcerpt(sourceText: string, query: string): string {
-  const body = sourceText.toLocaleLowerCase();
-  const words = query.split(/\s+/).filter(Boolean);
-  if (!words.length) {
-    const trimmed = sourceText.replace(/\s+/g, " ").trim();
-    return trimmed.slice(0, 140) + (trimmed.length > 140 ? "…" : "");
-  }
-  const matches = words.map(word => ({ word, index: body.indexOf(word) })).filter(m => m.index >= 0);
-  if (!matches.length) return "";
-  matches.sort((a, b) => a.index - b.index);
-  const first = matches[0];
-  const last = matches[matches.length - 1];
-  const start = Math.max(0, first.index - 55);
-  const end = Math.min(sourceText.length, last.index + last.word.length + 85);
-  return `${start ? "…" : ""}${sourceText.slice(start, end).replace(/\s+/g, " ").trim()}${end < sourceText.length ? "…" : ""}`;
-}
 
 export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
   if (!query.trim()) return { notes: [], folders: [], tags: [] };
@@ -35,6 +19,13 @@ export function searchWorkspace(entries: Entry[] = [], query: string, contents: 
     .filter(entry => !words.length || hasWords(`${entry.name} ${entry.path}`.toLocaleLowerCase(), words));
   const tags = collectTags(all, filter, words);
   return { notes, folders, tags };
+}
+
+export function excerptQueryFor(filter: SearchFilter, source: string | undefined): string {
+  if (filter.text) return filter.text;
+  if (source === "Tag" && filter.tag) return filter.tag;
+  if (source === "Folder" && filter.folder) return filter.folder;
+  return "";
 }
 
 function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, content: string): NoteMatch | null {
@@ -54,11 +45,7 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
   const tagTextOriginal = tagNames.join(" ");
   const combinedText = `${titleText} ${pathText} ${tagTextOriginal} ${content}`;
   const sourceText = source === "Title" ? titleText : source === "Folder" ? pathText : source === "Tag" ? tagTextOriginal : combinedText;
-  let excerptQuery = filter.text;
-  if (!excerptQuery) {
-    if (source === "Tag" && filter.tag) excerptQuery = filter.tag;
-    else if (source === "Folder" && filter.folder) excerptQuery = filter.folder;
-  }
+  const excerptQuery = excerptQueryFor(filter, source);
   return { entry, excerpt: makeExcerpt(sourceText, excerptQuery), score, source };
 }
 

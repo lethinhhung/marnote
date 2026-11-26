@@ -17,6 +17,7 @@ describe("updateSavedEntry", () => {
     expect(updated[0]?.isEmpty).toBe(true);
     expect(updated[0]?.metadata?.createdMs).toBe(1000);
     expect(updated[0]?.metadata?.updatedMs).toBe(1000);
+    expect(updated[0]?.modifiedMs).toBe(1000);
   });
 
   it("preserves an existing created timestamp while updating the modified timestamp", () => {
@@ -25,6 +26,7 @@ describe("updateSavedEntry", () => {
 
     expect(updated[0]?.metadata?.createdMs).toBe(100);
     expect(updated[0]?.metadata?.updatedMs).toBe(2000);
+    expect(updated[0]?.modifiedMs).toBe(2000);
   });
 
   it("updates a nested entry located by its full path", () => {

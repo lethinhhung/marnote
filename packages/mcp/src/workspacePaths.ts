@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import { resolve, isAbsolute } from "path";
+import { relative, resolve, isAbsolute, sep } from "path";
 import { WorkspaceError } from "./workspaceErrors.js";
 
 export function validateWorkspaceRelativePath(root: string, relativePath: string): string {
@@ -19,8 +19,28 @@ export function validateWorkspaceRelativePath(root: string, relativePath: string
 
   const canonicalRoot = resolve(root);
   const canonicalResolved = resolve(root, normalized);
-  if (!canonicalResolved.startsWith(canonicalRoot)) throw new WorkspaceError("Path escapes workspace");
+  if (!isWithin(canonicalRoot, canonicalResolved)) throw new WorkspaceError("Path escapes workspace");
   return canonicalResolved;
+}
+
+export async function assertWorkspacePath(root: string, target: string): Promise<void> {
+  const canonicalRoot = await fs.realpath(root);
+  const segments = relative(resolve(root), resolve(target)).split(sep).filter(Boolean);
+  let current = canonicalRoot;
+
+  for (const segment of segments) {
+    current = resolve(current, segment);
+    const stats = await fs.lstat(current);
+    if (stats.isSymbolicLink()) throw new WorkspaceError("Path must not contain symlinks");
+  }
+
+  const realTarget = await fs.realpath(target);
+  if (!isWithin(canonicalRoot, realTarget)) throw new WorkspaceError("Path escapes workspace");
+}
+
+function isWithin(root: string, target: string): boolean {
+  const pathFromRoot = relative(root, target);
+  return pathFromRoot === "" || (!pathFromRoot.startsWith(`..${sep}`) && pathFromRoot !== "..");
 }
 
 export async function isSymlink(path: string): Promise<boolean> {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
-import { Braces, Folder, Heading1, Heading2, Heading3, Link2, List, ListChecks, ListOrdered, Minus, Pilcrow, Quote, Table2 } from "lucide-react";
+import { Braces, Folder, Heading1, Heading2, Heading3, Link2, List, ListChecks, ListOrdered, Minus, Pilcrow, Quote, Table2, Smile } from "lucide-react";
 
 export type SlashState = { query: string; from: number; to: number; top: number; left: number; maxHeight: number };
 
@@ -17,6 +17,7 @@ const choices = [
   { id: "table", label: "Table", detail: "Insert a Markdown table", icon: Table2 },
   { id: "link", label: "Link", detail: "Insert a link", icon: Link2 },
   { id: "workspace-link", label: "Link to a note or folder", detail: "Search workspace items", icon: Folder },
+  { id: "emoji", label: "Emoji", detail: "Insert an emoji", icon: Smile },
   { id: "divider", label: "Divider", detail: "Separate sections", icon: Minus },
 ];
 export const matchingSlashIds = (query: string) => choices.filter(item => `${item.label} ${item.detail}`.toLowerCase().includes(query.toLowerCase())).map(item => item.id);

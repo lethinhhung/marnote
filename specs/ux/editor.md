@@ -15,7 +15,9 @@
 
 ## Blocks and links
 
-- Toolbar and `/` menu insert text, headings, lists, tasks, quotes, code, tables, links, and dividers. Slash results support arrow keys, Enter, and Escape.
+- On desktop, the toolbar and `/` menu insert text, headings, lists, tasks, quotes, code, tables, links, emoji, and dividers. Slash results support arrow keys, Enter, and Escape. On web, `/emoji` opens the emoji picker.
+- Selecting **Emoji** from the desktop `/` menu, or typing `/emoji` on web, opens an emoji picker at the editor cursor. Choosing an emoji inserts it as Unicode text in place of the command and returns focus to the editor; Escape or dismissal without a choice leaves the command unchanged.
+- Typing a recognized `:shortcode:` replaces it with the matching Unicode emoji. Recognize every English emoji name exposed by the emoji picker, using underscores for spaces and punctuation. Support suggestions and replacement in every editable text block; use Up/Down and Enter to choose, and Escape to dismiss. Do not convert unknown names or rewrite shortcode-like text already present when a note is opened.
 - Markdown paste is parsed. Blocks can be dragged; code can be copied. Table controls edit rows, columns, headers, and alignment. Wide content can wrap or scroll.
 - Create web links with **Add web address link** in the toolbar or **Link** in the `/` menu. The dialog edits link text and a web address: it focuses the text field, ↓ moves to the address field, and Enter saves. Cancel or Escape closes the dialog and returns focus to the editor; moving focus outside also dismisses it.
 - Create workspace links with **Link to a note or folder** in the toolbar or `/` menu. This opens a search-palette overlay showing note and folder names and paths; type to filter, use Up/Down to navigate, Enter to create the link, and Escape to close.

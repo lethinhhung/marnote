@@ -84,4 +84,11 @@ describe("NoteEditor", () => {
     renderEditor();
     expect(screen.getByRole("textbox", { name: "Markdown note editor" })).toBeInTheDocument();
   });
+
+  it("initializes with empty content when value is empty string", () => {
+    renderEditor({ value: "" });
+    const editor = screen.getByRole("textbox", { name: "Markdown note editor" });
+    expect(editor).toBeInTheDocument();
+    expect(editor).toHaveTextContent("");
+  });
 });

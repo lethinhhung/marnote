@@ -81,7 +81,7 @@ describe("initializeServer - search_notes matching and ranking", () => {
       const data = JSON.parse((await getTools(server).search_notes.handler({ query: "alpha" })).content[0].text);
 
       expect(data.results[0].source).toBe("Title");
-      expect(data.results[0].excerpt).toBe("");
+      expect(data.results[0].excerpt).toContain("Alpha Note");
       expect(data.results[0].path).toBe("alpha.md");
     } finally {
       await cleanupTempDir(tempDir2);

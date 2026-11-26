@@ -29,7 +29,7 @@ describe("listWorkspace - exclusions", () => {
 
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      const names = entries.map((e) => e.name);
+      const names = entries.entries.map((e) => e.name);
       expect(names).toEqual(["note.md"]);
     } finally {
       await cleanupTempDir(temp);
@@ -47,7 +47,7 @@ describe("listWorkspace - exclusions", () => {
 
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      const names = entries.map((e) => e.name);
+      const names = entries.entries.map((e) => e.name);
       expect(names).toEqual(["note.md"]);
     } finally {
       await cleanupTempDir(temp);
@@ -64,7 +64,7 @@ describe("listWorkspace - exclusions", () => {
 
       const workspace = await resolveWorkspace({ path: temp });
       const entries = await listWorkspace(workspace);
-      const names = entries.map((e) => e.name);
+      const names = entries.entries.map((e) => e.name);
       expect(names).toEqual(["note.md"]);
     } finally {
       await cleanupTempDir(temp);

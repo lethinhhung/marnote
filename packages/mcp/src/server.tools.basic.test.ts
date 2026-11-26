@@ -33,8 +33,8 @@ describe("initializeServer - basic tools", () => {
   it("list_workspace tool returns workspace entries", async () => {
     const server = await initializeServer({ workspacePath: tempDir });
     const result = await getTools(server).list_workspace.handler({});
-    const entries = JSON.parse(result.content[0].text) as Array<{ name: string }>;
-    expect(entries.map((e) => e.name).sort()).toEqual(["folder", "note.md"]);
+    const page = JSON.parse(result.content[0].text) as { entries: Array<{ name: string }> };
+    expect(page.entries.map((e) => e.name).sort()).toEqual(["folder", "inner.md", "note.md"]);
   });
 
   it("read_note tool reads note content", async () => {

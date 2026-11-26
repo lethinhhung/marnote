@@ -76,8 +76,8 @@ describe("stdio subprocess integration: tools", () => {
 
   it("list_workspace returns workspace entries via stdio", async () => {
     await initialize();
-    const entries = (await callTool("list_workspace", {})) as Array<{ name: string }>;
-    expect(entries.map((e) => e.name).sort()).toEqual(["folder", "note1.md", "note2.md"]);
+    const page = (await callTool("list_workspace", {})) as { entries: Array<{ name: string }> };
+    expect(page.entries.map((e) => e.name).sort()).toEqual(["folder", "nested.md", "note1.md", "note2.md"]);
   });
 
   it("read_note reads note content via stdio", async () => {

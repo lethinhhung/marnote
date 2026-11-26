@@ -4,6 +4,23 @@ Notable user-facing changes are recorded here for each release. Add a dated vers
 
 ## Unreleased
 
+## [0.5.0] - 2026-11-26
+
+### Added
+
+- Insert emoji from the editor picker or by typing a recognized shortcode; emoji are saved as standard Unicode text in Markdown.
+- Configure the read-only MCP server with a guided setup prompt or manual client instructions, and browse workspace entries in pages.
+- Add search and social sharing metadata, a web app manifest, and a social preview image to the web app.
+
+### Improved
+
+- Restrict MCP browsing to visible workspace files, omit symlinks and hidden entries, and bound note reads and search results.
+- Improve workspace navigation and search behavior across desktop and web.
+
+### Compatibility
+
+- Markdown workspaces need no migration. MCP `list_workspace` now returns paginated results with `entries` and `nextOffset`; clients using its former array response should update to the new shape. Web notes remain stored in the browser profile and do not sync with desktop workspaces. macOS builds remain ad-hoc signed and not notarized, so first launch may require approval in Privacy & Security settings.
+
 ## [0.4.1] - 2026-11-20
 
 ### Added
