@@ -12,17 +12,6 @@ export function useEditorEmoji({ editorRef }: { editorRef: RefObject<Editor | nu
     const { $from } = editor.state.selection;
     if (!$from.parent.isTextblock) { setMenu(null); return; }
     const before = $from.parent.textContent.slice(0, $from.parentOffset);
-    const completed = before.match(/(^|[\s([{]):([\w+-]+)([ \t.,!?;:)}\]]*)$/);
-    if (completed) {
-      const emoji = emojiForShortcode(completed[2]);
-      if (emoji && completed[3].startsWith(":")) {
-        const from = $from.pos - completed[0].length;
-        const insertion = completed[1] + emoji + completed[3].slice(1);
-        editor.chain().insertContentAt({ from, to: $from.pos }, insertion).setTextSelection(from + insertion.length).run();
-        setMenu(null);
-        return;
-      }
-    }
     const match = before.match(/(?:^|[\s([{]):([\w+-]*)$/);
     if (match && match[1].length >= 1) {
       const cursor = editor.view.coordsAtPos($from.pos);
@@ -50,6 +39,11 @@ export function useEditorEmoji({ editorRef }: { editorRef: RefObject<Editor | nu
     if (event.key === "Escape") { event.preventDefault(); setMenu(null); return; }
     if (menu.mode !== "shortcode") return;
     const matches = matchingEmojiShortcodes(menu.query);
+    if (event.key === ":" && menu.query && emojiForShortcode(menu.query)) {
+      event.preventDefault();
+      choose(menu.query);
+      return;
+    }
     if (matches.length && (event.key === "ArrowDown" || event.key === "ArrowUp")) { event.preventDefault(); setSelected(value => (value + (event.key === "ArrowDown" ? 1 : matches.length - 1)) % matches.length); }
     if (event.key === "Enter" && matches[selected]) { event.preventDefault(); choose(matches[selected]); }
   };

@@ -1,6 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Editor } from "@tiptap/react";
+import type { KeyboardEvent } from "react";
 import { useEditorEmoji } from "./useEditorEmoji";
 
 function editorFor(text: string) {
@@ -15,6 +16,18 @@ function editorFor(text: string) {
   return { editor, insertContentAt, setTextSelection, run };
 }
 
+function pressKey(result: { current: ReturnType<typeof useEditorEmoji> }, key: string) {
+  const event = {
+    key,
+    preventDefault: vi.fn(),
+    stopPropagation: vi.fn(),
+    nativeEvent: new KeyboardEvent("keydown", { key }),
+    currentTarget: document.body,
+    target: document.body,
+  } as unknown as KeyboardEvent<HTMLDivElement>;
+  act(() => result.current.keys(event));
+}
+
 describe("useEditorEmoji", () => {
   it("suggests matching names and replaces the shortcode when chosen", () => {
     const mock = editorFor("hello :smi");
@@ -27,15 +40,21 @@ describe("useEditorEmoji", () => {
     expect(result.current.menu).toBeNull();
   });
 
-  it("converts a completed shortcode and leaves unknown names alone", () => {
-    const mock = editorFor(":heart:");
+  it("converts a completed shortcode on colon key press and leaves unknown names alone", () => {
+    const mock = editorFor(":heart");
     const { result } = renderHook(() => useEditorEmoji({ editorRef: { current: mock.editor } }));
     act(() => result.current.update());
-    expect(mock.insertContentAt).toHaveBeenCalledWith({ from: 1, to: 8 }, "❤️");
+    expect(result.current.menu?.query).toBe("heart");
+    pressKey(result, ":");
+    expect(mock.insertContentAt).toHaveBeenCalledWith({ from: 1, to: 7 }, "❤️");
     expect(result.current.menu).toBeNull();
-    const unknown = editorFor(":not_a_shortcode:");
+
+    const unknown = editorFor(":not_a_shortcode");
     const next = renderHook(() => useEditorEmoji({ editorRef: { current: unknown.editor } }));
     act(() => next.result.current.update());
+    expect(next.result.current.menu?.query).toBe("not_a_shortcode");
+    pressKey(next.result, ":");
     expect(unknown.insertContentAt).not.toHaveBeenCalled();
+    expect(next.result.current.menu).not.toBeNull();
   });
 });
