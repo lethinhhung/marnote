@@ -1,7 +1,7 @@
 # MCP
 
 - MCP is optional and does not add steps or controls to everyday note-taking.
-- Desktop provides a workspace-scoped MCP setup guide and lets users copy the workspace path.
+- Desktop shows the active workspace path and provides two setup paths: copy a ready-to-paste AI prompt that includes the path, or follow the manual setup steps.
 - The guide explains client setup; the MCP client manages the local server process.
 - Web excludes MCP because browser storage cannot provide arbitrary filesystem access.
 - Describe the three read-only tools in plain language; return concise, bounded results with useful paths and excerpts.
