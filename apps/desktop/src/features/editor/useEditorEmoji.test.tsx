@@ -31,7 +31,7 @@ describe("useEditorEmoji", () => {
     const mock = editorFor(":heart:");
     const { result } = renderHook(() => useEditorEmoji({ editorRef: { current: mock.editor } }));
     act(() => result.current.update());
-    expect(mock.insertContentAt).toHaveBeenCalledWith(1, "❤️");
+    expect(mock.insertContentAt).toHaveBeenCalledWith({ from: 1, to: 8 }, "❤️");
     expect(result.current.menu).toBeNull();
     const unknown = editorFor(":not_a_shortcode:");
     const next = renderHook(() => useEditorEmoji({ editorRef: { current: unknown.editor } }));
