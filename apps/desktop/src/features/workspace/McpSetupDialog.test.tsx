@@ -39,7 +39,7 @@ describe("McpSetupDialog", () => {
     await user.click(screen.getByRole("button", { name: "Copy prompt" }));
     const prompt = writeText.mock.calls[0][0] as string;
     expect(prompt).toContain("/workspace/notes");
-    expect(prompt).toContain("https://github.com/lethinhhung/marnote/blob/develop/docs/mcp.md");
+    expect(prompt).toContain("https://github.com/lethinhhung/marnote/blob/main/docs/mcp.md");
     expect(prompt).toContain("read-only tools: list_workspace, read_note, and search_notes");
     expect(prompt).toContain("Do not claim the setup is complete");
     expect(screen.getByRole("button", { name: "Copy prompt" })).toHaveTextContent("Prompt copied");
@@ -60,7 +60,7 @@ describe("McpSetupDialog", () => {
     const user = userEvent.setup();
     render(<McpSetupDialog workspacePath="/workspace" onClose={vi.fn()} />);
     await user.click(screen.getByRole("link", { name: "Open manual setup guide" }));
-    expect(browserOpen).toHaveBeenCalledWith("https://github.com/lethinhhung/marnote/blob/develop/docs/mcp.md", "_blank", "noopener,noreferrer");
+    expect(browserOpen).toHaveBeenCalledWith("https://github.com/lethinhhung/marnote/blob/main/docs/mcp.md", "_blank", "noopener,noreferrer");
   });
 
   it("keeps keyboard focus inside the modal", async () => {

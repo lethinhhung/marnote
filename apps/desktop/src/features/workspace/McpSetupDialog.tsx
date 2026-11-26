@@ -8,7 +8,7 @@ type Props = { workspacePath: string; onClose: () => void };
 export function McpSetupDialog({ workspacePath, onClose }: Props) {
   const [copied, setCopied] = useState(false);
   const [promptCopied, setPromptCopied] = useState(false);
-  const guideUrl = "https://github.com/lethinhhung/marnote/blob/develop/docs/mcp.md";
+  const guideUrl = "https://github.com/lethinhhung/marnote/blob/main/docs/mcp.md";
   const dialogKeys = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
     if (event.key !== "Tab") return;
