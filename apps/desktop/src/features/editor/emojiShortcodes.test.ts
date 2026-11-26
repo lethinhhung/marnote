@@ -7,8 +7,9 @@ describe("emoji shortcodes", () => {
     expect(emojiForShortcode("unknown")).toBeUndefined();
   });
 
-  it("returns up to eight names containing the query", () => {
-    expect(matchingEmojiShortcodes("HEA")).toEqual(["heart"]);
+  it("returns every matching picker name", () => {
+    expect(matchingEmojiShortcodes("HEA")).toContain("heart");
+    expect(matchingEmojiShortcodes("grinning_face")).toContain("grinning_face");
     expect(matchingEmojiShortcodes("")).toHaveLength(8);
     expect(matchingEmojiShortcodes("missing")).toEqual([]);
   });

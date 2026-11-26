@@ -10,9 +10,9 @@ export function useEditorEmoji({ editorRef }: { editorRef: RefObject<Editor | nu
     const editor = editorRef.current;
     if (!editor || !editor.state.selection.empty) { setMenu(null); return; }
     const { $from } = editor.state.selection;
-    if ($from.parent.type.name !== "paragraph") { setMenu(null); return; }
+    if (!$from.parent.isTextblock) { setMenu(null); return; }
     const before = $from.parent.textContent.slice(0, $from.parentOffset);
-    const completed = before.match(/(^|\s):([\w+-]+)([ \t.,!?;:]*)$/);
+    const completed = before.match(/(^|[\s([{]):([\w+-]+)([ \t.,!?;:)}\]]*)$/);
     if (completed) {
       const emoji = emojiForShortcode(completed[2]);
       if (emoji && completed[3].startsWith(":")) {
@@ -23,7 +23,7 @@ export function useEditorEmoji({ editorRef }: { editorRef: RefObject<Editor | nu
         return;
       }
     }
-    const match = before.match(/(?:^|\s):([\w+-]*)$/);
+    const match = before.match(/(?:^|[\s([{]):([\w+-]*)$/);
     if (match && match[1].length >= 1) {
       const cursor = editor.view.coordsAtPos($from.pos);
       setMenu({ mode: "shortcode", query: match[1], from: $from.pos - match[1].length - 1, to: $from.pos, top: Math.min(cursor.bottom + 6, window.innerHeight - 300), left: Math.max(12, Math.min(cursor.left, window.innerWidth - 230)) });
