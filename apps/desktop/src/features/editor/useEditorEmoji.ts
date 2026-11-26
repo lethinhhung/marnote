@@ -18,7 +18,7 @@ export function useEditorEmoji({ editorRef }: { editorRef: RefObject<Editor | nu
       if (emoji && completed[3].startsWith(":")) {
         const from = $from.pos - completed[0].length;
         const insertion = completed[1] + emoji + completed[3].slice(1);
-        editor.chain().insertContentAt(from, insertion).setTextSelection(from + insertion.length).run();
+        editor.chain().insertContentAt({ from, to: $from.pos }, insertion).setTextSelection(from + insertion.length).run();
         setMenu(null);
         return;
       }
