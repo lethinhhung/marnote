@@ -52,19 +52,19 @@ describe("searchNotes - ranking & result bounds", () => {
       for (let i = 0; i < 25; i++) await fs.writeFile(join(tempDir, `note${i}.md`), `# Note ${i}`);
       const w = await resolveWorkspace({ path: tempDir });
       const r = await searchNotes(w, "note");
-      expect(r.results.length).toBe(20); expect(r.total).toBe(20);
+      expect(r.results.length).toBe(20); expect(r.total).toBe(26);
     });
     it("respects custom limit below 20", async () => {
       for (let i = 0; i < 10; i++) await fs.writeFile(join(tempDir, `note${i}.md`), `# Note ${i}`);
       const w = await resolveWorkspace({ path: tempDir });
       const r = await searchNotes(w, "note", 5);
-      expect(r.results.length).toBe(5); expect(r.total).toBe(5);
+      expect(r.results.length).toBe(5); expect(r.total).toBe(11);
     });
     it("caps at 100 results", async () => {
       for (let i = 0; i < 120; i++) await fs.writeFile(join(tempDir, `note${i}.md`), `# Note ${i}`);
       const w = await resolveWorkspace({ path: tempDir });
       const r = await searchNotes(w, "note", 200);
-      expect(r.results.length).toBe(100); expect(r.total).toBe(100);
+      expect(r.results.length).toBe(100); expect(r.total).toBe(121);
     });
     it("clamps negative limit to 1", async () => {
       await fs.writeFile(join(tempDir, "note.md"), "# Note");

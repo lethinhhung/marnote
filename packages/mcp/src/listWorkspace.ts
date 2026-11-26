@@ -41,7 +41,7 @@ export async function listWorkspace(
     } catch {
       return;
     }
-    items.sort((a, b) => a.name.localeCompare(b.name));
+    items.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
     for (const item of items) {
       if (collected.length > pageSize) return;
       if (item.isSymbolicLink() || isHiddenWorkspaceEntry(item.name)) continue;
@@ -56,7 +56,7 @@ export async function listWorkspace(
   }
 
   await visit(workspace.root);
-  const entries = collected.slice(start, start + pageSize);
+  const entries = collected.slice(0, pageSize);
   return {
     entries,
     offset: start,

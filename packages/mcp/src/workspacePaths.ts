@@ -25,7 +25,7 @@ export function validateWorkspaceRelativePath(root: string, relativePath: string
 
 export async function assertWorkspacePath(root: string, target: string): Promise<void> {
   const canonicalRoot = await fs.realpath(root);
-  const segments = relative(canonicalRoot, target).split(sep).filter(Boolean);
+  const segments = relative(resolve(root), resolve(target)).split(sep).filter(Boolean);
   let current = canonicalRoot;
 
   for (const segment of segments) {
