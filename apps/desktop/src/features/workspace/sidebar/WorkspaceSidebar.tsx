@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { File, FilePlus, FileText, Folder, FolderOpen, FolderPlus, Home, Pencil, Trash2, Eye, EyeOff, Tag, Star, ChevronsUpDown, RefreshCw } from "lucide-react";
 import { isDesktop, openWorkspaceFolder } from "../../../platform/dialog";
-import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import { FileTree, type TreeEdit } from "../tree/FileTree";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
 import { EmojiPicker } from "../../../shared/ui/EmojiPicker";
@@ -9,8 +8,8 @@ import { requestTagEdit } from "../../../shared/ui/tagEditRequest";
 import { uniqueCreatePath } from "../uniqueCreatePath";
 import { useSearchExplorerActions } from "./useSearchExplorerActions";
 import { MoveEntryDialog } from "./MoveEntryDialog";
-import { TrashDialog } from "./TrashDialog";
-import type { TrashItem } from "../../../platform/workspace";
+import { TrashDialog, WorkspaceMcpSetup } from "./WorkspaceSidebarDialogs";
+import type { TrashItem, UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { ExplorerSort } from "../sortEntries";
 import "../../../shared/theme/sidebar-reference.css";
 type Props = { tree: WorkspaceTree | null; selected: string; recent: string[]; width: number; collapsed: boolean; peekOpen: boolean; trash: TrashItem[]; onListTrash: () => void; onRestoreTrash: (id: string) => void; onEmptyTrash: () => void; onDefault: () => void; onOpen: (path: string) => void; onRefresh?: () => void; onSelect: (e: Entry) => void; onTargetChange?: (path: string, kind: "note" | "folder") => void; onCreate: (p: string) => void; onCreateFolder: (p: string) => void; onRename: (p: string, n: string) => void; onDelete: (p: string) => void; onMove: (source: string, destination: string) => Promise<boolean>; onReorder: (parent: string, paths: string[]) => Promise<boolean>; onUpdateMetadata?: (path: string, metadata: UpdateEntryMetadataInput) => void };
@@ -93,6 +92,7 @@ export function WorkspaceSidebar(props: Props) {
     <div className="sidebar-workspaces">{props.recent.length > 0 && <label className="recent-workspaces"><span>Recent Workspaces</span><span className="recent-workspace-select"><select aria-label="Switch workspace" value={tree?.path || ""} onChange={event => event.target.value && props.onOpen(event.target.value)}>{tree && <option value={tree.path}>{tree.name}</option>}{props.recent.filter(path => path !== tree?.path).map(path => <option key={path} value={path}>{path.split(/[\\/]/).filter(Boolean).pop()}</option>)}</select><ChevronsUpDown size={14} aria-hidden="true" /></span></label>}
     <div className="workspace-open">
       <button className="open-workspace" type="button" onClick={() => void browse()}><FolderOpen size={14} /> Open workspace...</button>
+      {isDesktop() && <WorkspaceMcpSetup workspacePath={tree?.path} />}
       <button className="open-workspace" type="button" disabled={!tree} onClick={() => setTrashOpen(true)}><Trash2 size={14} /> Workspace trash</button>
       {browseError && <p className="sidebar-error" role="alert">{browseError}</p>}
     </div></div>

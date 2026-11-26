@@ -45,6 +45,17 @@ describe("WorkspaceSidebar", () => {
     expect(onRefresh).toHaveBeenCalledOnce();
   });
 
+  it("opens workspace MCP setup only in the desktop app", async () => {
+    const user = userEvent.setup();
+    isDesktop.mockReturnValue(true);
+    const view = render(<WorkspaceSidebar {...makeProps()} />);
+    await user.click(screen.getByRole("button", { name: "Connect an AI app" }));
+    expect(screen.getByRole("dialog", { name: "Connect an AI app" })).toBeInTheDocument();
+    isDesktop.mockReturnValue(false);
+    view.rerender(<WorkspaceSidebar {...makeProps()} />);
+    expect(screen.queryByRole("button", { name: "Connect an AI app" })).not.toBeInTheDocument();
+  });
+
   it("creates a note under the selected note's parent", async () => {
     const user = userEvent.setup();
     const onCreate = vi.fn();
