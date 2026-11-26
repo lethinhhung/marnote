@@ -16,5 +16,6 @@
 
 ## Implemented
 
-- Core desktop editing uses local files. Git UI and MCP server are not implemented.
+- The local read-only MCP stdio server exposes `list_workspace`, `read_note`, and `search_notes` for one configured workspace.
+- Git UI is not implemented.
 - The header can copy the active note as Markdown.

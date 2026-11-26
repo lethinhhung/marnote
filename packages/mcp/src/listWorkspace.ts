@@ -1,4 +1,5 @@
 import { promises as fs } from "fs";
+import type { Dirent } from "fs";
 import { resolve } from "path";
 import { isMarkdownFile, ResolvedWorkspace } from "./workspace.js";
 import { isHiddenWorkspaceEntry } from "./workspaceEntries.js";
@@ -25,11 +26,16 @@ export async function listWorkspace(
   const pageSize = Math.min(Math.max(1, limit), MAX_PAGE_SIZE);
   const start = Math.max(0, offset);
   const collected: ListedEntry[] = [];
-  const targetCount = start + pageSize + 1;
+  let skipped = 0;
+
+  function collect(entry: ListedEntry): void {
+    if (skipped < start) skipped += 1;
+    else if (collected.length <= pageSize) collected.push(entry);
+  }
 
   async function visit(directory: string, parent = ""): Promise<void> {
-    if (collected.length >= targetCount) return;
-    let items;
+    if (collected.length > pageSize) return;
+    let items: Dirent[];
     try {
       items = await fs.readdir(directory, { withFileTypes: true });
     } catch {
@@ -37,14 +43,14 @@ export async function listWorkspace(
     }
     items.sort((a, b) => a.name.localeCompare(b.name));
     for (const item of items) {
-      if (collected.length >= targetCount) return;
+      if (collected.length > pageSize) return;
       if (item.isSymbolicLink() || isHiddenWorkspaceEntry(item.name)) continue;
       const path = parent ? `${parent}/${item.name}` : item.name;
       if (item.isDirectory()) {
-        collected.push({ name: item.name, path, kind: "directory" });
+        collect({ name: item.name, path, kind: "directory" });
         await visit(resolve(directory, item.name), path);
       } else if (item.isFile() && isMarkdownFile(item.name)) {
-        collected.push({ name: item.name, path, kind: "file" });
+        collect({ name: item.name, path, kind: "file" });
       }
     }
   }
