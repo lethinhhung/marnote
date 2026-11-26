@@ -1,5 +1,5 @@
 import { promises as fs } from "fs";
-import { validateWorkspaceRelativePath, isMarkdownFile, WorkspaceError } from "./workspace.js";
+import { validateWorkspaceRelativePath, assertWorkspacePath, isMarkdownFile, WorkspaceError } from "./workspace.js";
 
 export interface ReadNoteResult {
   path: string;
@@ -13,6 +13,13 @@ export async function readNote(root: string, relativePath: string): Promise<Read
     throw new WorkspaceError("Expected a Markdown file");
   }
 
+  try {
+    await assertWorkspacePath(root, canonicalPath);
+  } catch (error) {
+    if (error instanceof WorkspaceError) throw error;
+    throw new WorkspaceError("Note not found");
+  }
+
   let stats: Awaited<ReturnType<typeof fs.stat>>;
   try {
     stats = await fs.stat(canonicalPath);
@@ -24,25 +31,6 @@ export async function readNote(root: string, relativePath: string): Promise<Read
     throw new WorkspaceError("Expected a Markdown file");
   }
 
-  const realRoot = await fs.realpath(root);
-  const realPath = await fs.realpath(canonicalPath);
-  if (!realPath.startsWith(realRoot)) {
-    throw new WorkspaceError("Path escapes workspace");
-  }
-
-  if (await isSymlink(canonicalPath)) {
-    throw new WorkspaceError("Expected a Markdown file");
-  }
-
   const content = await fs.readFile(canonicalPath, "utf-8");
   return { path: relativePath, content };
-}
-
-async function isSymlink(path: string): Promise<boolean> {
-  try {
-    const stats = await fs.lstat(path);
-    return stats.isSymbolicLink();
-  } catch {
-    return false;
-  }
 }
