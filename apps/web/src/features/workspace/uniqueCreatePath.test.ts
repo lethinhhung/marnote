@@ -70,6 +70,19 @@ describe("uniqueCreatePath", () => {
   it("handles uppercase .MD extension conflict with lowercase existing file", () => {
     expect(uniqueCreatePath([file("notes/report.md")], "notes/REPORT.MD")).toBe("notes/REPORT-1.MD");
   });
+
+  it("detects conflict between file and folder with same stem", () => {
+    expect(uniqueCreatePath([folder("notes")], "notes.md")).toBe("notes-1.md");
+  });
+
+  it("detects conflict between folder and file with same stem", () => {
+    expect(uniqueCreatePath([file("notes.md")], "notes")).toBe("notes-1");
+  });
+
+  it("detects case-insensitive conflict between file and folder", () => {
+    expect(uniqueCreatePath([folder("notes")], "Notes.md")).toBe("Notes-1.md");
+    expect(uniqueCreatePath([file("Notes.md")], "notes")).toBe("notes-1");
+  });
 });
 
 describe("uniqueCreatePath folder paths", () => {
