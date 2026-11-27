@@ -5,7 +5,8 @@ import { parentPath } from "./state/workspacePaths";
 export function uniqueCreatePath(entries: Entry[], path: string): string {
   const parent = parentPath(path).toLowerCase();
   const name = path.split("/").pop() || path;
-  const extension = name.toLowerCase().endsWith(".md") ? ".md" : "";
+  const extensionMatch = name.match(/\.md$/i);
+  const extension = extensionMatch ? extensionMatch[0] : "";
   const stem = extension ? name.slice(0, -extension.length) : name;
   const allEntries = flattenEntries(entries);
   const siblings = allEntries.filter(entry => parentPath(entry.path).toLowerCase() === parent);
