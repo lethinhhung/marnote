@@ -10,9 +10,19 @@ export function uniqueCreatePath(entries: Entry[], path: string): string {
   const stem = extension ? name.slice(0, -extension.length) : name;
   const allEntries = flattenEntries(entries);
   const siblings = allEntries.filter(entry => parentPath(entry.path).toLowerCase() === parent);
-  const existing = new Set(siblings.map(entry => entry.name.toLowerCase()));
-  if (!existing.has(name.toLowerCase())) return path;
+  const existing = new Set<string>();
+  for (const entry of siblings) {
+    const entryName = entry.name.toLowerCase();
+    existing.add(entryName);
+    if (entry.kind === "file") {
+      const entryExtensionMatch = entry.name.match(/\.md$/i);
+      const entryExtension = entryExtensionMatch ? entryExtensionMatch[0] : "";
+      const entryStem = entryExtension ? entry.name.slice(0, -entryExtension.length) : entry.name;
+      existing.add(entryStem.toLowerCase());
+    }
+  }
+  if (!existing.has(name.toLowerCase()) && !existing.has(stem.toLowerCase())) return path;
   let suffix = 1;
-  while (existing.has(`${stem}-${suffix}${extension}`.toLowerCase())) suffix++;
+  while (existing.has(`${stem}-${suffix}${extension}`.toLowerCase()) || existing.has(`${stem}-${suffix}`.toLowerCase())) suffix++;
   return [...parentPath(path).split("/"), `${stem}-${suffix}${extension}`].filter(Boolean).join("/");
 }
