@@ -61,6 +61,15 @@ describe("uniqueCreatePath", () => {
     expect(uniqueCreatePath(entries, "projects/alpha/brief.md")).toBe("projects/alpha/brief-1.md");
     expect(uniqueCreatePath(entries, "projects/alpha/new.md")).toBe("projects/alpha/new.md");
   });
+
+  it("handles uppercase .MD extension when adding a suffix", () => {
+    expect(uniqueCreatePath([file("notes/REPORT.MD")], "notes/REPORT.MD")).toBe("notes/REPORT-1.MD");
+    expect(uniqueCreatePath([file("notes/draft.Md")], "notes/draft.Md")).toBe("notes/draft-1.Md");
+  });
+
+  it("handles uppercase .MD extension conflict with lowercase existing file", () => {
+    expect(uniqueCreatePath([file("notes/report.md")], "notes/REPORT.MD")).toBe("notes/REPORT-1.MD");
+  });
 });
 
 describe("uniqueCreatePath folder paths", () => {
