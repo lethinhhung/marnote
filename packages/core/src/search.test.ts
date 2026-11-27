@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSearchQuery, searchWorkspace } from "./search";
+import { excerptQueryFor, parseSearchQuery, searchWorkspace } from "./search";
 import type { Entry } from "./workspace";
 
 const entries: Entry[] = [
@@ -133,5 +133,35 @@ describe("searchWorkspace", () => {
 
   it("parses tag: filter with leading # as tag name without #", () => {
     expect(parseSearchQuery("tag:#work")).toEqual({ text: "", tag: "work", folder: "", type: "" });
+  });
+});
+
+describe("excerptQueryFor", () => {
+  it("returns the text query when one is set, regardless of source", () => {
+    expect(excerptQueryFor({ text: "meeting", tag: "", folder: "", type: "" }, "Title")).toBe("meeting");
+    expect(excerptQueryFor({ text: "meeting", tag: "", folder: "", type: "" }, "Tag")).toBe("meeting");
+    expect(excerptQueryFor({ text: "meeting", tag: "", folder: "", type: "" }, "Folder")).toBe("meeting");
+    expect(excerptQueryFor({ text: "meeting", tag: "", folder: "", type: "" }, "Content")).toBe("meeting");
+  });
+
+  it("returns the tag when source is Tag and no text query is set", () => {
+    expect(excerptQueryFor({ text: "", tag: "work", folder: "", type: "" }, "Tag")).toBe("work");
+  });
+
+  it("returns the folder when source is Folder and no text query is set", () => {
+    expect(excerptQueryFor({ text: "", tag: "", folder: "work", type: "" }, "Folder")).toBe("work");
+  });
+
+  it("returns an empty string when source is Tag but no tag filter is set", () => {
+    expect(excerptQueryFor({ text: "", tag: "", folder: "", type: "" }, "Tag")).toBe("");
+  });
+
+  it("returns an empty string when source is Folder but no folder filter is set", () => {
+    expect(excerptQueryFor({ text: "", tag: "", folder: "", type: "" }, "Folder")).toBe("");
+  });
+
+  it("returns an empty string for other sources without a text query", () => {
+    expect(excerptQueryFor({ text: "", tag: "", folder: "", type: "" }, "Content")).toBe("");
+    expect(excerptQueryFor({ text: "", tag: "", folder: "", type: "" }, undefined)).toBe("");
   });
 });
