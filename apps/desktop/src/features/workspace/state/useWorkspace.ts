@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { createFile, createFolder, deleteFile, emptyTrash as emptyTrashApi, listTrash, listWorkspace, moveFile, readFile, renameWorkspaceTag, restoreTrash, saveManualOrder, saveWorkspaceTags, updateEntryMetadata, writeFile } from "../../../platform/workspace";
 import type { UpdateEntryMetadataInput } from "../../../platform/workspace";
 import type { Entry, WorkspaceTree } from "../workspaceTypes";
@@ -6,14 +6,13 @@ import { useWorkspaceRecent } from "./useWorkspaceRecent";
 import { isSameOrDescendant, rebasePath } from "./workspacePaths";
 import type { TrashItem } from "../../../platform/workspace";
 import { DEFAULT_TAG_COLOR, saveWorkspace, updateEntryEmptiness, updateSavedEntry } from "@marnote/core";
-import { sameWorkspaceTree } from "./workspaceTreeSnapshot";
+import { useWorkspaceRefresh } from "./useWorkspaceRefresh";
 
 export function useWorkspace() {
   const [tree, setTree] = useState<WorkspaceTree | null>(null);
   const [note, setNote] = useState<{ path: string; content: string } | null>(null);
   const [error, setError] = useState("");
   const [trash, setTrash] = useState<TrashItem[]>([]);
-  const refreshing = useRef(false);
   const run = useCallback(async (task: () => Promise<void>) => { try { setError(""); await task(); } catch (e) { setError(String(e)); } }, []);
   const { open, openDefault, openLastOrDefault, recent } = useWorkspaceRecent({ setTree, setNote, setError });
   const select = (entry: Entry) => run(async () => { if (!tree) return; const result = await readFile(tree.path, entry.path); setNote({ path: result.path, content: result.content }); });
@@ -38,22 +37,7 @@ export function useWorkspace() {
     return path === current.path ? current : { ...current, path };
   });
   const dropNote = (root: string) => setNote(current => current && isSameOrDescendant(current.path, root) ? null : current);
-  const refresh = useCallback(async (silent = false) => {
-    if (!tree || refreshing.current) return;
-    refreshing.current = true;
-    try {
-      const next = await listWorkspace(tree.path);
-      setTree(current => current && sameWorkspaceTree(current, next) ? current : next);
-      if (!silent) setError("");
-    }
-    catch (e) { if (!silent) setError(String(e)); }
-    finally { refreshing.current = false; }
-  }, [tree?.path]);
-  useEffect(() => {
-    if (!tree) return;
-    const timer = window.setInterval(() => { void refresh(true); }, 2500);
-    return () => window.clearInterval(timer);
-  }, [tree?.path, refresh]);
+  const { refresh } = useWorkspaceRefresh(tree, setTree, setError);
   const mutate = (task: () => Promise<void>) => run(async () => { await task(); await refresh(); });
   const renameOrMove = (p: string, n: string) => run(async () => {
     if (!tree) return;
