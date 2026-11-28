@@ -1,10 +1,39 @@
-import { flattenEntries, isMarkdown, type Entry } from "./workspace.js";
+import { flattenEntries, isMarkdown, type Entry, type WorkspaceTree } from "./workspace.js";
 import { parseSearchQuery, hasWords, folderMatches, type MatchSource, type SearchFilter } from "./searchQuery.js";
 import { makeExcerpt } from "./searchUtils.js";
 
 export type NoteMatch = { entry: Entry; excerpt: string; score: number; source: MatchSource };
 export type SearchResults = { notes: NoteMatch[]; folders: Entry[]; tags: { name: string; count: number }[] };
+export type ReadResult = { path: string; content: string; modifiedMs: number };
 export { type MatchSource, type SearchFilter, parseSearchQuery };
+
+type CachedNote = { modifiedMs?: number; content: string };
+const indexes = new Map<string, Map<string, CachedNote>>();
+
+export function updateSearchIndexContent(root: string, path: string, content: string, modifiedMs?: number) {
+  const index = indexes.get(root) ?? new Map<string, CachedNote>();
+  indexes.set(root, index);
+  index.set(path, { modifiedMs, content });
+}
+
+export async function loadSearchIndex(tree: WorkspaceTree, read: (root: string, path: string) => Promise<ReadResult>) {
+  const index = indexes.get(tree.path) ?? new Map<string, CachedNote>();
+  indexes.set(tree.path, index);
+  const notes = flattenEntries(tree.entries).filter(isMarkdown);
+  await Promise.all(notes.map(async entry => {
+    const cached = index.get(entry.path);
+    if (cached && cached.modifiedMs === entry.modifiedMs) return;
+    try {
+      const result = await read(tree.path, entry.path);
+      index.set(entry.path, { modifiedMs: result.modifiedMs, content: result.content });
+    } catch {
+      if (!cached) index.set(entry.path, { modifiedMs: entry.modifiedMs, content: "" });
+    }
+  }));
+  const paths = new Set(notes.map(entry => entry.path));
+  for (const path of index.keys()) if (!paths.has(path)) index.delete(path);
+  return Object.fromEntries([...index].map(([path, note]) => [path, note.content]));
+}
 
 export function searchWorkspace(entries: Entry[] = [], query: string, contents: Record<string, string> = {}): SearchResults {
   if (!query.trim()) return { notes: [], folders: [], tags: [] };
