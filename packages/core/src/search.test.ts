@@ -86,6 +86,20 @@ describe("searchWorkspace", () => {
     expect(results.tags).toEqual([{ name: "work", count: 1 }]);
   });
 
+  it("collects tags only from notes matching all query words, not all notes in scope", () => {
+    const entries: Entry[] = [
+      { name: "matching.md", path: "notes/matching.md", kind: "file", modifiedMs: 100, metadata: { tags: ["project"] } },
+      { name: "nonmatching.md", path: "notes/nonmatching.md", kind: "file", modifiedMs: 200, metadata: { tags: ["work"] } },
+    ];
+    const contents = {
+      "notes/matching.md": "work project",
+      "notes/nonmatching.md": "foo",
+    };
+    const results = searchWorkspace(entries, "work project", contents);
+    expect(results.notes.map((n) => n.entry.name)).toEqual(["matching.md"]);
+    expect(results.tags).toEqual([{ name: "project", count: 1 }]);
+  });
+
   it("matches note content and attributes Content source", () => {
     const contents = { "work/meeting-notes.md": "quarterly planning summary" };
     const results = searchWorkspace(entries, "quarterly", contents);

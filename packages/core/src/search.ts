@@ -11,13 +11,14 @@ export function searchWorkspace(entries: Entry[] = [], query: string, contents: 
   const filter = parseSearchQuery(query);
   const all = flattenEntries(entries);
   const words = filter.text.split(/\s+/).filter(Boolean);
-  const notes = all.filter(isMarkdown).filter(entry => folderMatches(entry.path, filter.folder) && (!filter.type || filter.type === "note"))
+  const matchedEntries = all.filter(isMarkdown).filter(entry => folderMatches(entry.path, filter.folder) && (!filter.type || filter.type === "note"));
+  const notes = matchedEntries
     .map(entry => makeNoteMatch(entry, words, filter, contents[entry.path] ?? ""))
     .filter((match): match is NoteMatch => !!match)
     .sort((a, b) => b.score - a.score || (b.entry.modifiedMs ?? 0) - (a.entry.modifiedMs ?? 0));
   const folders = all.filter(entry => entry.kind === "directory" && (!filter.type || filter.type === "folder") && folderMatches(entry.path, filter.folder))
     .filter(entry => !words.length || hasWords(`${entry.name} ${entry.path}`.toLocaleLowerCase(), words));
-  const tags = collectTags(all, filter, words);
+  const tags = collectTags(notes.map(n => n.entry), filter, words);
   return { notes, folders, tags };
 }
 
@@ -51,8 +52,7 @@ function makeNoteMatch(entry: Entry, words: string[], filter: SearchFilter, cont
 
 function collectTags(entries: Entry[], filter: SearchFilter, words: string[]) {
   const counts = new Map<string, number>();
-  for (const entry of entries.filter(isMarkdown)) {
-    if (!folderMatches(entry.path, filter.folder) || (filter.type && filter.type !== "note")) continue;
+  for (const entry of entries) {
     for (const tag of new Set(entry.metadata?.tags ?? [])) {
       const tagName = tag.toLocaleLowerCase();
       if (filter.tag ? tagName === filter.tag : words.some(word => tagName.includes(word))) counts.set(tagName, (counts.get(tagName) ?? 0) + 1);
