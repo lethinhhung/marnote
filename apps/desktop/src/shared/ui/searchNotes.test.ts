@@ -126,21 +126,17 @@ describe("searchWorkspace", () => {
     expect(result.notes.map((n) => n.entry.name)).toEqual(["Project Plan.md", "Meeting Notes.md"]);
   });
 
-  it("collects tags matching any query word, sorted by name", () => {
+  it("collects tags only from notes matching all query words", () => {
     const result = searchWorkspace(entries, "work docs", contents);
-    expect(result.tags.map((t) => ({ name: t.name, count: t.count }))).toEqual([
-      { name: "docs", count: 1 },
-      { name: "work", count: 2 },
-    ]);
+    expect(result.notes).toHaveLength(0);
+    expect(result.tags).toEqual([]);
   });
 
-  it("counts tags case-insensitively and merges case variants", () => {
+  it("counts tags case-insensitively from matching notes only", () => {
     const mixed = [...entries, entry({ name: "C.md", path: "Docs/C.md", metadata: { tags: ["Work"] } })];
     const result = searchWorkspace(mixed, "work docs", contents);
-    expect(result.tags.map((t) => ({ name: t.name, count: t.count }))).toEqual([
-      { name: "docs", count: 1 },
-      { name: "work", count: 3 },
-    ]);
+    expect(result.notes.map((n) => n.entry.name)).toEqual(["C.md"]);
+    expect(result.tags).toEqual([{ name: "work", count: 1 }]);
   });
 
   it("produces an excerpt around the matched term", () => {
